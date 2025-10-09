@@ -9,6 +9,7 @@ import { Transceiver } from "../models/Transceiver";
 import { DeviceNeighbor } from "../models/DeviceNeighbor";
 
 const dbPath = path.join(app.getPath("userData"), "local.db");
+const migrationsPath = path.resolve(__dirname, '..', 'migrations', '*.js');;
 
 export const AppDataSource = new DataSource({
   type: "sqlite",
@@ -16,5 +17,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   logging: true,
   entities: [Snapshot, Device, Interface, Transceiver, DeviceNeighbor],
-  migrations: ["../migrations/*.js"],
+  migrations: [migrationsPath],
 });
