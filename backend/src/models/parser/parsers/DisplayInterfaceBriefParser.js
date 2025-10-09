@@ -7,7 +7,7 @@ class DisplayInterfaceBriefParser {
     this.rules = [
       {
         name: 'data_row',
-        regex: /^\s*(?<Interface>\S+)\s+(?<PHY>\S+)\s+(?<Protocol>\S+)\s+(?<InUti>\S+)\s+(?<OutUti>\S+)\s+(?<inErrors>\d+)\s+(?<outErrors>\d+)\s*$/,
+        regex: /^(?<Interface>\S+)\s+(?<PHY>\S+)\s+(?<Protocol>\S+)\s+(?<InUti>\S+)\s+(?<OutUti>\S+)\s+(?<inErrors>\d+)\s+(?<outErrors>\d+)\s*$/,
         handler: (match) => {
           this.data.interfaces.push({
             interface: match.groups.Interface,
@@ -24,27 +24,17 @@ class DisplayInterfaceBriefParser {
         name: 'table_header',
         regex: /^\s*Interface\s+PHY\s+Protocol/,
         handler: () => {}
-      },
-      {
-        name: 'info_or_empty_line',
-        regex: /^(PHY:|InUti\/OutUti:|\*down:|^\s*\(|\[Huawei\]|^\s*$)/,
-        handler: () => {}
       }
     ];
   }
 
-  /**
-   * ИЗМЕНЕНО: Используем .includes() вместо .startsWith() для надежности.
-   * Теперь парсер сработает, даже если перед командой есть имя устройства.
-   * @param {string} line - Строка из лога.
-   * @returns {boolean}
-   */
+
   isEntryPoint(line) {
-    // Просто проверяем, содержит ли строка команду, а не начинается ли с нее.
-    return line.includes('display interface brief');
+    const regex = /^\s*Interface\s+PHY\s+Protocol/;
+    return line.match(regex);
   }
 
-  startBlock(line) { // `match` здесь не нужен, так как isEntryPoint возвращает true/false
+  startBlock(line, match) { 
     this.data = {
       type: this.name,
       interfaces: [],
@@ -52,8 +42,11 @@ class DisplayInterfaceBriefParser {
   }
 
   parseLine(line) {
+    const trimmedLine = line.trim();
+    if (trimmedLine === '') return;
+
     for (const rule of this.rules) {
-      const match = line.match(rule.regex);
+      const match = trimmedLine.match(rule.regex);
       if (match) {
         rule.handler(match);
         return;
@@ -62,7 +55,7 @@ class DisplayInterfaceBriefParser {
   }
 
   isBlockComplete(line) {
-    return line.trim().startsWith('<');
+    return line.trim().startsWith('<') || this.isEntryPoint(line);
   }
   
   getResult() {

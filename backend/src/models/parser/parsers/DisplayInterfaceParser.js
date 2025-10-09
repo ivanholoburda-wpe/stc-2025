@@ -5,7 +5,6 @@ class DisplayInterfaceParser {
   sub_parser_mode = null;
 
   constructor() {
-    // ...конструктор с правилами остается без изменений...
     this.rules = [
       {
         name: 'status_lines',
@@ -17,7 +16,6 @@ class DisplayInterfaceParser {
         regex: /Line protocol current state\s+:\s+(?<protocol>.+?)\s*$/,
         handler: (match) => { this.data.protocol_status = match.groups.protocol; }
       },
-      // ...остальные правила остаются такими же...
       {
         name: 'description_line',
         regex: /^Description:\s*(?<desc>.*)$/,
@@ -98,32 +96,21 @@ class DisplayInterfaceParser {
     ];
   }
 
-  /**
-   * ИЗМЕНЕНО: "Умное" правило, которое находит оба варианта шапки.
-   * Возвращает объект совпадения (match) или null.
-   */
   isEntryPoint(line) {
     const trimmedLine = line.trim();
-    // Ищем: (Имя интерфейса) И (либо " current state :", либо ничего до конца строки)
     const regex = /^(?<iface>(GigabitEthernet|LoopBack|NULL|Vlanif)\S*)(\s+current state\s+:\s+(?<state>.+?)\s*$|\s*$)/;
     return trimmedLine.match(regex);
   }
 
-  /**
-   * ИЗМЕНЕНО: Теперь принимает `match` от движка.
-   */
   startBlock(line, match) {
     this.sub_parser_mode = null;
     this.data = {
       type: this.name,
-      // Берём имя интерфейса из группы `iface`
       interface: match.groups.iface,
-      // Если состояние было в той же строке, сразу его записываем
       state: match.groups.state || null,
       protocol_status: null,
       description: null,
       mac_address: null,
-      // ...остальная структура данных...
       last_up_time: null,
       last_down_time: null,
       port_settings: { pvid: null, tpid: null, mtu: null },
@@ -139,10 +126,8 @@ class DisplayInterfaceParser {
     };
   }
 
-  // ...остальные методы без изменений...
   parseLine(line) {
     const trimmedLine = line.trim();
-    // Если состояние уже было найдено в шапке, не нужно его искать снова
     if (this.data.state && trimmedLine.includes('current state')) {
       return;
     }
