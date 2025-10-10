@@ -9,7 +9,7 @@ import { Transceiver } from "../models/Transceiver";
 import { DeviceNeighbor } from "../models/DeviceNeighbor";
 import { Option } from "../models/Option";
 
-const dbPath = "./local.db";
+const dbPath = path.join(app.getPath("userData"), "local.db");
 const migrationsPath = path.resolve(__dirname, '..', 'migrations', '*.js');;
 
 export const AppDataSource = new DataSource({
