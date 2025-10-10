@@ -9,11 +9,11 @@ on:
       - feature/ci/cd-pipeline
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build-linux-portable:
-    name: Build portable Linux artifact
+  build-linux:
+    name: Build main & renderer (Linux)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install OS build dependencies
+      - name: Install system dependencies for sqlite3
         run: |
           sudo apt-get update
           sudo apt-get install -y python3 pkg-config libsqlite3-dev build-essential
@@ -32,48 +32,8 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
-      - name: Rebuild sqlite3 for Electron
-        run: |
-          npm install --no-save electron-rebuild@3
-          npx electron-rebuild -f -w sqlite3
+      - name: Build main process
+        run: npm run build:main
 
-      - name: Build portable artifact
-        env:
-          CI: true
-        run: npm run build:portable
-
-      - name: List produced files
-        run: |
-          find portable || echo "No portable output"
-          find dist || echo "No dist output"
-          find out || echo "No out output"
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            portable/**
-            dist/**
-            out/**
-
-  release:
-    name: Create GitHub Release (only on push to main)
-    needs: build-linux-portable
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: release_files
-
-      - name: List release_files
-        run: find release_files || echo "no release files"
-
-      - name: Create GitHub release and upload assets
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v${{ github.run_number }}
-          files: release_files/**
+      - name: Build renderer process
+        run: npm run build:renderer
