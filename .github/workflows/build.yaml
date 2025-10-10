@@ -22,13 +22,13 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-      
-      - name: Show Node and npm versions
+    
+      - name: Setup Visual Studio Build Tools and Windows SDK
         run: |
-          node -v
-          npm -v
+            choco install visualstudio2022buildtools --params "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --norestart" -y
+        shell: pwsh
 
-      - name: Setup Visual Studio Build Tools
+      - name: Setup MSBuild (activates environment)
         uses: microsoft/setup-msbuild@v2
 
       - name: Install dependencies
@@ -45,21 +45,11 @@ jobs:
           npm install --no-save --no-audit electron-rebuild@3
           npx electron-rebuild -v $ev -f -w sqlite3
 
-      - name: Setup MSVC + Windows SDK
-        run: |
-          choco install visualstudio2022buildtools --params "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --norestart" -y
-        
-      - name: Build (TypeScript / app) - PowerShell safe
+      - name: Build (TypeScript / app)
         shell: pwsh
         run: |
-          # Detect if package.json defines a "build" script; run it only if present.
           $hasBuild = node -e "try { console.log(Boolean(require('./package.json').scripts && require('./package.json').scripts.build)); } catch (e) { console.log(false); }"
-          Write-Host "package.json reports build script present? -> $hasBuild"
-          if ($hasBuild -eq 'true') {
-            npm run build
-          } else {
-            Write-Host "No build script defined, skipping npm run build"
-          }
+          if ($hasBuild -eq 'true') { npm run build } else { Write-Host "No build script defined" }
 
       - name: Package Windows EXE
         env:
