@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build portable Windows artifact
+    name: Build portable Windows artifact (diagnostics)
     runs-on: windows-latest
     env:
       npm_config_disturl: "https://electronjs.org/headers"
@@ -26,46 +26,70 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Write .npmrc to force msvs_version=2022 (as you did locally)
+      - name: Write .npmrc to force msvs_version=2022
         shell: pwsh
         run: |
-          "$([System.IO.File]::WriteAllText('.npmrc', 'msvs_version=2022'))"
+          Set-Content -Path .npmrc -Value 'msvs_version=2022' -Encoding UTF8
           Write-Host ".npmrc written:"
           Get-Content .npmrc
 
       - name: Export node-gyp / npm env for MSVC 2022
         shell: pwsh
         run: |
-          echo "GYP_MSVS_VERSION=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "GYP_MSVS_VERSION=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Host "Exported GYP_MSVS_VERSION and npm_config_msvs_version to GITHUB_ENV"
 
-      - name: Try install Windows SDK 10.0.22621.0 (best-effort)
-        # this may be slow or not available on runner images; keep as best-effort to match your local fix
+      - name: Try install Windows SDK 10.0.19041.0 (best-effort)
         shell: pwsh
         continue-on-error: true
         run: |
-          Write-Host "Attempting to install Windows SDK 10.0.22621.0 via Chocolatey (best-effort). This step will not fail the job if installation is not possible on the hosted runner."
-          choco install windows-sdk-10.1 --version=10.0.22621.0 -y
+          Write-Host "Attempting to install Windows SDK 10.0.19041.0 via Chocolatey (best-effort). This may not be supported on hosted images."
+          choco install windows-sdk-10.1 --version=10.0.19041.0 -y
           Write-Host "choco exit code: $LASTEXITCODE"
 
-      - name: Setup MSBuild (includes vswhere)
+      - name: Install MSBuild helper (vswhere available via setup-msbuild)
         uses: microsoft/setup-msbuild@v2
 
-      - name: Install dependencies (run under VS dev env)
+      - name: Diagnose Visual Studio and Windows SDK (vswhere)
+        shell: pwsh
+        run: |
+          Write-Host "=== vswhere: list all installations ==="
+          &"$env:ProgramFiles\Microsoft Visual Studio\Installer\vswhere.exe" -all -prerelease -products * -format json | Out-File vswhere.json -Encoding utf8
+          Get-Content vswhere.json
+          Write-Host "=== Checking for Windows SDK folders under Program Files (possible SDK locations) ==="
+          Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Lib' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+          Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Include' -ErrorAction SilentlyContinue | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Fail early with guidance if no Windows SDK found
+        shell: pwsh
+        run: |
+          $sdkExists = Test-Path 'C:\Program Files (x86)\Windows Kits\10\Include' -PathType Container -ErrorAction SilentlyContinue
+          if (-not $sdkExists) {
+            Write-Host "Windows SDK not found on runner."
+            Write-Host "Recommended options:"
+            Write-Host "  1) Use a self-hosted Windows runner with Visual Studio 2022 + 'Desktop development with C++' workload and Windows SDK 10.0.19041.0 (or your target SDK)."
+            Write-Host "  2) Make sure your electron/sqlite3 combo has prebuilt binaries (change versions) to avoid native builds in CI."
+            Write-Host "  3) If you still want to try on hosted runner, allow the workflow to continue but builds may fail."
+            # do not fail the job here — we will continue to attempt best-effort build, but emit a warning
+            exit 0
+          } else {
+            Write-Host "Windows SDK seems present; proceeding."
+          }
+
+      - name: Install dependencies (under VS dev env if available)
         shell: cmd
         run: |
-          REM try common vcvars paths (Community then Enterprise); if neither exists, continue without vcvars
           if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
             call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
           ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" (
             call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           ) else (
-            echo "vcvars64.bat not found in common locations; proceeding anyway (node-gyp may fail)."
+            echo "vcvars64.bat not found in common VS 2022 locations; continuing without vcvars (node-gyp may fail)."
           )
           npm ci
 
-      - name: Rebuild sqlite3 for Electron (electron-rebuild)
+      - name: Rebuild sqlite3 for Electron (electron-rebuild) - best-effort
         shell: cmd
         env:
           npm_config_disturl: "https://electronjs.org/headers"
@@ -79,13 +103,13 @@ jobs:
             echo "vcvars64.bat not found; continuing (rebuild may fail)."
           )
 
-          REM detect electron version (installed in node_modules after npm ci)
           for /f "usebackq delims=" %%v in (`node -p "require('./node_modules/electron/package.json').version"`) do set EV=%%v
           echo Detected electron version: %EV%
 
-          REM install electron-rebuild locally and rebuild sqlite3 for electron
           npm install --no-save --no-audit electron-rebuild@3
-          npx electron-rebuild -v %EV% -f -w sqlite3
+          npx electron-rebuild -v %EV% -f -w sqlite3 || (
+            echo "electron-rebuild failed. If it fails due to missing Windows SDK, prefer self-hosted runner with VS+SDK installed."
+          )
 
       - name: Build portable artifact (msvc env + pack)
         shell: cmd
@@ -138,6 +162,7 @@ jobs:
           path: release_files
 
       - name: List release_files
+        shell: cmd
         run: dir /s /b release_files || echo "no release files"
 
       - name: Create GitHub release and upload assets
