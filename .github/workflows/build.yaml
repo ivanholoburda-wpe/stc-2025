@@ -52,15 +52,19 @@ jobs:
           npx electron-rebuild -v $ev -f -w sqlite3
 
       - name: Build (TypeScript / app)
-        shell: pwsh
+        shell: cmd
         run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
           $hasBuild = node -e "try { console.log(Boolean(require('./package.json').scripts && require('./package.json').scripts.build)); } catch (e) { console.log(false); }"
           if ($hasBuild -eq 'true') { npm run build } else { Write-Host "No build script defined" }
 
       - name: Package Windows EXE
+        shell: cmd
         env:
           CI: true
-        run: npm run pack:win
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+          npm run pack:win
 
       - name: List dist output
         run: dir /s /b dist || echo "dist folder not found"
