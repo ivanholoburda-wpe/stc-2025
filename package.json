@@ -17,7 +17,7 @@
     "build:main": "tsc && npm run copy:preload",
     "build": "run-s build:main build:renderer build:electron",
     "build:renderer": "vite build --config renderer/vite.config.js",
-    "build:electron": "electron-builder -mwl --dir",
+    "build:electron": "electron-builder -w --dir",
     "pack:win": "electron-builder -w",
     "pack:mac": "electron-builder -m",
     "pack:linux": "electron-builder -l",
