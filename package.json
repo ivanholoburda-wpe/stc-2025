@@ -6,15 +6,12 @@
   "type": "commonjs",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
-    "build:portable": "electron-builder build --win portable"
+    "build:portable": "electron-builder build --win portable",
     "dev": "run-p dev:renderer dev:electron",
     "dev:renderer": "vite --config renderer/vite.config.js",
-    
-    "predev:electron": "npm run build:main", 
+    "predev:electron": "npm run build:main",
     "dev:electron": "npm run copy:preload && wait-on tcp:5173 && cross-env NODE_ENV=development electron .",
-    
     "copy:preload": "cp preload.js dist/preload.js",
-    
     "build:main": "tsc && npm run copy:preload",
     "build": "run-s build:main build:renderer build:electron",
     "build:renderer": "vite build --config renderer/vite.config.js",
