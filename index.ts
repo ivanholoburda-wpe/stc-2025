@@ -4,6 +4,9 @@ import fs from 'fs/promises';
 import { AppDataSource } from './backend/src/database/data-source';
 import { container } from './backend/src/container';
 import { DeviceHandler } from './backend/src/handlers/DeviceHandler';
+import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
+import { TYPES } from './backend/src/types';
+import { IConfigurationService } from './backend/src/services/ConfigurationService';
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -32,6 +35,13 @@ function createWindow(): void {
     }
   });
 
+  const configService = container.get<IConfigurationService>(TYPES.ConfigurationService);
+
+  ipcMain.handle('config:is-offline-mode', async () => {
+    const isOffline = await configService.isOfflineMode();
+    return isOffline;
+  });
+
   console.log(process.env.NODE_ENV);
   if (process.env.NODE_ENV === 'development') {
     mainWindow.loadURL('http://localhost:5173');
@@ -45,6 +55,9 @@ app.whenReady().then(async () => {
     await AppDataSource.initialize();
     await AppDataSource.runMigrations();
     console.log('Database initialized and migrations completed');
+
+    const seeder = container.get<DefaultOptionsSeeder>(TYPES.DefaultOptionsSeeder);
+    await seeder.run();
 
     // Initialize DI container and handlers
     const deviceHandler = container.get(DeviceHandler);

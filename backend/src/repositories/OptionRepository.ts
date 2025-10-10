@@ -1,0 +1,38 @@
+import { injectable, inject } from "inversify";
+import { DataSource, Repository } from "typeorm";
+import { Option } from "../models/Option";
+import { TYPES } from "../types";
+
+export interface IOptionRepository {
+    findByOptionName(option_name: string): Promise<Option | null>;
+    updateOrCreate(option_name: string, option_value: string): Promise<Option>;
+}
+
+@injectable()
+export class OptionRepository implements IOptionRepository {
+    private repository: Repository<Option>;
+
+    constructor(@inject(TYPES.DataSource) private dataSource: DataSource) {
+        this.repository = dataSource.getRepository(Option);
+    }
+    
+    async findByOptionName(option_name: string): Promise<Option | null> {
+        return await this.repository.findOne({
+            where: {
+                option_name
+            }
+        })
+    }
+
+    async updateOrCreate(option_name: string, option_value: string): Promise<Option> {
+        let option = await this.findByOptionName(option_name);
+
+        if (option) {
+            option.option_value = option_value;
+        } else {
+            option = this.repository.create({ option_name, option_value });
+        }
+
+        return await this.repository.save(option);
+    }
+}

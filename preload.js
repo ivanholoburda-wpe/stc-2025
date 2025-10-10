@@ -13,3 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createDevice: (deviceData) => ipcRenderer.invoke('create-device', deviceData),
   getDeviceById: (id) => ipcRenderer.invoke('get-device-by-id', id),
 });
+
+contextBridge.exposeInMainWorld('configAPI', {
+  isOfflineMode: () => ipcRenderer.invoke('config:is-offline-mode'),
+})
