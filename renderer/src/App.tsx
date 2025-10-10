@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Device {
   id: number;
@@ -11,10 +11,20 @@ interface Device {
   };
 }
 
+declare global {
+  interface Window {
+    configAPI: {
+      isOfflineMode: () => Promise<boolean>;
+      getAiModelKey: () => Promise<string | null>;
+    };
+  }
+}
+
 export function App() {
   const [fileContent, setFileContent] = useState('');
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isOffline, setIsOffline] = useState(true);
 
   const handleReadFile = async () => {
     const content = await window.electronAPI.readFile();
@@ -30,10 +40,10 @@ export function App() {
         setDevices(result.data);
       } else {
         console.log(result.error);
-        alert('Ошибка: ' + result.error);
+        alert('Error: ' + result.error);
       }
     } catch (error) {
-      alert('Ошибка при получении устройств: ' + (error as Error).message);
+      alert('Error fetching devices: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
@@ -46,39 +56,61 @@ export function App() {
         model: 'Test Model'
       });
       if (result.success) {
-        alert('Устройство создано: ' + result.data.hostname);
-        handleGetDevices(); // Обновляем список
+        alert('Device created: ' + result.data.hostname);
+        handleGetDevices();
       } else {
-        alert('Ошибка: ' + result.error);
+        alert('Error: ' + result.error);
       }
     } catch (error) {
-      alert('Ошибка при создании устройства: ' + (error as Error).message);
+      alert('Error while creating device: ' + (error as Error).message);
     }
   };
+
+  useEffect(() => {
+    async function fetchConfig() {
+      try {
+        const offlineStatus = await window.configAPI.isOfflineMode();
+        setIsOffline(offlineStatus);
+      } catch (error) {
+        console.error("Failed to fetch configuration:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchConfig();
+  }, []);
 
   return (
     <div style={{ padding: 24, fontFamily: 'sans-serif' }}>
       <h1>Electron + React + TypeORM + Inversify</h1>
+      <p>
+        Application status: 
+        {loading 
+          ? 'Loading...' 
+          : <b>{isOffline ? 'Offline mode' : 'Online mode'}</b>
+        }
+      </p>
       
       <div style={{ marginTop: 16 }}>
         <button onClick={handleReadFile} style={{ marginRight: 8 }}>
-          Прочитать файл
+          Read file
         </button>
         <button 
           onClick={handleGetDevices} 
           disabled={loading}
           style={{ marginRight: 8 }}
         >
-          {loading ? 'Загрузка...' : 'Показать устройства'}
+          {loading ? 'Loading...' : 'Show devices'}
         </button>
         <button onClick={handleCreateTestDevice}>
-          Создать тестовое устройство
+          Create test device
         </button>
       </div>
 
       {devices.length > 0 && (
         <div style={{ marginTop: 24 }}>
-          <h3>Найдено устройств: {devices.length}</h3>
+          <h3>Devices: {devices.length}</h3>
           <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
             {devices.map(device => (
               <div 
@@ -94,7 +126,7 @@ export function App() {
                 <p>ID: {device.id}</p>
                 {device.model && <p>Модель: {device.model}</p>}
                 {device.firstSeenSnapshot && (
-                  <p>Создано: {new Date(device.firstSeenSnapshot.created_at).toLocaleString()}</p>
+                  <p>Created at: {new Date(device.firstSeenSnapshot.created_at).toLocaleString()}</p>
                 )}
               </div>
             ))}
@@ -102,7 +134,7 @@ export function App() {
         </div>
       )}
 
-      <h3 style={{ marginTop: 24 }}>Содержимое файла:</h3>
+      <h3 style={{ marginTop: 24 }}>File content:</h3>
       <pre style={{ 
         backgroundColor: '#f4f4f4', 
         padding: 16, 
@@ -110,7 +142,7 @@ export function App() {
         whiteSpace: 'pre-wrap', 
         wordBreak: 'break-all'
       }}>
-        {fileContent || 'Нажмите на кнопку, чтобы выбрать и прочитать файл...'}
+        {fileContent || 'Choose the file...'}
       </pre>
     </div>
   );
