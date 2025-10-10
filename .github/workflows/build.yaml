@@ -25,7 +25,7 @@ jobs:
 
       - name: Setup Windows SDK manually
         run: |
-          choco install windows-sdk-10 -y
+          choco install windows-sdk-10.1 --verison=10.1.26100.4948 -y
         shell: pwsh
 
       - name: Setup Visual Studio Build Tools
