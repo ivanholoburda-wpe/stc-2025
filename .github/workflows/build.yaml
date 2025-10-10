@@ -28,28 +28,26 @@ jobs:
           node -v
           npm -v
 
+      - name: Setup Visual Studio Build Tools
+        uses: microsoft/setup-msbuild@v2
+
       - name: Install dependencies
         run: npm ci
 
-      - name: Rebuild native modules for Electron (sqlite3)
-        # PowerShell on windows runner
+      - name: Rebuild sqlite3 for Electron
         shell: pwsh
         env:
-          # ensure prebuild-install/electron headers use electron's headers
           npm_config_disturl: "https://electronjs.org/headers"
           npm_config_runtime: "electron"
         run: |
-          # Get the installed electron version (exact) and force-rebuild sqlite3 for that electron version.
           $ev = node -p "require('./node_modules/electron/package.json').version"
           Write-Host "Detected electron version: $ev"
-          Write-Host "Running electron-rebuild for sqlite3 against electron $ev"
-          # Install electron-rebuild locally (no package.json change) and run it to rebuild native module(s) for Electron.
           npm install --no-save --no-audit electron-rebuild@3
           npx electron-rebuild -v $ev -f -w sqlite3
 
-      - name: Setup MSVC
+      - name: Setup MSVC + Windows SDK
         run: |
-          choco install visualstudio2022buildtools --params "--add Microsoft.VisualStudio.Workload.VCTools --quiet --norestart" -y
+          choco install visualstudio2022buildtools --params "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --norestart" -y
         
       - name: Build (TypeScript / app) - PowerShell safe
         shell: pwsh
