@@ -13,6 +13,10 @@ jobs:
   build:
     name: Build portable Windows artifact
     runs-on: windows-latest
+    env:
+      # ensure electron headers are used by prebuild/node-gyp when rebuilding native modules
+      npm_config_disturl: "https://electronjs.org/headers"
+      npm_config_runtime: "electron"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,23 +27,84 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Show Node and npm versions
-        run: |
-          node -v
-          npm -v
-
-      - name: Install dependencies
-        run: npm ci
-        shell: pwsh
-
-      - name: Build portable artifact
-        # run the single script requested by you
+      - name: Write .npmrc to force msvs_version=2022 (as you did locally)
         shell: pwsh
         run: |
-          Write-Host "Running npm run build:portable"
+          "$([System.IO.File]::WriteAllText('.npmrc', 'msvs_version=2022'))"
+          Write-Host ".npmrc written:"
+          Get-Content .npmrc
+
+      - name: Export node-gyp / npm env for MSVC 2022
+        shell: pwsh
+        run: |
+          echo "GYP_MSVS_VERSION=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Exported GYP_MSVS_VERSION and npm_config_msvs_version to GITHUB_ENV"
+
+      - name: Try install Windows SDK 10.0.19041.0 (best-effort)
+        # this may be slow or not available on runner images; keep as best-effort to match your local fix
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          Write-Host "Attempting to install Windows SDK 10.0.19041.0 via Chocolatey (best-effort). This step will not fail the job if installation is not possible on the hosted runner."
+          choco install windows-sdk-10.1 --version=10.0.19041.0 -y
+          Write-Host "choco exit code: $LASTEXITCODE"
+
+      - name: Setup MSBuild (includes vswhere)
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Install dependencies (run under VS dev env)
+        shell: cmd
+        run: |
+          REM try common vcvars paths (Community then Enterprise); if neither exists, continue without vcvars
+          if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
+            call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+          ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" (
+            call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          ) else (
+            echo "vcvars64.bat not found in common locations; proceeding anyway (node-gyp may fail)."
+          )
+          npm ci
+
+      - name: Rebuild sqlite3 for Electron (electron-rebuild)
+        shell: cmd
+        env:
+          npm_config_disturl: "https://electronjs.org/headers"
+          npm_config_runtime: "electron"
+        run: |
+          if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
+            call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+          ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" (
+            call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          ) else (
+            echo "vcvars64.bat not found; continuing (rebuild may fail)."
+          )
+
+          REM detect electron version (installed in node_modules after npm ci)
+          for /f "usebackq delims=" %%v in (`node -p "require('./node_modules/electron/package.json').version"`) do set EV=%%v
+          echo Detected electron version: %EV%
+
+          REM install electron-rebuild locally and rebuild sqlite3 for electron
+          npm install --no-save --no-audit electron-rebuild@3
+          npx electron-rebuild -v %EV% -f -w sqlite3
+
+      - name: Build portable artifact (msvc env + pack)
+        shell: cmd
+        env:
+          CI: true
+        run: |
+          if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat" (
+            call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+          ) else if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" (
+            call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          ) else (
+            echo "vcvars64.bat not found; attempting to build anyway."
+          )
+
+          echo "Running npm run build:portable"
           npm run build:portable
 
-      - name: List potential output folders (debug)
+      - name: List potential outputs (debug)
         shell: pwsh
         run: |
           $paths = @('portable','dist','out')
