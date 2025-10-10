@@ -45,7 +45,7 @@ jobs:
         continue-on-error: true
         run: |
           Write-Host "Attempting to install Windows SDK 10.0.19041.0 via Chocolatey (best-effort). This may not be supported on hosted images."
-          choco install windows-sdk-10.1 --version=10.1.19041.5609 -y
+          choco install windows-sdk-10.0 --version=10.1.19041.5609 -y
           Write-Host "choco exit code: $LASTEXITCODE"
 
       - name: Install MSBuild helper (vswhere)
