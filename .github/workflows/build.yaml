@@ -40,12 +40,12 @@ jobs:
           echo "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
           Write-Host "Exported GYP_MSVS_VERSION and npm_config_msvs_version to GITHUB_ENV"
 
-      - name: Try install Windows SDK 10.0.19041.0 (best-effort)
+      - name: Try install Windows SDK 10.0.22621.0 (best-effort)
         # this may be slow or not available on runner images; keep as best-effort to match your local fix
         shell: pwsh
         continue-on-error: true
         run: |
-          Write-Host "Attempting to install Windows SDK 10.0.19041.0 via Chocolatey (best-effort). This step will not fail the job if installation is not possible on the hosted runner."
+          Write-Host "Attempting to install Windows SDK 10.0.22621.0 via Chocolatey (best-effort). This step will not fail the job if installation is not possible on the hosted runner."
           choco install windows-sdk-10.1 --version=10.0.22621.0 -y
           Write-Host "choco exit code: $LASTEXITCODE"
 
