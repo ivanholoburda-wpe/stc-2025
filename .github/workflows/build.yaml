@@ -1,0 +1,77 @@
+on:
+  push:
+    branches:
+      - feature/ci/cd-pipeline
+  pull_request:
+    branches:
+      - feature/ci/cd-pipeline
+
+permissions:
+  contents: write   # required for creating releases/assets with GITHUB_TOKEN
+
+jobs:
+  build:
+    name: Build & Package (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Show Node and npm versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (TypeScript / app)
+        run: |
+          # run your build script if present; npm run build is common in the repo
+          if npm run | findstr /R /C:"build"; then npm run build; else echo "no build script"; fi
+
+      - name: Package Windows EXE
+        env:
+          CI: true
+        run: |
+          # This runs your packaging command; it should produce the installer/exe in dist/ or similar
+          npm run pack:win
+
+      - name: List dist output (for debugging)
+        run: dir /s /b dist || echo "dist folder not found"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            dist/**
+            out/**
+
+  release:
+    name: Create GitHub Release (only on push to main)
+    needs: build
+    runs-on: windows-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: release_files
+
+      - name: List release_files (debug)
+        run: dir /s /b release_files || echo "no release files"
+
+      - name: Create GitHub release and upload assets
+        # ncipollo/release-action will create (or update) a release and attach files
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ github.run_number }}
+          files: release_files/**
