@@ -25,28 +25,17 @@ jobs:
 
       - name: Setup Windows SDK manually
         run: |
-          choco install windows-sdk-10.1 --verison=10.1.26100.4948 -y
+          choco install windows-sdk-10.1 --verison=10.0.19041.0 -y
         shell: pwsh
 
       - name: Setup Visual Studio Build Tools
         uses: microsoft/setup-msbuild@v2
 
-      - name: Set environment variables for node-gyp
+      - name: Set node-gyp version
         shell: pwsh
         run: |
           echo "GYP_MSVS_VERSION=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Microsoft\VC\v170" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "WINDOWSSDKDIR=C:\Program Files (x86)\Windows Kits\10" | Out-File -FilePath $env:GITHUB_ENV -Append
-
-      - name: Verify SDK presence
-        run: |
-          if (Test-Path "C:\Program Files (x86)\Windows Kits\10") {
-            Write-Host "Windows SDK found"
-          } else {
-            Write-Host "SDK missing"
-            exit 1
-          }
 
       - name: Install dependencies
         run: npm ci
