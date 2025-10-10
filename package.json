@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
+    "build:portable": "electron-builder build --win portable"
     "dev": "run-p dev:renderer dev:electron",
     "dev:renderer": "vite --config renderer/vite.config.js",
     
