@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build & Package (Windows)
+    name: Build portable Windows artifact
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -23,57 +23,41 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Setup Windows SDK manually
+      - name: Show Node and npm versions
         run: |
-          choco install windows-sdk-10.1 --verison=10.0.19041.0 -y
-        shell: pwsh
-
-      - name: Setup Visual Studio Build Tools
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Set node-gyp version
-        shell: pwsh
-        run: |
-          echo "GYP_MSVS_VERSION=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          node -v
+          npm -v
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Rebuild sqlite3 for Electron
         shell: pwsh
-        env:
-          npm_config_disturl: "https://electronjs.org/headers"
-          npm_config_runtime: "electron"
-        run: |
-          $ev = node -p "require('./node_modules/electron/package.json').version"
-          Write-Host "Detected electron version: $ev"
-          npm install --no-save --no-audit electron-rebuild@3
-          npx electron-rebuild -v $ev -f -w sqlite3
 
-      - name: Build (TypeScript / app)
-        shell: cmd
+      - name: Build portable artifact
+        # run the single script requested by you
+        shell: pwsh
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-          $hasBuild = node -e "try { console.log(Boolean(require('./package.json').scripts && require('./package.json').scripts.build)); } catch (e) { console.log(false); }"
-          if ($hasBuild -eq 'true') { npm run build } else { Write-Host "No build script defined" }
+          Write-Host "Running npm run build:portable"
+          npm run build:portable
 
-      - name: Package Windows EXE
-        shell: cmd
-        env:
-          CI: true
+      - name: List potential output folders (debug)
+        shell: pwsh
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
-          npm run pack:win
-
-      - name: List dist output
-        run: dir /s /b dist || echo "dist folder not found"
+          $paths = @('portable','dist','out')
+          foreach ($p in $paths) {
+            if (Test-Path $p) {
+              Write-Host "Contents of $p:"
+              Get-ChildItem -Recurse -Force $p | ForEach-Object { Write-Host $_.FullName }
+            } else {
+              Write-Host "$p not found"
+            }
+          }
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
           path: |
+            portable/**
             dist/**
             out/**
 
