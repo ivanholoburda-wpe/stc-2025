@@ -31,10 +31,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build (TypeScript / app)
+      - name: Build (TypeScript / app) - PowerShell safe
+        shell: pwsh
         run: |
-          # run your build script if present; npm run build is common in the repo
-          if npm run | findstr /R /C:"build"; then npm run build; else echo "no build script"; fi
+          # Detect if package.json defines a "build" script; run it only if present.
+          $hasBuild = node -e "try { console.log(Boolean(require('./package.json').scripts && require('./package.json').scripts.build)); } catch (e) { console.log(false); }"
+          Write-Host "package.json reports build script present? -> $hasBuild"
+          if ($hasBuild -eq 'true') {
+            npm run build
+          } else {
+            Write-Host "No build script defined, skipping npm run build"
+          }
 
       - name: Package Windows EXE
         env:
