@@ -7,7 +7,7 @@ on:
       - feature/ci/cd-pipeline
 
 permissions:
-  contents: write   # required for creating releases/assets with GITHUB_TOKEN
+  contents: write
 
 jobs:
   build:
@@ -22,14 +22,31 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-    
-      - name: Setup Visual Studio Build Tools and Windows SDK
+
+      - name: Setup Windows SDK manually
         run: |
-            choco install visualstudio2022buildtools --params "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --norestart" -y
+          choco install windows-sdk-10-version-10.0.19041.0 -y
         shell: pwsh
 
-      - name: Setup MSBuild (activates environment)
+      - name: Setup Visual Studio Build Tools
         uses: microsoft/setup-msbuild@v2
+
+      - name: Set environment variables for node-gyp
+        shell: pwsh
+        run: |
+          echo "GYP_MSVS_VERSION=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "npm_config_msvs_version=2022" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Microsoft\VC\v170" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "WINDOWSSDKDIR=C:\Program Files (x86)\Windows Kits\10" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Verify SDK presence
+        run: |
+          if (Test-Path "C:\Program Files (x86)\Windows Kits\10") {
+            Write-Host "Windows SDK found"
+          } else {
+            Write-Host "SDK missing"
+            exit 1
+          }
 
       - name: Install dependencies
         run: npm ci
@@ -54,11 +71,9 @@ jobs:
       - name: Package Windows EXE
         env:
           CI: true
-        run: |
-          # This runs your packaging command; it should produce the installer/exe in dist/ or similar
-          npm run pack:win
+        run: npm run pack:win
 
-      - name: List dist output (for debugging)
+      - name: List dist output
         run: dir /s /b dist || echo "dist folder not found"
 
       - name: Upload build artifacts
@@ -81,11 +96,10 @@ jobs:
           name: build-artifacts
           path: release_files
 
-      - name: List release_files (debug)
+      - name: List release_files
         run: dir /s /b release_files || echo "no release files"
 
       - name: Create GitHub release and upload assets
-        # ncipollo/release-action will create (or update) a release and attach files
         uses: ncipollo/release-action@v1
         with:
           tag: v${{ github.run_number }}
