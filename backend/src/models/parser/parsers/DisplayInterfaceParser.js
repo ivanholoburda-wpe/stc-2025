@@ -1,10 +1,12 @@
-class DisplayInterfaceParser {
-  name = 'display_interface_block';
-  priority = 100;
-  data = null;
-  sub_parser_mode = null;
+const BaseParser = require('../core/BaseParser');
 
+class DisplayInterfaceParser extends BaseParser {
   constructor() {
+    super();
+    this.name = 'display_interface_block';
+    this.priority = 100;
+    this.sub_parser_mode = null;
+
     this.rules = [
       {
         name: 'status_lines',
@@ -94,6 +96,19 @@ class DisplayInterfaceParser {
         }
       }
     ];
+
+    // Добавляем правила валидации
+    this.addValidationRule({
+      name: 'interface_name_required',
+      validate: (data) => data.interface && data.interface.length > 0,
+      message: 'Interface name is required'
+    });
+
+    this.addValidationRule({
+      name: 'state_required',
+      validate: (data) => data.state && ['UP', 'DOWN', 'ADMINISTRATIVELY DOWN'].includes(data.state.toUpperCase()),
+      message: 'Valid interface state is required'
+    });
   }
 
   isEntryPoint(line) {
@@ -103,9 +118,12 @@ class DisplayInterfaceParser {
   }
 
   startBlock(line, match) {
+    super.startBlock(line, match);
     this.sub_parser_mode = null;
+    
+    // Расширяем базовую структуру данных
     this.data = {
-      type: this.name,
+      ...this.data,
       interface: match.groups.iface,
       state: match.groups.state || null,
       protocol_status: null,
@@ -128,27 +146,54 @@ class DisplayInterfaceParser {
 
   parseLine(line) {
     const trimmedLine = line.trim();
+    
+    // Пропускаем дублирующиеся строки состояния
     if (this.data.state && trimmedLine.includes('current state')) {
-      return;
+      return true;
     }
 
-    for (const rule of this.rules) {
-      const match = trimmedLine.match(rule.regex);
-      if (match) {
-        rule.handler(match);
-        return;
-      }
-    }
+    return super.parseLine(line);
   }
 
   isBlockComplete(line) {
     const trimmedLine = line.trim();
-    return trimmedLine === '' || trimmedLine.startsWith('<') || this.isEntryPoint(trimmedLine);
+    
+    // Расширяем базовые условия завершения
+    if (super.isBlockComplete(line)) {
+      return true;
+    }
+    
+    // Дополнительные условия для интерфейсов
+    if (trimmedLine.startsWith('GigabitEthernet') && trimmedLine !== this.data.interface) {
+      return true;
+    }
+    
+    return false;
   }
-  
-  getResult() {
-    return this.data;
+
+  /**
+   * Переопределяем метод валидации для специфичных проверок интерфейса
+   */
+  _validateData() {
+    super._validateData();
+    
+    if (!this.data) return;
+
+    // Проверяем корректность MAC адреса
+    if (this.data.mac_address && !/^[\da-f]{4}-[\da-f]{4}-[\da-f]{4}$/i.test(this.data.mac_address)) {
+      this._addWarning('Invalid MAC address format', this.data.mac_address);
+    }
+
+    // Проверяем корректность PVID
+    if (this.data.port_settings.pvid && (this.data.port_settings.pvid < 1 || this.data.port_settings.pvid > 4094)) {
+      this._addWarning('PVID out of valid range (1-4094)', this.data.port_settings.pvid.toString());
+    }
+
+    // Проверяем корректность MTU
+    if (this.data.port_settings.mtu && (this.data.port_settings.mtu < 64 || this.data.port_settings.mtu > 9216)) {
+      this._addWarning('MTU out of valid range (64-9216)', this.data.port_settings.mtu.toString());
+    }
   }
 }
 
-module.exports = new DisplayInterfaceParser();
+module.exports = DisplayInterfaceParser;

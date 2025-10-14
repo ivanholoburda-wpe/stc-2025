@@ -1,9 +1,11 @@
-class DisplayInterfaceBriefParser {
-  name = 'display_interface_brief_block';
-  priority = 10;
-  data = null;
+const BaseParser = require('../core/BaseParser');
 
+class DisplayInterfaceBriefParser extends BaseParser {
   constructor() {
+    super();
+    this.name = 'display_interface_brief_block';
+    this.priority = 10;
+
     this.rules = [
       {
         name: 'data_row',
@@ -23,11 +25,40 @@ class DisplayInterfaceBriefParser {
       {
         name: 'table_header',
         regex: /^\s*Interface\s+PHY\s+Protocol/,
-        handler: () => {}
+        handler: () => {
+          // Заголовок таблицы - просто пропускаем
+        }
+      },
+      {
+        name: 'separator_line',
+        regex: /^[-=\s]+$/,
+        handler: () => {
+          // Разделительные линии - пропускаем
+        }
       }
     ];
-  }
 
+    // Добавляем правила валидации
+    this.addValidationRule({
+      name: 'interfaces_array_required',
+      validate: (data) => Array.isArray(data.interfaces) && data.interfaces.length > 0,
+      message: 'At least one interface must be parsed'
+    });
+
+    this.addValidationRule({
+      name: 'interface_data_valid',
+      validate: (data) => {
+        return data.interfaces.every(iface => 
+          iface.interface && 
+          iface.phy_status && 
+          iface.protocol_status &&
+          typeof iface.in_errors === 'number' &&
+          typeof iface.out_errors === 'number'
+        );
+      },
+      message: 'All interfaces must have valid data'
+    });
+  }
 
   isEntryPoint(line) {
     const regex = /^\s*Interface\s+PHY\s+Protocol/;
@@ -35,32 +66,77 @@ class DisplayInterfaceBriefParser {
   }
 
   startBlock(line, match) { 
+    super.startBlock(line, match);
+    
+    // Расширяем базовую структуру данных
     this.data = {
-      type: this.name,
+      ...this.data,
       interfaces: [],
     };
   }
 
   parseLine(line) {
     const trimmedLine = line.trim();
-    if (trimmedLine === '') return;
-
-    for (const rule of this.rules) {
-      const match = trimmedLine.match(rule.regex);
-      if (match) {
-        rule.handler(match);
-        return;
-      }
+    
+    // Пропускаем пустые строки
+    if (!trimmedLine) {
+      return true;
     }
+
+    return super.parseLine(line);
   }
 
   isBlockComplete(line) {
-    return line.trim().startsWith('<') || this.isEntryPoint(line);
+    const trimmedLine = line.trim();
+    
+    // Расширяем базовые условия завершения
+    if (super.isBlockComplete(line)) {
+      return true;
+    }
+    
+    // Дополнительные условия для brief таблицы
+    if (trimmedLine.startsWith('Interface') && trimmedLine !== this.data.raw_line) {
+      return true;
+    }
+    
+    return false;
   }
-  
-  getResult() {
-    return this.data;
+
+  /**
+   * Переопределяем метод валидации для специфичных проверок brief таблицы
+   */
+  _validateData() {
+    super._validateData();
+    
+    if (!this.data || !this.data.interfaces) return;
+
+    // Проверяем каждую строку интерфейса
+    this.data.interfaces.forEach((iface, index) => {
+      // Проверяем статусы PHY
+      if (!['Up', 'Down', 'Administratively Down'].includes(iface.phy_status)) {
+        this._addWarning(`Invalid PHY status for interface ${iface.interface}: ${iface.phy_status}`);
+      }
+
+      // Проверяем статусы протокола
+      if (!['Up', 'Down'].includes(iface.protocol_status)) {
+        this._addWarning(`Invalid protocol status for interface ${iface.interface}: ${iface.protocol_status}`);
+      }
+
+      // Проверяем ошибки
+      if (iface.in_errors < 0 || iface.out_errors < 0) {
+        this._addWarning(`Negative error count for interface ${iface.interface}`);
+      }
+
+      // Проверяем утилизацию
+      if (iface.in_utilization && !/^\d+(\.\d+)?%?$/.test(iface.in_utilization)) {
+        this._addWarning(`Invalid input utilization format for interface ${iface.interface}: ${iface.in_utilization}`);
+      }
+
+      if (iface.out_utilization && !/^\d+(\.\d+)?%?$/.test(iface.out_utilization)) {
+        this._addWarning(`Invalid output utilization format for interface ${iface.interface}: ${iface.out_utilization}`);
+      }
+    });
   }
 }
 
-module.exports = new DisplayInterfaceBriefParser();
+module.exports = DisplayInterfaceBriefParser;
