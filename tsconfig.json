@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "jsx": "react-jsx",
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "DOM"],
     "outDir": "./dist",
     "rootDir": "./",
     "strict": true,
@@ -17,6 +18,6 @@
     "declarationMap": true,
     "sourceMap": true
   },
-  "include": ["index.ts", "backend/src/**/*", "preload.js"],
-  "exclude": ["node_modules", "dist", "renderer"]
+  "include": ["index.ts", "backend/src/**/*", "renderer", "preload.js"],
+  "exclude": ["node_modules", "dist"]
 }
