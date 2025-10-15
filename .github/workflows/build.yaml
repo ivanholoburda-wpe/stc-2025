@@ -1,0 +1,39 @@
+on:
+  push:
+    branches:
+      - main
+      - feature/ci/cd-pipeline
+  pull_request:
+    branches:
+      - main
+      - feature/ci/cd-pipeline
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+    name: Build main & renderer (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install system dependencies for sqlite3
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 pkg-config libsqlite3-dev build-essential
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build main process
+        run: npm run build:main
+
+      - name: Build renderer process
+        run: npm run build:renderer

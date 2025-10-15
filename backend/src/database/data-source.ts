@@ -6,8 +6,9 @@ import { Device } from "../models/Device";
 import { Interface } from "../models/Interface";
 import { Transceiver } from "../models/Transceiver";
 import { DeviceNeighbor } from "../models/DeviceNeighbor";
+import { Option } from "../models/Option";
 
-// Для запуска вне Electron используем локальный путь рядом с репозиторием
+
 const dbPath = path.join(process.cwd(), "local.db");
 
 export const AppDataSource = new DataSource({
