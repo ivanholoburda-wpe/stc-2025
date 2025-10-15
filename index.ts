@@ -1,5 +1,5 @@
 // index.ts
-import { RootFolderParsingService } from "./backend/src/services";
+import { RootFolderParsingService } from "./backend/src/services/RootFolderParsingService";
 import { AppDataSource } from "./backend/src/database/data-source";
 
 async function main() {
