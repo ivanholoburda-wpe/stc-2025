@@ -75,3 +75,5 @@ release/
 # Package manager
 yarn.lock
 pnpm-lock.yaml
+*.txt
+logs
