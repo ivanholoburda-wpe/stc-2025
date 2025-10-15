@@ -1,13 +1,10 @@
-/**
- * Система логирования и статистики для парсеров
- */
 class Logger {
   constructor(options = {}) {
     this.level = options.level || 'info';
     this.enableConsole = options.enableConsole !== false;
     this.enableFile = options.enableFile || false;
     this.filePath = options.filePath || 'parser.log';
-    this.maxFileSize = options.maxFileSize || 10 * 1024 * 1024; // 10MB
+    this.maxFileSize = options.maxFileSize || 10 * 1024 * 1024;
     this.maxFiles = options.maxFiles || 5;
     
     this.levels = {
@@ -26,12 +23,6 @@ class Logger {
     };
   }
 
-  /**
-   * Логирует сообщение
-   * @param {string} level - уровень логирования
-   * @param {string} message - сообщение
-   * @param {Object} meta - дополнительные метаданные
-   */
   log(level, message, meta = {}) {
     if (this.levels[level] > this.levels[this.level]) {
       return;
@@ -46,72 +37,53 @@ class Logger {
       pid: process.pid
     };
 
-    // Обновляем статистику
     this.stats.totalLogs++;
     if (!this.stats.logsByLevel[level]) {
       this.stats.logsByLevel[level] = 0;
     }
     this.stats.logsByLevel[level]++;
 
-    // Сохраняем ошибки и предупреждения
     if (level === 'error') {
       this.stats.errors.push(logEntry);
     } else if (level === 'warn') {
       this.stats.warnings.push(logEntry);
     }
 
-    // Выводим в консоль
     if (this.enableConsole) {
       this._logToConsole(logEntry);
     }
 
-    // Записываем в файл
     if (this.enableFile) {
       this._logToFile(logEntry);
     }
   }
 
-  /**
-   * Логирует ошибку
-   */
   error(message, meta = {}) {
     this.log('error', message, meta);
   }
 
-  /**
-   * Логирует предупреждение
-   */
   warn(message, meta = {}) {
     this.log('warn', message, meta);
   }
 
-  /**
-   * Логирует информационное сообщение
-   */
   info(message, meta = {}) {
     this.log('info', message, meta);
   }
 
-  /**
-   * Логирует отладочную информацию
-   */
   debug(message, meta = {}) {
     this.log('debug', message, meta);
   }
 
-  /**
-   * Выводит лог в консоль
-   */
   _logToConsole(logEntry) {
     const { timestamp, level, message, meta } = logEntry;
     const time = timestamp.split('T')[1].split('.')[0];
     const metaStr = Object.keys(meta).length > 0 ? ` ${JSON.stringify(meta)}` : '';
     
     const colors = {
-      error: '\x1b[31m', // red
-      warn: '\x1b[33m',  // yellow
-      info: '\x1b[36m', // cyan
-      debug: '\x1b[90m' // gray
+      error: '\x1b[31m',
+      warn: '\x1b[33m',
+      info: '\x1b[36m',
+      debug: '\x1b[90m'
     };
     
     const reset = '\x1b[0m';
@@ -120,15 +92,11 @@ class Logger {
     console.log(`${color}[${time}] ${level.toUpperCase()}: ${message}${metaStr}${reset}`);
   }
 
-  /**
-   * Записывает лог в файл
-   */
   async _logToFile(logEntry) {
     try {
       const fs = require('fs').promises;
       const logLine = JSON.stringify(logEntry) + '\n';
       
-      // Проверяем размер файла и ротируем при необходимости
       await this._rotateLogFile();
       
       await fs.appendFile(this.filePath, logLine);
@@ -137,9 +105,6 @@ class Logger {
     }
   }
 
-  /**
-   * Ротирует лог файл при превышении размера
-   */
   async _rotateLogFile() {
     try {
       const fs = require('fs').promises;
@@ -150,7 +115,6 @@ class Logger {
         return;
       }
 
-      // Переименовываем существующие файлы
       for (let i = this.maxFiles - 1; i > 0; i--) {
         const oldFile = `${this.filePath}.${i}`;
         const newFile = `${this.filePath}.${i + 1}`;
@@ -158,20 +122,15 @@ class Logger {
         try {
           await fs.rename(oldFile, newFile);
         } catch (error) {
-          // Игнорируем ошибки если файл не существует
         }
       }
 
-      // Переименовываем текущий файл
       await fs.rename(this.filePath, `${this.filePath}.1`);
     } catch (error) {
       console.error('Failed to rotate log file:', error.message);
     }
   }
 
-  /**
-   * Получает статистику логирования
-   */
   getStats() {
     return {
       ...this.stats,
@@ -180,9 +139,6 @@ class Logger {
     };
   }
 
-  /**
-   * Очищает статистику
-   */
   clearStats() {
     this.stats = {
       totalLogs: 0,
@@ -194,19 +150,12 @@ class Logger {
   }
 }
 
-/**
- * Система сбора статистики производительности
- */
 class PerformanceTracker {
   constructor() {
     this.metrics = new Map();
     this.timers = new Map();
   }
 
-  /**
-   * Начинает измерение времени
-   * @param {string} name - имя метрики
-   */
   startTimer(name) {
     this.timers.set(name, {
       start: process.hrtime.bigint(),
@@ -214,11 +163,6 @@ class PerformanceTracker {
     });
   }
 
-  /**
-   * Завершает измерение времени
-   * @param {string} name - имя метрики
-   * @param {Object} meta - дополнительные метаданные
-   */
   endTimer(name, meta = {}) {
     const timer = this.timers.get(name);
     if (!timer) {
@@ -229,7 +173,7 @@ class PerformanceTracker {
     const end = process.hrtime.bigint();
     const endMemory = process.memoryUsage();
     
-    const duration = Number(end - timer.start) / 1000000; // в миллисекундах
+    const duration = Number(end - timer.start) / 1000000;
     const memoryDelta = {
       rss: endMemory.rss - timer.startMemory.rss,
       heapUsed: endMemory.heapUsed - timer.startMemory.heapUsed,
@@ -254,12 +198,6 @@ class PerformanceTracker {
     return metric;
   }
 
-  /**
-   * Записывает метрику
-   * @param {string} name - имя метрики
-   * @param {number} value - значение
-   * @param {Object} meta - дополнительные метаданные
-   */
   recordMetric(name, value, meta = {}) {
     const metric = {
       name,
@@ -275,10 +213,6 @@ class PerformanceTracker {
     this.metrics.get(name).push(metric);
   }
 
-  /**
-   * Получает статистику по метрике
-   * @param {string} name - имя метрики
-   */
   getMetricStats(name) {
     const metrics = this.metrics.get(name);
     if (!metrics || metrics.length === 0) {
@@ -303,9 +237,6 @@ class PerformanceTracker {
     };
   }
 
-  /**
-   * Получает общую статистику
-   */
   getOverallStats() {
     const stats = {};
     
@@ -320,27 +251,18 @@ class PerformanceTracker {
     };
   }
 
-  /**
-   * Очищает метрики
-   */
   clearMetrics() {
     this.metrics.clear();
     this.timers.clear();
   }
 }
 
-/**
- * Глобальный экземпляр логгера
- */
 const globalLogger = new Logger({
   level: process.env.LOG_LEVEL || 'info',
   enableConsole: true,
   enableFile: process.env.LOG_TO_FILE === 'true'
 });
 
-/**
- * Глобальный экземпляр трекера производительности
- */
 const globalPerformanceTracker = new PerformanceTracker();
 
 module.exports = {

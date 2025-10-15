@@ -7,7 +7,6 @@ class DisplayBfdSessionAllParser extends BaseParser {
 
     this.rules = [
       {
-        // Это правило находит и разбирает каждую строку с данными о сессии
         name: 'data_row',
         regex: /^\s*(?<Local>\d+)\s+(?<Remote>\d+)\s+(?<PeerIpAddr>[\d\.\*]+)\s+(?<State>\S+)\s+(?<Type>\S+)\s+(?<InterfaceName>\S+)\s*$/,
         handler: (match) => {
@@ -22,31 +21,23 @@ class DisplayBfdSessionAllParser extends BaseParser {
         }
       },
       {
-        // Это правило игнорирует заголовки, разделители и примечания
         name: 'ignore_lines',
         regex: /^(?:Local\s+Remote|---|-- -|\(w\):|\(\*\):)/,
         handler: () => {
-          // Ничего не делаем, просто пропускаем строку
         }
       }
     ];
   }
 
-  /**
-   * Точка входа: ищет заголовок таблицы
-   */
   isEntryPoint(line) {
     return /Local\s+Remote\s+PeerIpAddr/.test(line);
   }
 
-  /**
-   * Инициализация структуры данных при входе в блок
-   */
   startBlock(line, match) {
     super.startBlock(line, match);
     this.data = {
       type: this.name,
-      sessions: [], // Создаем массив для хранения сессий
+      sessions: [],
     };
   }
 }

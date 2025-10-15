@@ -36,6 +36,7 @@ class DisplayIpRoutingTableParser extends BaseParser {
           if (!this.currentRoutingTable) return;
 
           const rest = match.groups.TheRest.trim().split(/\s+/);
+          
           const interfaceName = rest.pop();
           const next_hop = rest.pop();
           const flags = rest.join(' ') || null;
@@ -52,19 +53,14 @@ class DisplayIpRoutingTableParser extends BaseParser {
         }
       },
       {
-        // 🔥 ИЗМЕНЕНИЕ ЗДЕСЬ: Добавляем сам заголовок таблицы в список игнорируемых строк
         name: 'ignore_lines',
-        regex: /^(?:Proto:|Route Flags:|---|Destination\/Mask)/,
-        handler: () => { /* Ничего не делаем */ }
+        regex: /^(?:Proto:|Route Flags:|---)/,
+        handler: () => {}
       }
     ];
   }
 
-  /**
-   * 🔥 ИЗМЕНЕНИЕ ЗДЕСЬ: Точка входа теперь — это простая и надежная проверка на наличие ключевых слов.
-   */
   isEntryPoint(line) {
-    // Этот метод не зависит от количества пробелов и гарантированно найдет заголовок.
     return line.includes('Destination/Mask') && line.includes('Proto') && line.includes('Pre');
   }
 

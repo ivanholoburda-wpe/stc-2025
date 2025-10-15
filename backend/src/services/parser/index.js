@@ -1,13 +1,13 @@
 const fs = require('fs').promises;
 const path = require('path');
-const LogsParserService = require('./services/LogsParserService');
+const LogsParserService = require('../LogsParserService');
 const { CommonValidationRules, CommonFilters, CommonTransformers } = require('./core/DataValidator');
 
 async function main() {
   console.log('Starting enhanced log parsing...\n');
 
   const parserService = new LogsParserService();
-  const logFilePath = path.join(__dirname, 'logs', 'huawei_config.txt');
+  const logFilePath = '/Users/ivanholoburda/Hackathon/logs/DeviceA/huawei_config.txt';
   const outputFilePath = 'parsing_results.json';
 
   try {

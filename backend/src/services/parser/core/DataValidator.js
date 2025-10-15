@@ -1,6 +1,3 @@
-/**
- * Система валидации и фильтрации данных для парсеров
- */
 class DataValidator {
   constructor() {
     this.rules = new Map();
@@ -8,40 +5,18 @@ class DataValidator {
     this.transformers = new Map();
   }
 
-  /**
-   * Регистрирует правило валидации
-   * @param {string} name - имя правила
-   * @param {Function} validator - функция валидации
-   * @param {string} message - сообщение об ошибке
-   */
   addRule(name, validator, message = 'Validation failed') {
     this.rules.set(name, { validator, message });
   }
 
-  /**
-   * Регистрирует фильтр данных
-   * @param {string} name - имя фильтра
-   * @param {Function} filter - функция фильтрации
-   */
   addFilter(name, filter) {
     this.filters.set(name, filter);
   }
 
-  /**
-   * Регистрирует трансформатор данных
-   * @param {string} name - имя трансформатора
-   * @param {Function} transformer - функция трансформации
-   */
   addTransformer(name, transformer) {
     this.transformers.set(name, transformer);
   }
 
-  /**
-   * Валидирует данные
-   * @param {Object} data - данные для валидации
-   * @param {Array} ruleNames - имена правил для применения
-   * @returns {Object} - результат валидации
-   */
   validate(data, ruleNames = null) {
     const result = {
       isValid: true,
@@ -77,12 +52,6 @@ class DataValidator {
     return result;
   }
 
-  /**
-   * Фильтрует данные
-   * @param {Object} data - данные для фильтрации
-   * @param {Array} filterNames - имена фильтров для применения
-   * @returns {Object} - отфильтрованные данные
-   */
   filter(data, filterNames = null) {
     let filteredData = { ...data };
     
@@ -102,12 +71,6 @@ class DataValidator {
     return filteredData;
   }
 
-  /**
-   * Трансформирует данные
-   * @param {Object} data - данные для трансформации
-   * @param {Array} transformerNames - имена трансформаторов для применения
-   * @returns {Object} - трансформированные данные
-   */
   transform(data, transformerNames = null) {
     let transformedData = { ...data };
     
@@ -127,15 +90,8 @@ class DataValidator {
     return transformedData;
   }
 
-  /**
-   * Очищает данные от чувствительной информации
-   * @param {Object} data - данные для очистки
-   * @returns {Object} - очищенные данные
-   */
   _sanitizeData(data) {
     const sanitized = { ...data };
-    
-    // Удаляем чувствительные поля
     const sensitiveFields = ['password', 'secret', 'key', 'token', 'auth'];
     sensitiveFields.forEach(field => {
       if (sanitized[field]) {
@@ -143,7 +99,6 @@ class DataValidator {
       }
     });
 
-    // Ограничиваем размер данных
     const jsonString = JSON.stringify(sanitized);
     if (jsonString.length > 1000) {
       return { ...sanitized, _truncated: true, _originalSize: jsonString.length };
@@ -152,9 +107,6 @@ class DataValidator {
     return sanitized;
   }
 
-  /**
-   * Получает статистику валидатора
-   */
   getStats() {
     return {
       rulesCount: this.rules.size,
@@ -167,18 +119,13 @@ class DataValidator {
   }
 }
 
-/**
- * Предустановленные правила валидации
- */
 class CommonValidationRules {
   static createValidator() {
     const validator = new DataValidator();
-
-    // Базовые правила валидации
     validator.addRule('required_type', (data) => data.type && typeof data.type === 'string', 'Type field is required');
+
     validator.addRule('required_timestamp', (data) => data.parsed_at && !isNaN(Date.parse(data.parsed_at)), 'Valid timestamp is required');
-    
-    // Правила для интерфейсов
+
     validator.addRule('interface_name_format', (data) => {
       if (!data.interface) return true;
       return /^(GigabitEthernet|LoopBack|NULL|Vlanif)\S*$/.test(data.interface);
@@ -196,7 +143,6 @@ class CommonValidationRules {
              (!mtu || (mtu >= 64 && mtu <= 9216));
     }, 'Port settings must be within valid ranges');
 
-    // Правила для статистики
     validator.addRule('statistics_format', (data) => {
       if (!data.statistics) return true;
       const stats = data.statistics;
@@ -208,14 +154,10 @@ class CommonValidationRules {
   }
 }
 
-/**
- * Предустановленные фильтры
- */
 class CommonFilters {
   static createFilters() {
     const validator = new DataValidator();
 
-    // Фильтр для удаления null/undefined значений
     validator.addFilter('remove_null_values', (data) => {
       const filtered = {};
       for (const [key, value] of Object.entries(data)) {
@@ -233,7 +175,6 @@ class CommonFilters {
       return filtered;
     });
 
-    // Фильтр для удаления пустых массивов
     validator.addFilter('remove_empty_arrays', (data) => {
       const filtered = {};
       for (const [key, value] of Object.entries(data)) {
@@ -245,7 +186,6 @@ class CommonFilters {
       return filtered;
     });
 
-    // Фильтр для удаления технических полей
     validator.addFilter('remove_technical_fields', (data) => {
       const technicalFields = ['raw_line', '_truncated', '_originalSize'];
       const filtered = {};
@@ -261,14 +201,10 @@ class CommonFilters {
   }
 }
 
-/**
- * Предустановленные трансформаторы
- */
 class CommonTransformers {
   static createTransformers() {
     const validator = new DataValidator();
 
-    // Трансформатор для нормализации статусов
     validator.addTransformer('normalize_status', (data) => {
       const normalized = { ...data };
       
@@ -283,11 +219,9 @@ class CommonTransformers {
       return normalized;
     });
 
-    // Трансформатор для конвертации чисел
     validator.addTransformer('convert_numbers', (data) => {
       const converted = { ...data };
       
-      // Конвертируем числовые поля в статистике
       if (converted.statistics) {
         if (converted.statistics.rate) {
           ['input', 'output'].forEach(direction => {
@@ -313,7 +247,6 @@ class CommonTransformers {
       return converted;
     });
 
-    // Трансформатор для добавления метаданных
     validator.addTransformer('add_metadata', (data) => {
       return {
         ...data,

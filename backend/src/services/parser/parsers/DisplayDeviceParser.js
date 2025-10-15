@@ -7,7 +7,6 @@ class DisplayDeviceParser extends BaseParser {
 
     this.rules = [
       {
-        // Правило для разбора каждой строки с данными
         name: 'data_row',
         regex: /^\s*(?<slot>\d+)\s+(?<type>\S+)\s+(?<online>\S+)\s+(?<register>\S+)\s+(?<status>\S+)\s+(?<role>\S+)\s+(?<lsid>\d+)\s+(?<primary>\S+)\s*$/,
         handler: (match) => {
@@ -24,33 +23,25 @@ class DisplayDeviceParser extends BaseParser {
         }
       },
       {
-        // Правило для игнорирования заголовков и разделителей
         name: 'ignore_lines',
         regex: /^(?:Slot #\s+Type|----)/,
         handler: () => {
-          // Ничего не делаем
         }
       }
     ];
   }
 
-  /**
-   * Точка входа: ищет заголовок и извлекает модель устройства
-   */
   isEntryPoint(line) {
     const regex = /^(?<model>[\w\s-]+)'s Device status:/;
     return line.match(regex);
   }
 
-  /**
-   * Инициализация структуры данных
-   */
   startBlock(line, match) {
     super.startBlock(line, match);
     this.data = {
       type: this.name,
-      model: match.groups.model, // Сохраняем модель из заголовка
-      devices: [], // Создаем массив для хранения данных о модулях
+      model: match.groups.model,
+      devices: [],
     };
   }
 }

@@ -4,7 +4,7 @@ class DisplayInterfaceParser extends BaseParser {
   constructor() {
     super();
     this.name = 'display_interface_block';
-    this.priority = 2;
+    this.priority = 100;
     this.sub_parser_mode = null;
 
     this.rules = [
@@ -97,7 +97,6 @@ class DisplayInterfaceParser extends BaseParser {
       }
     ];
 
-    // Добавляем правила валидации
     this.addValidationRule({
       name: 'interface_name_required',
       validate: (data) => data.interface && data.interface.length > 0,
@@ -121,7 +120,6 @@ class DisplayInterfaceParser extends BaseParser {
     super.startBlock(line, match);
     this.sub_parser_mode = null;
     
-    // Расширяем базовую структуру данных
     this.data = {
       ...this.data,
       interface: match.groups.iface,
@@ -147,7 +145,6 @@ class DisplayInterfaceParser extends BaseParser {
   parseLine(line) {
     const trimmedLine = line.trim();
     
-    // Пропускаем дублирующиеся строки состояния
     if (this.data.state && trimmedLine.includes('current state')) {
       return true;
     }
@@ -158,12 +155,10 @@ class DisplayInterfaceParser extends BaseParser {
   isBlockComplete(line) {
     const trimmedLine = line.trim();
     
-    // Расширяем базовые условия завершения
     if (super.isBlockComplete(line)) {
       return true;
     }
     
-    // Дополнительные условия для интерфейсов
     if (trimmedLine.startsWith('GigabitEthernet') && trimmedLine !== this.data.interface) {
       return true;
     }
@@ -171,25 +166,19 @@ class DisplayInterfaceParser extends BaseParser {
     return false;
   }
 
-  /**
-   * Переопределяем метод валидации для специфичных проверок интерфейса
-   */
   _validateData() {
     super._validateData();
     
     if (!this.data) return;
 
-    // Проверяем корректность MAC адреса
     if (this.data.mac_address && !/^[\da-f]{4}-[\da-f]{4}-[\da-f]{4}$/i.test(this.data.mac_address)) {
       this._addWarning('Invalid MAC address format', this.data.mac_address);
     }
 
-    // Проверяем корректность PVID
     if (this.data.port_settings.pvid && (this.data.port_settings.pvid < 1 || this.data.port_settings.pvid > 4094)) {
       this._addWarning('PVID out of valid range (1-4094)', this.data.port_settings.pvid.toString());
     }
 
-    // Проверяем корректность MTU
     if (this.data.port_settings.mtu && (this.data.port_settings.mtu < 64 || this.data.port_settings.mtu > 9216)) {
       this._addWarning('MTU out of valid range (64-9216)', this.data.port_settings.mtu.toString());
     }

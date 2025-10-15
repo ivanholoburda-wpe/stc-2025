@@ -1,7 +1,7 @@
 const fs = require('fs');
 const readline = require('readline');
-const ParserFactory = require('../core/ParserFactory');
-const { globalLogger, globalPerformanceTracker } = require('../core/Logger');
+const ParserFactory = require('./parser/core/ParserFactory');
+const { globalLogger, globalPerformanceTracker } = require('./parser/core/Logger');
 
 class LogsParserService {
   constructor() {
@@ -56,7 +56,6 @@ class LogsParserService {
       return this._createEmptyResult();
     }
 
-    // Получаем все доступные парсеры
     const availableParsers = this.factory.getAllParsers();
     this.logger.info(`Available parsers: ${availableParsers.map(p => p.name).join(', ')}`);
 
@@ -64,14 +63,13 @@ class LogsParserService {
     const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
     
     const results = [];
-    const activeParsers = new Map(); // Поддержка множественных активных парсеров
+    const activeParsers = new Map();
     let consecutiveErrors = 0;
 
     try {
       for await (const line of rl) {
         this.globalStats.totalLines++;
         
-        // Проверяем завершение блоков для всех активных парсеров
         for (const [parserName, parser] of activeParsers) {
           if (parser.isBlockComplete(line)) {
             const result = parser.getResult();
@@ -104,12 +102,10 @@ class LogsParserService {
           }
         }
 
-        // Если слишком много ошибок подряд, останавливаемся
         if (consecutiveErrors >= maxErrors) {
           break;
         }
 
-        // Ищем новые точки входа для всех парсеров
         for (const parser of availableParsers) {
           try {
             const match = parser.isEntryPoint(line);
@@ -120,7 +116,6 @@ class LogsParserService {
                 match: match.groups || 'no groups'
               });
               
-              // Создаем новый экземпляр парсера для каждого блока
               const parserInstance = this.factory.createParserInstance(parser.name);
               if (parserInstance) {
                 parserInstance.startBlock(line, match);
@@ -129,7 +124,7 @@ class LogsParserService {
                   parser: parser.name,
                   line: line.trim().substring(0, 100)
                 });
-                consecutiveErrors = 0; // Сбрасываем счетчик ошибок при успешном старте
+                consecutiveErrors = 0;
               }
             }
           } catch (error) {
@@ -145,7 +140,6 @@ class LogsParserService {
         }
       }
 
-      // Завершаем все активные парсеры
       for (const [parserName, parser] of activeParsers) {
         const result = parser.getResult();
         if (result && this._isValidResult(result)) {
@@ -174,7 +168,6 @@ class LogsParserService {
       this.globalStats.processingTime = performanceMetric ? performanceMetric.duration : 0;
     }
 
-    // Подсчитываем общую статистику ошибок и предупреждений
     this._calculateGlobalStats(results);
 
     const finalResult = {
@@ -202,12 +195,10 @@ class LogsParserService {
       return false;
     }
     
-    // Проверяем базовые поля
     if (!result.type) {
       return false;
     }
 
-    // Если есть критические ошибки, считаем результат невалидным
     if (result.errors && result.errors.length > 0) {
       const criticalErrors = result.errors.filter(error => 
         error.message.includes('Critical') || 
@@ -243,13 +234,11 @@ class LogsParserService {
     };
 
     results.forEach(result => {
-      // Подсчет типов блоков
       if (!summary.blockTypes[result.type]) {
         summary.blockTypes[result.type] = 0;
       }
       summary.blockTypes[result.type]++;
 
-      // Подсчет блоков с ошибками и предупреждениями
       if (result.errors && result.errors.length > 0) {
         summary.errorBlocks++;
       }
@@ -280,16 +269,10 @@ class LogsParserService {
     };
   }
 
-  /**
-   * Получает статистику всех парсеров
-   */
   getParserStats() {
     return this.factory.getAllParsers().map(parser => parser.getStats());
   }
 
-  /**
-   * Сбрасывает статистику
-   */
   resetStats() {
     this.globalStats = {
       totalLines: 0,

@@ -1,9 +1,5 @@
 const { globalLogger, globalPerformanceTracker } = require('./Logger');
 
-/**
- * Базовый класс для всех парсеров с улучшенной обработкой ошибок
- * и поддержкой множественных типов данных
- */
 class BaseParser {
   constructor() {
     this.name = 'base_parser';
@@ -26,24 +22,13 @@ class BaseParser {
     this.performanceTracker = globalPerformanceTracker;
   }
 
-  /**
-   * Проверяет, является ли строка точкой входа для парсера
-   * @param {string} line - строка для проверки
-   * @returns {Object|null} - результат совпадения или null
-   */
   isEntryPoint(line) {
     throw new Error('isEntryPoint method must be implemented by subclass');
   }
 
-  /**
-   * Инициализирует блок данных для парсинга
-   * @param {string} line - строка инициализации
-   * @param {Object} match - результат совпадения
-   */
   startBlock(line, match) {
     this.isActive = true;
     
-    // Инициализируем stats если не инициализированы
     if (!this.stats) {
       this.stats = {
         linesProcessed: 0,
@@ -81,11 +66,6 @@ class BaseParser {
     }
   }
 
-  /**
-   * Парсит строку с обработкой ошибок
-   * @param {string} line - строка для парсинга
-   * @returns {boolean} - true если строка была обработана
-   */
   parseLine(line) {
     if (!this.isActive || !this.data) {
       return false;
@@ -94,13 +74,11 @@ class BaseParser {
     this.stats.linesProcessed++;
     const trimmedLine = line.trim();
 
-    // Пропускаем пустые строки
     if (!trimmedLine) {
       return true;
     }
 
     try {
-      // Пытаемся применить правила парсинга
       for (const rule of this.rules) {
         try {
           const match = trimmedLine.match(rule.regex);
@@ -114,13 +92,11 @@ class BaseParser {
         }
       }
 
-      // Если ни одно правило не сработало, проверяем на мусорные данные
       if (this._isGarbageData(trimmedLine)) {
         this._addWarning(`Skipped garbage data: ${trimmedLine}`, trimmedLine);
         return true;
       }
 
-      // Если это не мусор, но и не подходящее правило - добавляем предупреждение
       this._addWarning(`Unrecognized line format: ${trimmedLine}`, trimmedLine);
       return true;
 
@@ -130,15 +106,9 @@ class BaseParser {
     }
   }
 
-  /**
-   * Проверяет, завершен ли блок парсинга
-   * @param {string} line - строка для проверки
-   * @returns {boolean} - true если блок завершен
-   */
   isBlockComplete(line) {
     const trimmedLine = line.trim();
     
-    // Базовые условия завершения блока
     if (!trimmedLine) return true;
     if (trimmedLine.startsWith('<')) return true;
     if (this.isEntryPoint(trimmedLine)) return true;
@@ -146,10 +116,6 @@ class BaseParser {
     return false;
   }
 
-  /**
-   * Получает результат парсинга с валидацией
-   * @returns {Object} - результат парсинга
-   */
   getResult() {
     if (!this.data) {
       return null;
@@ -165,7 +131,6 @@ class BaseParser {
       });
     }
 
-    // Добавляем статистику и ошибки к результату
     this.data.stats = { 
       ...this.stats,
       processingTime: performanceMetric ? performanceMetric.duration : 0
@@ -173,7 +138,6 @@ class BaseParser {
     this.data.errors = [...this.errors];
     this.data.warnings = [...this.warnings];
 
-    // Валидация данных
     this._validateData();
 
     if (this.logger && this.logger.debug) {
@@ -191,35 +155,24 @@ class BaseParser {
     return this.data;
   }
 
-  /**
-   * Проверяет, является ли строка мусорными данными
-   * @param {string} line - строка для проверки
-   * @returns {boolean} - true если это мусорные данные
-   */
   _isGarbageData(line) {
-    // Паттерны мусорных данных
     const garbagePatterns = [
-      /^\s*$/, // пустые строки
-      /^Error:/, // ошибки команд
-      /^\^/, // символы ошибок
-      /^Unrecognized command/, // нераспознанные команды
-      /^Wrong parameter/, // неправильные параметры
-      /^Current system time:/, // системное время (не критично)
-      /^IP Sending Frames/, // техническая информация
+      /^\s*$/,
+      /^Error:/,
+      /^\^/,
+      /^Unrecognized command/,
+      /^Wrong parameter/,
+      /^Current system time:/,
+      /^IP Sending Frames/,
     ];
 
     return garbagePatterns.some(pattern => pattern.test(line));
   }
 
-  /**
-   * Добавляет ошибку
-   * @param {string} message - сообщение об ошибке
-   * @param {string} line - строка, вызвавшая ошибку
-   */
   _addError(message, line = '') {
     const error = {
       message,
-      line: line.substring(0, 100), // ограничиваем длину
+      line: line.substring(0, 100),
       timestamp: new Date().toISOString()
     };
     this.errors.push(error);
@@ -234,11 +187,6 @@ class BaseParser {
     }
   }
 
-  /**
-   * Добавляет предупреждение
-   * @param {string} message - сообщение предупреждения
-   * @param {string} line - строка, вызвавшая предупреждение
-   */
   _addWarning(message, line = '') {
     const warning = {
       message,
@@ -257,18 +205,13 @@ class BaseParser {
     }
   }
 
-  /**
-   * Валидирует данные после парсинга
-   */
   _validateData() {
     if (!this.data) return;
 
-    // Базовая валидация
     if (!this.data.type) {
       this._addError('Missing data type');
     }
 
-    // Применяем пользовательские правила валидации
     for (const rule of this.validationRules) {
       try {
         if (!rule.validate(this.data)) {
@@ -280,17 +223,10 @@ class BaseParser {
     }
   }
 
-  /**
-   * Добавляет правило валидации
-   * @param {Object} rule - правило валидации
-   */
   addValidationRule(rule) {
     this.validationRules.push(rule);
   }
 
-  /**
-   * Сбрасывает состояние парсера
-   */
   reset() {
     this.data = null;
     this.errors = [];
@@ -304,10 +240,6 @@ class BaseParser {
     };
   }
 
-  /**
-   * Получает статистику парсера
-   * @returns {Object} - статистика
-   */
   getStats() {
     return {
       name: this.name,

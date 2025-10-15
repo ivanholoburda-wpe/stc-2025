@@ -32,14 +32,14 @@ export class ParsedDtoIngestor {
   }
 
   async ingest(results: ParserResults, snapshot: Snapshot, device: Device): Promise<void> {
+    console.log(results);
     if (!results?.data || !Array.isArray(results.data)) return;
 
-    // Define strict ingestion order to satisfy dependencies
     const processingOrder = [
-      "display_version",                 // update device model/hostname early
-      "display_interface_brief_block",  // ensure interfaces exist
-      "display_transceiver_verbose_block", // attach transceivers to interfaces
-      "display_lldp_neighbor_brief_block", // neighbors last
+      "display_version",
+      "display_interface_brief_block", 
+      "display_transceiver_verbose_block",
+      "display_lldp_neighbor_brief_block",
     ];
 
     for (const type of processingOrder) {
@@ -61,18 +61,15 @@ export class ParsedDtoIngestor {
         }
       }
     }
-
-    // Optionally process any unknown types afterwards (no-op for now)
   }
 
   private async ingestDeviceVersion(block: ParserBlock, device: Device): Promise<void> {
-    // Try to update hostname/model if available in this block
     const maybeModel = block?.vrp?.platform || block?.model;
     if (maybeModel) {
       device.model = String(maybeModel);
       await this.devRepo.save(device);
     }
-    const sysname = block?.sysname || block?.hostname; // future-proof if a parser adds sysname
+    const sysname = block?.sysname || block?.hostname;
     if (sysname) {
       device.hostname = String(sysname);
       await this.devRepo.save(device);
@@ -83,7 +80,6 @@ export class ParsedDtoIngestor {
     const rows = Array.isArray(block?.interfaces) ? block.interfaces : [];
     for (const row of rows) {
       const name = String(row.interface);
-      // Upsert by (device, snapshot, name)
       let iface = await this.ifaceRepo.findOne({
         where: { name, device: { id: device.id }, snapshot: { id: snapshot.id } },
         relations: ["device", "snapshot"],
@@ -101,17 +97,16 @@ export class ParsedDtoIngestor {
     const ifaceName: string | undefined = block?.interface;
     if (!ifaceName) return;
 
-    // Find or create interface for this transceiver (order-independent)
     let iface = await this.ifaceRepo.findOne({
       where: { name: ifaceName, device: { id: device.id }, snapshot: { id: snapshot.id } },
       relations: ["device", "snapshot"],
     });
+
     if (!iface) {
       iface = this.ifaceRepo.create({ name: ifaceName, device, snapshot });
       await this.ifaceRepo.save(iface);
     }
 
-    // Upsert transceiver by (device, snapshot, interface)
     let tx = await this.trxRepo.findOne({
       where: { interface: { id: iface.id }, device: { id: device.id }, snapshot: { id: snapshot.id } },
       relations: ["interface", "device", "snapshot"],
@@ -122,10 +117,17 @@ export class ParsedDtoIngestor {
         interface: iface,
         device,
         snapshot,
+        serial_number: block?.manufacture_information?.manu_serial_number,
+        wavelength: block?.common_information?.wavelength,
+        tx_power: block?.diagnostic_information?.tx_power,
+        rx_power: block?.diagnostic_information?.rx_power,
+        tx_warning_min: block?.diagnostic_information?.tx_power_low_threshold,
+        tx_warning_max: block?.diagnostic_information?.tx_power_high_threshold,
+        rx_warning_min: block?.diagnostic_information?.rx_power_low_threshold,
+        rx_warning_max: block?.diagnostic_information?.rx_power_high_threshold,
       });
     }
 
-    // Map a few well-known fields when available
     const diag = block?.diagnostic_information || {};
     const common = block?.common_information || {};
     if (typeof common.wavelength === "number") tx.wavelength = common.wavelength;
@@ -136,8 +138,6 @@ export class ParsedDtoIngestor {
   }
 
   private async ingestNeighbors(block: ParserBlock, device: Device): Promise<void> {
-    // Placeholder: when neighbors are matched to other devices, create links
-    // For now we skip creating DeviceNeighbor rows as we need cross-device resolution.
     return;
   }
 }

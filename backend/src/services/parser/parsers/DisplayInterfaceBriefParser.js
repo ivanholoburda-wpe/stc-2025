@@ -4,7 +4,7 @@ class DisplayInterfaceBriefParser extends BaseParser {
   constructor() {
     super();
     this.name = 'display_interface_brief_block';
-    this.priority = 1;
+    this.priority = 10;
 
     this.rules = [
       {
@@ -38,7 +38,6 @@ class DisplayInterfaceBriefParser extends BaseParser {
       }
     ];
 
-    // Добавляем правила валидации
     this.addValidationRule({
       name: 'interfaces_array_required',
       validate: (data) => Array.isArray(data.interfaces) && data.interfaces.length > 0,
