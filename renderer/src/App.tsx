@@ -1,149 +1,143 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Sidebar, ViewId } from './components/ui/Sidebar';
+import { Header } from './components/ui/Header';
+import { Modal } from './components/ui/Modal';
+import { DashboardView } from './components/views/DashboardView';
+import { DevicesView } from './components/views/DevicesView';
+import { PlaceholderView } from './components/views/PlaceholderView';
+import { Device, APIResult } from './api/types';
+import { useConfig } from './hooks/useConfig';
 
-interface Device {
-  id: number;
-  hostname: string;
-  model?: string;
-  firstSeenSnapshot?: {
-    id: number;
-    created_at: string;
-    root_folder_path: string;
-  };
-}
-
-declare global {
-  interface Window {
-    configAPI: {
-      isOfflineMode: () => Promise<boolean>;
-      getAiModelKey: () => Promise<string | null>;
-    };
-  }
-}
+// Мапа для відображення заголовків сторінок
+const viewTitles: Record<ViewId, string> = {
+  dashboard: 'Home',
+  devices: 'Devices',
+  analytics: 'Analytics',
+  alerts: 'Alerts',
+  reports: 'Reports',
+};
 
 export function App() {
+  const [activeView, setActiveView] = useState<ViewId>('dashboard');
   const [fileContent, setFileContent] = useState('');
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isOffline, setIsOffline] = useState(true);
+  const [modalMessage, setModalMessage] = useState('');
 
-  const handleReadFile = async () => {
-    const content = await window.electronAPI.readFile();
-    setFileContent(content);
+  const { isOffline, loading: configLoading } = useConfig();
+
+  const handleShowMessage = (message: string) => {
+    setModalMessage(message);
   };
 
-  const handleGetDevices = async () => {
-    setLoading(true);
+  /**
+   * Логіка читання файлу.
+   */
+  const handleReadFile = useCallback(async () => {
     try {
-      console.log(window.electronAPI);
-      const result = await window.electronAPI.getDevices();
-      if (result.success) {
-        setDevices(result.data);
+      if (window.electronAPI) {
+        const content = await window.electronAPI.readFile();
+        setFileContent(content);
       } else {
-        console.log(result.error);
-        alert('Error: ' + result.error);
+        console.warn('electronAPI not found. Running in browser mode.');
+        setFileContent('This is mock file content because electronAPI is not available.');
       }
     } catch (error) {
-      alert('Error fetching devices: ' + (error as Error).message);
+      handleShowMessage('Error reading file: ' + (error as Error).message);
+    }
+  }, []);
+
+  /**
+   * Логіка отримання списку пристроїв.
+   */
+  const handleGetDevices = useCallback(async () => {
+    setLoading(true);
+    try {
+      if (window.electronAPI) {
+        const result: APIResult<Device[]> = await window.electronAPI.getDevices();
+        if (result.success) {
+          setDevices(result.data || []);
+        } else {
+          handleShowMessage('Error: ' + result.error);
+        }
+      } else {
+        console.warn('electronAPI not found. Using mock data.');
+        setDevices([
+          { id: 1, hostname: 'mock-device-1', model: 'Mock Model X' },
+          { id: 2, hostname: 'mock-device-2', model: 'Mock Model Y', firstSeenSnapshot: { id: 100, created_at: new Date().toISOString(), root_folder_path: '/mock' } },
+        ]);
+      }
+    } catch (error) {
+      handleShowMessage('Error fetching devices: ' + (error as Error).message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCreateTestDevice = async () => {
-    try {
-      const result = await window.electronAPI.createDevice({
-        hostname: `test-device-${Date.now()}`,
-        model: 'Test Model'
-      });
-      if (result.success) {
-        alert('Device created: ' + result.data.hostname);
-        handleGetDevices();
-      } else {
-        alert('Error: ' + result.error);
-      }
-    } catch (error) {
-      alert('Error while creating device: ' + (error as Error).message);
-    }
-  };
-
-  useEffect(() => {
-    async function fetchConfig() {
-      try {
-        const offlineStatus = await window.configAPI.isOfflineMode();
-        setIsOffline(offlineStatus);
-      } catch (error) {
-        console.error("Failed to fetch configuration:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchConfig();
   }, []);
 
-  return (
-    <div style={{ padding: 24, fontFamily: 'sans-serif' }}>
-      <h1>Electron + React + TypeORM + Inversify</h1>
-      <p>
-        Application status: 
-        {loading 
-          ? 'Loading...' 
-          : <b>{isOffline ? 'Offline mode' : 'Online mode'}</b>
+  /**
+   * Логіка створення тестового пристрою.
+   */
+  const handleCreateTestDevice = useCallback(async () => {
+    try {
+      if (window.electronAPI) {
+        const result: APIResult<Device> = await window.electronAPI.createDevice({
+          hostname: `test-device-${Date.now()}`,
+          model: 'Test Model',
+        });
+        if (result.success && result.data) {
+          handleShowMessage('Device created: ' + result.data.hostname);
+          handleGetDevices(); // Оновити список
+        } else if (result.error) {
+          handleShowMessage('Error: ' + result.error);
         }
-      </p>
-      
-      <div style={{ marginTop: 16 }}>
-        <button onClick={handleReadFile} style={{ marginRight: 8 }}>
-          Read file
-        </button>
-        <button 
-          onClick={handleGetDevices} 
-          disabled={loading}
-          style={{ marginRight: 8 }}
-        >
-          {loading ? 'Loading...' : 'Show devices'}
-        </button>
-        <button onClick={handleCreateTestDevice}>
-          Create test device
-        </button>
+      } else {
+        console.warn('electronAPI not found. Cannot create device.');
+        handleShowMessage('Cannot create device in browser mode.');
+      }
+    } catch (error) {
+      handleShowMessage('Error while creating device: ' + (error as Error).message);
+    }
+  }, [handleGetDevices]);
+
+  // Завантажити пристрої при першому відкритті сторінки "Devices"
+  useEffect(() => {
+    if (activeView === 'devices') {
+      handleGetDevices();
+    }
+  }, [activeView, handleGetDevices]);
+
+  const renderActiveView = () => {
+    switch (activeView) {
+      case 'dashboard':
+        return <DashboardView onReadFile={handleReadFile} fileContent={fileContent} />;
+      case 'devices':
+        return (
+          <DevicesView
+            devices={devices}
+            loading={loading}
+            onGetDevices={handleGetDevices}
+            onCreateDevice={handleCreateTestDevice}
+          />
+        );
+      case 'analytics':
+      case 'alerts':
+      case 'reports':
+        return <PlaceholderView title={viewTitles[activeView]} />;
+      default:
+        return <DashboardView onReadFile={handleReadFile} fileContent={fileContent} />;
+    }
+  };
+
+  return (
+    <>
+      <Modal message={modalMessage} onClose={() => setModalMessage('')} />
+      <div className="flex h-screen bg-gray-900 font-sans">
+        <Sidebar activeView={activeView} setActiveView={setActiveView} />
+        <main className="flex-1 flex flex-col overflow-hidden">
+          <Header viewTitle={viewTitles[activeView] || 'Home'} />
+          <div className="flex-1 overflow-y-auto">{renderActiveView()}</div>
+        </main>
       </div>
-
-      {devices.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <h3>Devices: {devices.length}</h3>
-          <div style={{ display: 'grid', gap: 12, marginTop: 16 }}>
-            {devices.map(device => (
-              <div 
-                key={device.id} 
-                style={{ 
-                  border: '1px solid #ddd', 
-                  padding: 16, 
-                  borderRadius: 8,
-                  backgroundColor: '#f9f9f9'
-                }}
-              >
-                <h4>{device.hostname}</h4>
-                <p>ID: {device.id}</p>
-                {device.model && <p>Модель: {device.model}</p>}
-                {device.firstSeenSnapshot && (
-                  <p>Created at: {new Date(device.firstSeenSnapshot.created_at).toLocaleString()}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <h3 style={{ marginTop: 24 }}>File content:</h3>
-      <pre style={{ 
-        backgroundColor: '#f4f4f4', 
-        padding: 16, 
-        borderRadius: 4, 
-        whiteSpace: 'pre-wrap', 
-        wordBreak: 'break-all'
-      }}>
-        {fileContent || 'Choose the file...'}
-      </pre>
-    </div>
+    </>
   );
 }
