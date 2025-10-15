@@ -4,7 +4,7 @@ class DisplayInterfaceParser extends BaseParser {
   constructor() {
     super();
     this.name = 'display_interface_block';
-    this.priority = 100;
+    this.priority = 2;
     this.sub_parser_mode = null;
 
     this.rules = [

@@ -4,7 +4,7 @@ class DisplayInterfaceBriefParser extends BaseParser {
   constructor() {
     super();
     this.name = 'display_interface_brief_block';
-    this.priority = 10;
+    this.priority = 1;
 
     this.rules = [
       {

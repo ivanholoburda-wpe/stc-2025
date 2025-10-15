@@ -1,0 +1,119 @@
+const BaseParser = require('../core/BaseParser');
+
+class DisplayLicenseParser extends BaseParser {
+  constructor() {
+    super();
+    this.name = 'display_license_block';
+    // Отслеживаем текущий контекст (в какой мы секции)
+    this.currentSection = 'main';
+    // Храним ссылку на текущий объект "feature" для добавления вложенных данных
+    this.currentFeature = null;
+  }
+
+  isEntryPoint(line) {
+    // Точка входа остается надежной
+    return line.trim().startsWith('Active License');
+  }
+
+  startBlock(line, match) {
+    super.startBlock(line, match);
+    this.data = {
+      type: this.name,
+      features: [], // Массив для хранения всех "фич" из лицензии
+      activation_commands: {}, // Объект для хранения команд активации
+    };
+    this.currentSection = 'main';
+    this.currentFeature = null;
+  }
+
+  parseLine(line) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine || trimmedLine.startsWith('---') || trimmedLine.startsWith('***')) {
+      return true; // Игнорируем пустые строки и разделители
+    }
+
+    // --- 1. ПРИОРИТЕТНАЯ ПРОВЕРКА НА СМЕНУ КОНТЕКСТА ---
+    
+    // Ищем начало нового блока "Feature". Это самый важный маркер.
+    const featureStartMatch = trimmedLine.match(/^\s*Feature name\s*:\s*(?<name>.*)$/);
+    if (featureStartMatch) {
+      this.currentSection = 'feature';
+      const newFeature = {
+        feature_name: featureStartMatch.groups.name.trim(),
+        items: []
+      };
+      this.data.features.push(newFeature);
+      this.currentFeature = newFeature;
+      return true;
+    }
+
+    // Ищем заголовки таблиц, чтобы переключить режим парсинга
+    if (trimmedLine.startsWith('Item name') && trimmedLine.includes('Item type')) {
+      this.currentSection = 'items';
+      return true; // Пропускаем саму строку заголовка
+    }
+    if (trimmedLine.startsWith('Item name') && trimmedLine.includes('Command-line')) {
+      this.currentSection = 'commands';
+      return true; // Пропускаем саму строку заголовка
+    }
+
+    // --- 2. ОБРАБОТКА СТРОКИ В ЗАВИСИМОСТИ ОТ ТЕКУЩЕГО КОНТЕКСТА ---
+    switch (this.currentSection) {
+      case 'items':
+        this._parseItemRow(line);
+        break;
+      case 'commands':
+        this._parseCommandRow(trimmedLine);
+        break;
+      default: // 'main' или 'feature' (для полей Authorize type, Expired date и т.д.)
+        this._parseKeyValue(trimmedLine);
+        break;
+    }
+    
+    return true;
+  }
+
+  _parseKeyValue(line) {
+    const match = line.match(/^\s*(?<key>.+?)\s*:\s*(?<value>.*)$/);
+    if (match) {
+      const { key, value } = match.groups;
+      const normalizedKey = this._normalizeKey(key);
+      const targetObject = this.currentFeature || this.data; // Данные идут либо в фичу, либо в корень
+      targetObject[normalizedKey] = value.trim();
+    }
+  }
+
+  _parseItemRow(line) {
+    const match = line.match(/^\s*(?<name>\S+)\s+(?<type>\S+)\s+(?<value>\S+)\s+(?<desc>.*)$/);
+    if (match && this.currentFeature) {
+      this.currentFeature.items.push({
+        item_name: match.groups.name.trim(),
+        item_type: match.groups.type.trim(),
+        value: this._parseValue(match.groups.value),
+        description: match.groups.desc.trim(),
+        is_child: line.startsWith('   '),
+      });
+    }
+  }
+
+  _parseCommandRow(line) {
+    const match = line.match(/^\s*(?<name>\S+)\s+(?<command>.*)$/);
+    if (match) {
+      this.data.activation_commands[match.groups.name] = match.groups.command.trim();
+    }
+  }
+
+  _normalizeKey(key) {
+    return key.trim().toLowerCase().replace(/\s+/g, '_');
+  }
+  
+  _parseValue(value) {
+    const trimmed = value.trim();
+    if (trimmed === 'YES') return true;
+    if (trimmed === 'NO' || trimmed === '--') return false;
+    const num = parseInt(trimmed, 10);
+    return !isNaN(num) ? num : trimmed;
+  }
+}
+
+module.exports = DisplayLicenseParser;
