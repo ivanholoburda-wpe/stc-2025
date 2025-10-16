@@ -4,10 +4,11 @@ import type {DataSource, DataSource as TypeOrmDataSource} from "typeorm";
 import {Snapshot} from "../../models/Snapshot";
 import {Device} from "../../models/Device";
 import {ParsedDtoIngestor} from "../ingestion/ParsedDtoIngestor";
-import {inject} from "inversify";
+import {inject, injectable} from "inversify";
 import {TYPES} from "../../types";
 import {LogsParserService} from "./LogsParserService";
 
+@injectable()
 export class RootFolderParsingService {
     constructor(
         @inject(TYPES.DataSource) private dataSource: DataSource,
