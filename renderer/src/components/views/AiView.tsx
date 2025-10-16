@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SendIcon } from "../../icons";
 
-const generateId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
+const generateId = () => crypto.randomUUID();
 
 export const AiView = () => {
     const [selectedSnapshot, setSelectedSnapshot] = useState('');
