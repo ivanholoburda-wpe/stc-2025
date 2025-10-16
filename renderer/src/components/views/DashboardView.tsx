@@ -1,12 +1,13 @@
 import React from 'react';
 import { UploadCloudIcon } from '../../icons';
+import { ParsingResult } from '../../api/types';
 
 interface DashboardViewProps {
   onReadFile: () => Promise<void>;
-  fileContent: string;
+  parsingResult: ParsingResult;
 }
 
-export const DashboardView: React.FC<DashboardViewProps> = ({ onReadFile, fileContent }) => (
+export const DashboardView: React.FC<DashboardViewProps> = ({ onReadFile, parsingResult }) => (
   <div className="flex-grow flex items-center justify-center p-8">
     <div className="w-full max-w-2xl bg-gray-800 border border-gray-700 rounded-xl flex flex-col items-center justify-center p-16 text-center">
       <UploadCloudIcon className="w-16 h-16 text-gray-500 mb-4" />
@@ -18,11 +19,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onReadFile, fileCo
       >
         Search file
       </button>
-      {fileContent && (
+      {parsingResult && (
         <div className="mt-8 w-full text-left">
           <h3 className="text-lg font-semibold text-white mb-2">File content:</h3>
           <pre className="bg-gray-900 p-4 rounded-lg text-gray-300 text-sm max-h-60 overflow-auto">
-            {fileContent}
+            Snapshot was taken, snapshotId = {parsingResult.data.snapshotId}
           </pre>
         </div>
       )}

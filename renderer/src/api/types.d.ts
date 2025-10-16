@@ -1,3 +1,9 @@
+export interface ParsingResult {
+  success: boolean,
+  data: any,
+  message: string,
+}
+
 /**
  * Інтерфейс для моделі пристрою, що надходить із бекенду.
  */
@@ -25,7 +31,7 @@ export interface APIResult<T> {
  * Інтерфейс, що визначає функції, доступні через `window.electronAPI`.
  */
 interface ElectronAPI {
-  readFile: () => Promise<string>;
+  runParsing: () => Promise<ParsingResult>;
   getDevices: () => Promise<APIResult<Device[]>>;
   createDevice: (device: { hostname: string; model?: string }) => Promise<APIResult<Device>>;
 }

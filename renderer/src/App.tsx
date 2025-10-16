@@ -5,7 +5,7 @@ import { Modal } from './components/ui/Modal';
 import { DashboardView } from './components/views/DashboardView';
 import { DevicesView } from './components/views/DevicesView';
 import { PlaceholderView } from './components/views/PlaceholderView';
-import { Device, APIResult } from './api/types';
+import { Device, APIResult, ParsingResult } from './api/types';
 import { useConfig } from './hooks/useConfig';
 
 // Мапа для відображення заголовків сторінок
@@ -19,7 +19,7 @@ const viewTitles: Record<ViewId, string> = {
 
 export function App() {
   const [activeView, setActiveView] = useState<ViewId>('dashboard');
-  const [fileContent, setFileContent] = useState('');
+  const [parsingResult, setParsingResult] = useState<ParsingResult>();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
@@ -36,11 +36,10 @@ export function App() {
   const handleReadFile = useCallback(async () => {
     try {
       if (window.electronAPI) {
-        const content = await window.electronAPI.readFile();
-        setFileContent(content);
+        const content = await window.electronAPI.runParsing();
+        setParsingResult(content);
       } else {
         console.warn('electronAPI not found. Running in browser mode.');
-        setFileContent('This is mock file content because electronAPI is not available.');
       }
     } catch (error) {
       handleShowMessage('Error reading file: ' + (error as Error).message);
@@ -109,7 +108,7 @@ export function App() {
   const renderActiveView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <DashboardView onReadFile={handleReadFile} fileContent={fileContent} />;
+        return <DashboardView onReadFile={handleReadFile} parsingResult={parsingResult} />;
       case 'devices':
         return (
           <DevicesView
@@ -124,7 +123,7 @@ export function App() {
       case 'reports':
         return <PlaceholderView title={viewTitles[activeView]} />;
       default:
-        return <DashboardView onReadFile={handleReadFile} fileContent={fileContent} />;
+        return <DashboardView onReadFile={handleReadFile} parsingResult={parsingResult} />;
     }
   };
 

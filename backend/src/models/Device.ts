@@ -15,19 +15,19 @@ export class Device {
     @Column({ type: "varchar", nullable: true })
     model?: string;
 
-    @ManyToOne(() => Snapshot, (snapshot) => snapshot.devices)
+    @ManyToOne(() => Snapshot, (snapshot: Snapshot) => snapshot.devices)
     @JoinColumn({ name: "first_seen_snapshot_id" })
     firstSeenSnapshot!: Snapshot;
 
-    @OneToMany(() => Interface, (iface) => iface.device)
+    @OneToMany(() => Interface, (iface: Interface) => iface.device)
     interfaces?: Interface[];
 
-    @OneToMany(() => Transceiver, (transceiver) => transceiver.device)
+    @OneToMany(() => Transceiver, (transceiver: Transceiver) => transceiver.device)
     transceivers?: Transceiver[];
 
-    @OneToMany(() => DeviceNeighbor, (neighbor) => neighbor.firstDevice)
+    @OneToMany(() => DeviceNeighbor, (neighbor: DeviceNeighbor) => neighbor.firstDevice)
     firstDeviceNeighbors?: DeviceNeighbor[];
 
-    @OneToMany(() => DeviceNeighbor, (neighbor) => neighbor.secondDevice)
+    @OneToMany(() => DeviceNeighbor, (neighbor: DeviceNeighbor) => neighbor.secondDevice)
     secondDeviceNeighbors?: DeviceNeighbor[];
 }

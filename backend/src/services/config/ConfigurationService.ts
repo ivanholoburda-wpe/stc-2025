@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
-import { TYPES } from "../types";
-import { IOptionRepository } from "../repositories/OptionRepository";
+import { TYPES } from "../../types";
+import { IOptionRepository } from "../../repositories/OptionRepository";
 
 export interface IConfigurationService {
     isOfflineMode(): Promise<boolean>

@@ -11,11 +11,11 @@ export class Interface {
     @Column({ type: "varchar" })
     name!: string;
 
-    @ManyToOne(() => Snapshot, (snapshot) => snapshot.interfaces)
+    @ManyToOne(() => Snapshot, (snapshot: Snapshot) => snapshot.interfaces)
     @JoinColumn({ name: "snapshot_id" })
     snapshot!: Snapshot;
 
-    @ManyToOne(() => Device, (device) => device.interfaces)
+    @ManyToOne(() => Device, (device: Device) => device.interfaces)
     @JoinColumn({ name: "device_id" })
     device!: Device;
 
@@ -34,6 +34,6 @@ export class Interface {
     @Column({ type: "int", nullable: true })
     mtu?: number;
 
-    @OneToMany(() => Transceiver, (transceiver) => transceiver.interface)
+    @OneToMany(() => Transceiver, (transceiver: Transceiver) => transceiver.interface)
     transceivers?: Transceiver[];
 }

@@ -7,15 +7,17 @@ import { Interface } from "../models/Interface";
 import { Transceiver } from "../models/Transceiver";
 import { DeviceNeighbor } from "../models/DeviceNeighbor";
 import { Option } from "../models/Option";
+import { app } from "electron";
 
 
-const dbPath = path.join(process.cwd(), "local.db");
+const dbPath = path.join(app.getPath("userData"), "local.db");
+const migrationsPath = path.resolve(__dirname, '..', 'migrations', '*.js');;
 
 export const AppDataSource = new DataSource({
   type: "sqlite",
   database: dbPath,
   synchronize: false,
   logging: true,
-  entities: [Snapshot, Device, Interface, Transceiver, DeviceNeighbor],
-  migrations: [path.join(process.cwd(), "backend", "src", "migrations", "*.ts")],
+  entities: [Snapshot, Device, Interface, Transceiver, DeviceNeighbor, Option],
+  migrations: [migrationsPath],
 });

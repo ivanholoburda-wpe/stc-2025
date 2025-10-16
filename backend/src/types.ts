@@ -1,8 +1,17 @@
 export const TYPES = {
-  DeviceRepository: Symbol.for("DeviceRepository"),
-  DeviceService: Symbol.for("DeviceService"),
-  DataSource: Symbol.for("DataSource"),
-  OptionRepository: Symbol.for("OptionRepository"),
-  DefaultOptionsSeeder: Symbol.for("DefaultOptionsSeeder"),
-  ConfigurationService: Symbol.for("ConfigurationService")
+    DeviceRepository: Symbol.for("DeviceRepository"),
+    DeviceService: Symbol.for("DeviceService"),
+    DataSource: Symbol.for("DataSource"),
+    OptionRepository: Symbol.for("OptionRepository"),
+    DefaultOptionsSeeder: Symbol.for("DefaultOptionsSeeder"),
+    ConfigurationService: Symbol.for("ConfigurationService"),
+    RootFolderParsingService: Symbol.for("RootFolderParsingService"),
+    LogsParserService: Symbol.for("LogsParserService"),
+    Logger: Symbol.for("Logger"),
+    AIClient: Symbol.for("AIClient"),
+    SnapshotRepository: Symbol.for("SnapshotRepository"),
+    InterfaceRepository: Symbol.for("InterfaceRepository"),
+    TransceiverRepository: Symbol.for("TransceiverRepository"),
+    AIPromptBuilder: Symbol.for("AIPromptBuilder"),
+    AIAgent: Symbol.for("AIAgent"),
 };
