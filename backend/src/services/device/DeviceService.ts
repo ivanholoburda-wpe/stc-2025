@@ -1,7 +1,7 @@
 import { injectable, inject } from "inversify";
-import { Device } from "../models/Device";
-import { IDeviceRepository } from "../repositories/DeviceRepository";
-import { TYPES } from "../types"
+import { Device } from "../../models/Device";
+import { IDeviceRepository } from "../../repositories/DeviceRepository";
+import { TYPES } from "../../types"
 
 export interface IDeviceService {
   getAllDevices(): Promise<Device[]>;

@@ -11,15 +11,15 @@ export class Transceiver {
     @Column({ type: "varchar" })
     name!: string;
 
-    @ManyToOne(() => Interface, (iface) => iface.transceivers)
+    @ManyToOne(() => Interface, (iface: Interface) => iface.transceivers)
     @JoinColumn({ name: "interface_id" })
     interface!: Interface;
 
-    @ManyToOne(() => Snapshot, (snapshot) => snapshot.transceivers)
+    @ManyToOne(() => Snapshot, (snapshot: Snapshot) => snapshot.transceivers)
     @JoinColumn({ name: "snapshot_id" })
     snapshot!: Snapshot;
 
-    @ManyToOne(() => Device, (device) => device.transceivers)
+    @ManyToOne(() => Device, (device: Device) => device.transceivers)
     @JoinColumn({ name: "device_id" })
     device!: Device;
 

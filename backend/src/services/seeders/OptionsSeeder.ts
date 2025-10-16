@@ -10,7 +10,7 @@ export class DefaultOptionsSeeder {
 
     public async run(): Promise<void> {
         const defaultOptions = [
-            { name: 'mode', value: 'offline' },
+            { name: 'mode', value: 'online' },
         ];
 
         for (const defaultOption of defaultOptions) {

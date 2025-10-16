@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { IDeviceService } from "../services/DeviceService";
+import { IDeviceService } from "../services/device/DeviceService";
 import { TYPES } from "../types";
 
 @injectable()

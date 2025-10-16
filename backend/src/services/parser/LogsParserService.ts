@@ -1,28 +1,27 @@
-const fs = require('fs');
-const readline = require('readline');
-const ParserFactory = require('./parser/core/ParserFactory');
-const { globalLogger, globalPerformanceTracker } = require('./parser/core/Logger');
+import fs from 'fs';
+import readline from 'readline';
+import ParserFactory = require("./core/ParserFactory")
+import { globalLogger, globalPerformanceTracker } from './core/Logger';
+import { injectable } from 'inversify';
 
-class LogsParserService {
+@injectable()
+export class LogsParserService {
+  factory: any;
+  logger: any;
+  performanceTracker: any;
+  globalStats: any;
+
   constructor() {
     this.factory = new ParserFactory();
     this.logger = globalLogger;
     this.performanceTracker = globalPerformanceTracker;
-    this.globalStats = {
-      totalLines: 0,
-      parsedBlocks: 0,
-      errors: 0,
-      warnings: 0,
-      parsersUsed: new Set(),
-      startTime: null,
-      endTime: null
-    };
+    this.resetStats();
   }
 
-  async _readFileHeader(filePath, lineCount = 20) {
+  async _readFileHeader(filePath: string, lineCount: number = 20): Promise<string[]> {
     const fileStream = fs.createReadStream(filePath);
     const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
-    const lines = [];
+    const lines: string[] = [];
     for await (const line of rl) {
       lines.push(line);
       if (lines.length >= lineCount) {
@@ -34,7 +33,7 @@ class LogsParserService {
     return lines;
   }
 
-  async parse(filePath, options = {}) {
+  async parse(filePath: string, options: any = {}): Promise<any> {
     this.globalStats.startTime = new Date();
     this.performanceTracker.startTimer('total_parsing');
     
@@ -57,12 +56,12 @@ class LogsParserService {
     }
 
     const availableParsers = this.factory.getAllParsers();
-    this.logger.info(`Available parsers: ${availableParsers.map(p => p.name).join(', ')}`);
+    this.logger.info(`Available parsers: ${availableParsers.map((p: any) => p.name).join(', ')}`);
 
     const fileStream = fs.createReadStream(filePath);
     const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
     
-    const results = [];
+    const results: any[] = [];
     const activeParsers = new Map();
     let consecutiveErrors = 0;
 
@@ -76,15 +75,15 @@ class LogsParserService {
             if (result && this._isValidResult(result)) {
               results.push(result);
               this.globalStats.parsedBlocks++;
-              this.globalStats.parsersUsed.add(parserName);
+              this.globalStats.parsersUsed.add(parser.name);
             }
             activeParsers.delete(parserName);
           } else {
             try {
               parser.parseLine(line);
-            } catch (error) {
-              this.logger.error(`Error in parser ${parserName}`, {
-                parser: parserName,
+            } catch (error: any) {
+              this.logger.error(`Error in parser ${parser.name}`, {
+                parser: parser.name,
                 error: error.message,
                 line: line.substring(0, 100),
                 consecutiveErrors
@@ -127,7 +126,7 @@ class LogsParserService {
                 consecutiveErrors = 0;
               }
             }
-          } catch (error) {
+          } catch (error: any) {
             this.logger.error(`Error checking entry point for ${parser.name}`, {
               parser: parser.name,
               error: error.message,
@@ -145,11 +144,11 @@ class LogsParserService {
         if (result && this._isValidResult(result)) {
           results.push(result);
           this.globalStats.parsedBlocks++;
-          this.globalStats.parsersUsed.add(parserName);
+          this.globalStats.parsersUsed.add(parser.name);
         }
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Critical parsing error: ${error.message}`);
       if (!continueOnError) {
         throw error;
@@ -190,7 +189,7 @@ class LogsParserService {
     return finalResult;
   }
 
-  _isValidResult(result) {
+  _isValidResult(result: any): boolean {
     if (!result || typeof result !== 'object') {
       return false;
     }
@@ -200,7 +199,7 @@ class LogsParserService {
     }
 
     if (result.errors && result.errors.length > 0) {
-      const criticalErrors = result.errors.filter(error => 
+      const criticalErrors = result.errors.filter((error: any) => 
         error.message.includes('Critical') || 
         error.message.includes('Missing required')
       );
@@ -210,7 +209,7 @@ class LogsParserService {
     return true;
   }
 
-  _calculateGlobalStats(results) {
+  _calculateGlobalStats(results: any[]): void {
     this.globalStats.errors = 0;
     this.globalStats.warnings = 0;
 
@@ -224,8 +223,8 @@ class LogsParserService {
     });
   }
 
-  _createSummary(results) {
-    const summary = {
+  _createSummary(results: any[]): any {
+    const summary: any = {
       totalBlocks: results.length,
       blockTypes: {},
       errorBlocks: 0,
@@ -249,12 +248,12 @@ class LogsParserService {
 
     summary.successRate = results.length > 0 
       ? ((results.length - summary.errorBlocks) / results.length * 100).toFixed(2)
-      : 0;
+      : "100.00";
 
     return summary;
   }
 
-  _createEmptyResult() {
+  _createEmptyResult(): any {
     return {
       success: true,
       data: [],
@@ -264,16 +263,16 @@ class LogsParserService {
         blockTypes: {},
         errorBlocks: 0,
         warningBlocks: 0,
-        successRate: 100
+        successRate: "100.00"
       }
     };
   }
 
-  getParserStats() {
-    return this.factory.getAllParsers().map(parser => parser.getStats());
+  getParserStats(): any[] {
+    return this.factory.getAllParsers().map((parser: any) => parser.getStats());
   }
 
-  resetStats() {
+  resetStats(): void {
     this.globalStats = {
       totalLines: 0,
       parsedBlocks: 0,
@@ -285,5 +284,3 @@ class LogsParserService {
     };
   }
 }
-
-module.exports = LogsParserService;

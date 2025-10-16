@@ -17,12 +17,12 @@ export class Snapshot {
     @Column({ type: "text", nullable: true })
     description?: string;
 
-    @OneToMany(() => Device, (device) => device.firstSeenSnapshot)
+    @OneToMany(() => Device, (device: Device) => device.firstSeenSnapshot)
     devices?: Device[];
 
-    @OneToMany(() => Interface, (iface) => iface.snapshot)
+    @OneToMany(() => Interface, (iface: Interface) => iface.snapshot)
     interfaces?: Interface[];
 
-    @OneToMany(() => Transceiver, (transceiver) => transceiver.snapshot)
+    @OneToMany(() => Transceiver, (transceiver: Transceiver) => transceiver.snapshot)
     transceivers?: Transceiver[];
 }

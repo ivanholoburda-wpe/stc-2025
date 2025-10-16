@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
-const LogsParserService = require('../LogsParserService');
+const LogsParserService = require('./LogsParserService');
 const { CommonValidationRules, CommonFilters, CommonTransformers } = require('./core/DataValidator');
 
 async function main() {

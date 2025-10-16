@@ -6,11 +6,11 @@ export class DeviceNeighbor {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @ManyToOne(() => Device, (device) => device.firstDeviceNeighbors)
+    @ManyToOne(() => Device, (device: Device) => device.firstDeviceNeighbors)
     @JoinColumn({ name: "first_device_id" })
     firstDevice!: Device;
 
-    @ManyToOne(() => Device, (device) => device.secondDeviceNeighbors)
+    @ManyToOne(() => Device, (device: Device) => device.secondDeviceNeighbors)
     @JoinColumn({ name: "second_device_id" })
     secondDevice!: Device;
 }
