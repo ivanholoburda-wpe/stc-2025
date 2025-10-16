@@ -22,7 +22,7 @@ export const AiView = () => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
     }, [messages, isLoading]);
 
-    const handleSendMessage = async (e) => {
+    const handleSendMessage = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!inputValue.trim() || isLoading) return;
         
