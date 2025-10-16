@@ -8,10 +8,10 @@ import {
   FileTextIcon,
   SettingsIcon,
   LogOutIcon,
-  DownloadIcon,
+  DownloadIcon, SparklesIcon,
 } from '../../icons';
 
-export type ViewId = 'dashboard' | 'devices' | 'analytics' | 'alerts' | 'reports';
+export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports';
 
 interface NavItem {
   id: ViewId;
@@ -28,6 +28,7 @@ const navItems: NavItem[] = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon },
   { id: 'devices', label: 'Devices', icon: LaptopIcon },
   { id: 'analytics', label: 'Analytics', icon: BarChart3Icon },
+  { id: 'ai', label: 'AI Assistant', icon: SparklesIcon },
   { id: 'alerts', label: 'Alerts', icon: BellIcon },
   { id: 'reports', label: 'Reports', icon: FileTextIcon },
 ];

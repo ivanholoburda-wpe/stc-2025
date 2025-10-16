@@ -5,6 +5,7 @@ import { Modal } from './components/ui/Modal';
 import { DashboardView } from './components/views/DashboardView';
 import { DevicesView } from './components/views/DevicesView';
 import { PlaceholderView } from './components/views/PlaceholderView';
+import { AiView } from './components/views/AiView';
 import { Device, APIResult, ParsingResult } from './api/types';
 import { useConfig } from './hooks/useConfig';
 
@@ -12,6 +13,7 @@ import { useConfig } from './hooks/useConfig';
 const viewTitles: Record<ViewId, string> = {
   dashboard: 'Home',
   devices: 'Devices',
+  ai: 'AI Assistant',
   analytics: 'Analytics',
   alerts: 'Alerts',
   reports: 'Reports',
@@ -118,6 +120,7 @@ export function App() {
             onCreateDevice={handleCreateTestDevice}
           />
         );
+      case 'ai': return <AiView />;
       case 'analytics':
       case 'alerts':
       case 'reports':

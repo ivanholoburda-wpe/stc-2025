@@ -88,3 +88,16 @@ export const XIcon: React.FC<IconProps> = (props) => (
     <path d="m6 6 12 12" />
   </Icon>
 );
+
+export const SparklesIcon: React.FC<IconProps> = (props) => (
+    <Icon {...props}>
+        <path d="m12 3-1.9 1.9-1.4-1.4-1.9 1.9-1.4-1.4L3 6l1.4 1.4L3 9.3l1.4 1.4L3 12l1.9 1.9 1.4-1.4 1.9 1.9 1.4-1.4L12 21l1.9-1.9 1.4 1.4 1.9-1.9 1.4 1.4L21 18l-1.4-1.4L21 14.7l-1.4-1.4L21 12l-1.9-1.9-1.4 1.4-1.9-1.9-1.4 1.4L12 3z"/>
+    </Icon>
+);
+
+export const SendIcon: React.FC<IconProps> = (props) => (
+    <Icon {...props}>
+        <path d="m22 2-7 20-4-9-9-4Z"/>
+        <path d="m22 2-11 11"/>
+    </Icon>
+);
