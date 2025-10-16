@@ -48,7 +48,7 @@ export const AiView = () => {
     };
 
     return (
-        <div className="flex flex-col h-full p-6 text-white bg-gray-900 min-h-screen">
+        <div className="flex flex-col h-full p-6 text-white bg-gray-900">
             <div className="mb-4 flex-shrink-0">
                 <label htmlFor="snapshot-select" className="block text-sm font-medium text-gray-300 mb-2">Оберіть снапшот для аналізу:</label>
                 <select 
