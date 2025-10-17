@@ -1,3 +1,5 @@
+import {Snapshot} from "./snapshot";
+
 export interface ParsingResult {
   success: boolean,
   data: any,
@@ -33,7 +35,9 @@ export interface APIResult<T> {
 interface ElectronAPI {
   runParsing: () => Promise<ParsingResult>;
   getDevices: () => Promise<APIResult<Device[]>>;
+  getAllSnapshots: () => Promise<APIResult<Snapshot[]>>;
   createDevice: (device: { hostname: string; model?: string }) => Promise<APIResult<Device>>;
+  analyzeSnapshot: (snapshotId: number, prompt: string) => Promise<APIResult<string>>;
 }
 
 /**
