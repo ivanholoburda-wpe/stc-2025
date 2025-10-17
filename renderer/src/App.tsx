@@ -13,7 +13,7 @@ import { useConfig } from './hooks/useConfig';
 const viewTitles: Record<ViewId, string> = {
   dashboard: 'Home',
   devices: 'Devices',
-  ai: 'AI Assistant',
+  ai: 'RuslanChick',
   analytics: 'Analytics',
   alerts: 'Alerts',
   reports: 'Reports',
