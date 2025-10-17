@@ -46,6 +46,7 @@ export class ParsedDtoIngestor {
         const processingOrder = [
             "display_version",
             "display_interface_brief_block",
+            "display_ip_interface_brief_block",
             "display_transceiver_verbose_block",
             "display_lldp_neighbor_brief_block",
             "display_alarm_all_block",
@@ -62,6 +63,9 @@ export class ParsedDtoIngestor {
                     case "display_interface_brief_block":
                         await this.ingestInterfacesBrief(block, snapshot, device);
                         break;
+                    case "display_ip_interface_brief_block":
+                        await this.ingestIpInterfacesBrief(block, snapshot, device);
+                        break;
                     case "display_transceiver_verbose_block":
                         await this.ingestTransceiverVerbose(block, snapshot, device);
                         break;
@@ -74,6 +78,7 @@ export class ParsedDtoIngestor {
                     case "display_arp_all_block":
                         await this.ingestARPRecords(block, snapshot, device);
                         break;
+
                 }
             }
         }
@@ -215,6 +220,30 @@ export class ParsedDtoIngestor {
             arpRecorsToUpsert,
             ["ip_address", "device", "snapshot"]
         )
+    }
+
+    private async ingestIpInterfacesBrief(block: ParserBlock, snapshot: Snapshot, device: Device): Promise<void> {
+        const rows = Array.isArray(block?.interfaces) ? block.interfaces : [];
+
+        if (rows.length === 0) {
+            return;
+        }
+
+        const interfacesToUpsert = rows.map(row => {
+            const ifaceData: Partial<Interface> = {
+                name: String(row.interface),
+                ip_address: String(row.ip_address_mask),
+                snapshot: snapshot,
+                device: device,
+            };
+
+            return ifaceData;
+        });
+
+        await this.ifaceRepo.upsert(
+            interfacesToUpsert,
+            ['name', 'device', 'snapshot']
+        );
     }
 }
 export default ParsedDtoIngestor;
