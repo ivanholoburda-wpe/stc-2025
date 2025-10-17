@@ -11,6 +11,7 @@ export class DefaultOptionsSeeder {
     public async run(): Promise<void> {
         const defaultOptions = [
             { name: 'mode', value: 'online' },
+            { name: 'ai_prompt_start', value: "Imagine you're a senior networking engineer. Answer to the question, that user will ask. Here's the data about network state: " },
         ];
 
         for (const defaultOption of defaultOptions) {

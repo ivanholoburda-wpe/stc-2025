@@ -28,9 +28,7 @@ export class SnapshotRepository implements ISnapshotRepository {
     }
 
     async findAll(): Promise<Snapshot[]> {
-        return await this.repository.find({
-            relations: ["devices", "interfaces", "transceivers"]
-        });
+        return await this.repository.find();
     }
 
     async findById(id: number): Promise<Snapshot | null> {

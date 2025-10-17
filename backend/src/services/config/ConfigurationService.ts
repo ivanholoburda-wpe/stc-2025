@@ -4,9 +4,11 @@ import { IOptionRepository } from "../../repositories/OptionRepository";
 
 export interface IConfigurationService {
     isOfflineMode(): Promise<boolean>
-    getAiModelKey(): Promise<string | null>
     setOfflineMode(isOffline: boolean): Promise<void>;
+    getAiModelKey(): Promise<string | null>
     setAiModelKey(key: string): Promise<void>;
+    getAiPromptStart(): Promise<string | null>
+    setAiPromptStart(prompt: string): Promise<void>
 }
 
 @injectable()
@@ -35,6 +37,15 @@ export class ConfigurationService implements IConfigurationService {
     public async setAiModelKey(key: string): Promise<void> {
         await this.optionRepository.updateOrCreate('ai_model_key', key);
         this.settingsCache.set('ai_model_key', key);
+    }
+
+    public async getAiPromptStart(): Promise<string | null> {
+        return await this.getOptionValue('ai_model_key', null);
+    }
+
+    public async setAiPromptStart(prompt: string): Promise<void> {
+        await this.optionRepository.updateOrCreate('ai_prompt_start', prompt);
+        this.settingsCache.set('ai_prompt_start', prompt);
     }
 
     private async getOptionValue(optionName: string, defaultValue: string | null): Promise<string | null> {

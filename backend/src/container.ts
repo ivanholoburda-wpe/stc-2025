@@ -20,6 +20,8 @@ import { ITransceiverRepository, TransceiverRepository } from "./repositories/Tr
 import { IInterfaceRepository, InterfaceRepository } from "./repositories/InterfaceRepository";
 import {AIPromptBuilder} from "./services/ai-agent/AIPromptBuilder";
 import {AIAgent} from "./services/ai-agent/AIAgent";
+import { ISnapshotService, SnapshotService } from "./services/snapshot/SnapshotService"
+import {SnapshotHandler} from "./handlers/SnapshotHandler";
 
 const container = new Container();
 
@@ -42,9 +44,11 @@ container.bind<LogsParserService>(TYPES.LogsParserService).to(LogsParserService)
 container.bind<IAIClient>(TYPES.AIClient).to(GeminiClient).inSingletonScope();
 container.bind<AIPromptBuilder>(TYPES.AIPromptBuilder).to(AIPromptBuilder);
 container.bind<AIAgent>(TYPES.AIAgent).to(AIAgent);
+container.bind<ISnapshotService>(TYPES.SnapshotService).to(SnapshotService);
 
 // Bind Handler
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
+container.bind<SnapshotHandler>(SnapshotHandler).toSelf();
 
 export { container };

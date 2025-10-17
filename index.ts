@@ -1,13 +1,10 @@
-import {app, BrowserWindow, ipcMain, dialog} from 'electron';
+import {app, BrowserWindow, ipcMain} from 'electron';
 import path from 'path';
 import {AppDataSource} from './backend/src/database/data-source';
 import {container} from './backend/src/container';
 import {ParsingHandler} from './backend/src/handlers/ParsingHandler';
 import {DeviceHandler} from './backend/src/handlers/DeviceHandler';
-import {IAIClient} from './backend/src/services/ai-agent/client/IAIClient';
-import {TYPES} from './backend/src/types';
-import {ISnapshotRepository, SnapshotRepository} from "./backend/src/repositories/SnapshotRepository";
-import {AIAgent} from "./backend/src/services/ai-agent/AIAgent";
+import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -35,6 +32,7 @@ app.whenReady().then(async () => {
 
         const parsingHandler = container.get(ParsingHandler);
         const deviceHandler = container.get(DeviceHandler);
+        const snapshotHandler = container.get(SnapshotHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -43,6 +41,14 @@ app.whenReady().then(async () => {
         ipcMain.handle('get-devices', async () => {
             return await deviceHandler.getAllDevices();
         });
+
+        ipcMain.handle('get-snapshots', async () => {
+            return await snapshotHandler.getAllSnapshots();
+        })
+
+        ipcMain.handle('analyze-snapshot', async (event, snapshotId, prompt) => {
+            return await snapshotHandler.analyzeSnapshot(snapshotId, prompt);
+        })
     } catch (error) {
         console.error('Database initialization failed:', error);
     }
