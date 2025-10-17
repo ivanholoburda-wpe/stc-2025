@@ -14,6 +14,7 @@ export class DefaultOptionsSeeder {
             { name: 'ai_prompt_start', value: "Imagine you're a senior networking engineer. Answer to the question, that user will ask. Here's the data about network state: " },
         ];
 
+
         for (const defaultOption of defaultOptions) {
             await this.optionRepository.updateOrCreate(defaultOption.name, defaultOption.value);
         }

@@ -5,6 +5,8 @@ import {container} from './backend/src/container';
 import {ParsingHandler} from './backend/src/handlers/ParsingHandler';
 import {DeviceHandler} from './backend/src/handlers/DeviceHandler';
 import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
+import { TYPES } from './backend/src/types';
+import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -29,6 +31,8 @@ app.whenReady().then(async () => {
         await AppDataSource.runMigrations();
 
         console.log('Database initialized and migrations completed');
+        const optionsSeeder = container.get<DefaultOptionsSeeder>(TYPES.DefaultOptionsSeeder);
+        await optionsSeeder.run();
 
         const parsingHandler = container.get(ParsingHandler);
         const deviceHandler = container.get(DeviceHandler);
