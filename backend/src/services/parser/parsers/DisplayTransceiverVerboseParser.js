@@ -12,14 +12,10 @@ class DisplayTransceiverVerboseParser extends BaseParser {
     return line.match(regex);
   }
 
-  /**
-   * 🔥 ВОТ ИСПРАВЛЕНИЕ 🔥
-   * Добавляем поле 'type' в создаваемый объект данных.
-   */
   startBlock(line, match) {
     super.startBlock(line, match);
     this.data = {
-      type: this.name, // <-- ДОБАВЛЕНА ЭТА СТРОКА
+      type: this.name,
       interface: match.groups.interface,
       common_information: {},
       manufacture_information: {},
@@ -28,8 +24,6 @@ class DisplayTransceiverVerboseParser extends BaseParser {
     };
     this.currentSection = null;
   }
-
-  // ... остальная часть кода остается без изменений ...
 
   parseLine(line) {
     const trimmedLine = line.trim();

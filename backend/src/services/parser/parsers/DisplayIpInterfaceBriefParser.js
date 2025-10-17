@@ -9,7 +9,6 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
         this.rules = [
             {
                 name: 'summary_line',
-                // Захватывает строки вроде "The number of interface that is UP in Physical is 10"
                 regex: /^The number of interface that is (?<State>UP|DOWN) in (?<Type>Physical|Protocol) is (?<Count>\d+)/,
                 handler: (match) => {
                     const { State, Type, Count } = match.groups;
@@ -19,12 +18,10 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
             },
             {
                 name: 'data_row',
-                // Основное правило для разбора строк с данными интерфейсов
                 regex: /^(?<Interface>\S+)\s+(?<IPAddressMask>.+?)\s+(?<Physical>\S+)\s+(?<Protocol>\S+)\s+(?<VPN>\S+)\s*$/,
                 handler: (match) => {
                     const { Interface, IPAddressMask, Physical, Protocol, VPN } = match.groups;
 
-                    // Пропускаем строки, которые случайно совпали, но не являются данными (например, заголовок)
                     if (Interface === 'Interface' && IPAddressMask.startsWith('IP Address/Mask')) {
                         return;
                     }
@@ -39,11 +36,9 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
                 }
             },
             {
-                // Правило для пропуска легенды и разделителей
                 name: 'legend_or_header',
                 regex: /^\s*(\*down:|!down:|Interface|----)/,
                 handler: () => {
-                    // Просто пропускаем эти строки
                 }
             }
         ];
@@ -56,7 +51,6 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
     }
 
     isEntryPoint(line) {
-        // Точкой входа считаем заголовок таблицы
         const regex = /^\s*Interface\s+IP Address\/Mask\s+Physical\s+Protocol\s+VPN/;
         return line.match(regex);
     }
@@ -64,7 +58,6 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
     startBlock(line, match) {
         super.startBlock(line, match);
 
-        // Инициализируем структуру для хранения данных этого блока
         this.data = {
             ...this.data,
             summary: {
@@ -80,19 +73,15 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
     parseLine(line) {
         const trimmedLine = line.trim();
         if (!trimmedLine) {
-            return true; // Пропускаем пустые строки
+            return true;
         }
         return super.parseLine(line);
     }
 
-    /**
-     * Пользовательская валидация данных после завершения парсинга блока
-     */
     _validateData() {
         super._validateData();
         if (!this.data || !this.data.interfaces) return;
 
-        // 1. Проверяем каждый интерфейс на корректность статусов
         this.data.interfaces.forEach(iface => {
             if (!iface.physical.includes('up') && !iface.physical.includes('down')) {
                 this._addWarning(`Invalid Physical status for interface ${iface.interface}: ${iface.physical}`);
@@ -102,7 +91,6 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
             }
         });
 
-        // 2. Перекрестная проверка: сравниваем счетчики из заголовка с фактическим числом интерфейсов
         const actualPhysicalUp = this.data.interfaces.filter(i => i.physical.includes('up')).length;
         const actualPhysicalDown = this.data.interfaces.filter(i => i.physical.includes('down')).length;
         const actualProtocolUp = this.data.interfaces.filter(i => i.protocol.includes('up')).length;
