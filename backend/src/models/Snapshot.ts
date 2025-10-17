@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
 import { Device } from "./Device"
 import { Interface } from "./Interface"
 import { Transceiver } from "./Transceiver"
+import { Alarm } from "./Alarm"
 
 @Entity({ name: "snapshots" })
 export class Snapshot {
@@ -25,4 +26,7 @@ export class Snapshot {
 
     @OneToMany(() => Transceiver, (transceiver: Transceiver) => transceiver.snapshot)
     transceivers?: Transceiver[];
+
+    @OneToMany(() => Alarm, (alarm: Alarm) => alarm.snapshot)
+    alarms?: Alarm[];
 }

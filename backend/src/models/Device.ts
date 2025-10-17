@@ -3,6 +3,7 @@ import { Snapshot } from "./Snapshot"
 import { Interface } from "./Interface"
 import { Transceiver } from "./Transceiver"
 import { DeviceNeighbor } from "./DeviceNeighbor"
+import { Alarm } from "./Alarm"
 
 @Entity({ name: "devices" })
 export class Device {
@@ -30,4 +31,7 @@ export class Device {
 
     @OneToMany(() => DeviceNeighbor, (neighbor: DeviceNeighbor) => neighbor.secondDevice)
     secondDeviceNeighbors?: DeviceNeighbor[];
+
+    @OneToMany(() => Alarm, (alarm: Alarm) => alarm.device)
+    alarms?: Alarm[];
 }
