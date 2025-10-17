@@ -1,12 +1,3 @@
-// "ip_address": "172.***.***.***",
-//           "mac_address": "****-****-****",
-//           "expire_m": null,
-//           "type": "I -",
-//           "interface": "100GE0/3/0",
-//           "vpn_instance": null,
-//           "vlan": null,
-//           "cevlan": null
-
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm"
 import { Snapshot } from "./Snapshot"
 import { Device } from "./Device"
