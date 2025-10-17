@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {SendIcon} from "../../icons";
-import {analyzeSnapshot, getSnapshots, Snapshot} from "../../api/snapshot"
+import {analyzeSnapshot, getSnapshots} from "../../api/snapshot"
 import {APIResult} from "../../api/types";
+import {MarkdownRenderer} from "../ui/MarkdownRenderer";
 
 const generateId = () => crypto.randomUUID();
 
@@ -124,7 +125,11 @@ export const AiView = () => {
                                     ? 'bg-blue-600 text-white rounded-br-none'
                                     : 'bg-gray-700 text-gray-100 rounded-tl-none'
                                 }`}>
-                                <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                                {msg.sender === 'ai' ? (
+                                    <MarkdownRenderer text={msg.text} />
+                                ) : (
+                                    <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                                )}
                             </div>
                         </div>
                     ))}
