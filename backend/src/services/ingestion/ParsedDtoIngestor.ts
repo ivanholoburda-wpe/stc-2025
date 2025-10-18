@@ -1,4 +1,4 @@
-import type { Repository } from "typeorm";
+import {In, Repository} from "typeorm";
 import { Snapshot } from "../../models/Snapshot";
 import { Device } from "../../models/Device";
 import { Interface } from "../../models/Interface";
@@ -23,12 +23,20 @@ type ParserResults = {
 };
 
 export class ParsedDtoIngestor {
+    /**
+     * Repositories
+     */
     private ifaceRepo: Repository<Interface>;
     private trxRepo: Repository<Transceiver>;
     private devRepo: Repository<Device>;
     private neighRepo: Repository<DeviceNeighbor>;
     private alarmRepo: Repository<Alarm>;
     private arpRepo: Repository<ARPRecord>;
+
+    /**
+     * Cache to make relations
+     */
+    private interfaceCache: Map<string, Interface>;
 
     constructor(private readonly dataSource: TypeOrmDataSource = AppDataSource) {
         this.ifaceRepo = this.dataSource.getRepository(Interface);
@@ -40,12 +48,16 @@ export class ParsedDtoIngestor {
     }
 
     async ingest(results: ParserResults, snapshot: Snapshot, device: Device): Promise<void> {
-        console.log(results);
-        if (!results?.data || !Array.isArray(results.data)) return;
+        this.initCaches();
+
+        if (!results?.data || !Array.isArray(results.data)) {
+            return;
+        }
 
         const processingOrder = [
             "display_version",
             "display_interface_brief_block",
+            "display_optical_module_brief_block",
             "display_ip_interface_brief_block",
             "display_transceiver_verbose_block",
             "display_lldp_neighbor_brief_block",
@@ -62,6 +74,9 @@ export class ParsedDtoIngestor {
                         break;
                     case "display_interface_brief_block":
                         await this.ingestInterfacesBrief(block, snapshot, device);
+                        break;
+                    case "display_optical_module_brief_block":
+                        await this.ingestTransceiverBrief(block, snapshot, device);
                         break;
                     case "display_ip_interface_brief_block":
                         await this.ingestIpInterfacesBrief(block, snapshot, device);
@@ -125,50 +140,105 @@ export class ParsedDtoIngestor {
             interfacesToUpsert,
             ['name', 'device', 'snapshot']
         );
+
+        const interfaceNames = rows.map(row => String(row.interface));
+
+        const upsertedInterfaces = await this.ifaceRepo.find({
+            where: {
+                name: In(interfaceNames),
+                device: { id: device.id },
+                snapshot: { id: snapshot.id }
+            }
+        });
+
+        for (const iface of upsertedInterfaces) {
+            this.interfaceCache.set(iface.name, iface);
+        }
+    }
+
+    private async ingestTransceiverBrief(block: ParserBlock, snapshot: Snapshot, device: Device): Promise<void> {
+        const rows = Array.isArray(block?.modules) ? block.modules : [];
+
+        if (rows.length === 0) {
+            return;
+        }
+
+        const transceiversToUpsert = rows.map(row => {
+            const interfaceName = this.normalizeInterfaceName(row.port, row.type);
+
+            const parentInterface = this.interfaceCache.get(interfaceName);
+
+            if (!parentInterface) {
+                console.warn(`[ingestTransceiverBrief] Interface '${interfaceName}' not found in cache. Skipping transceiver.`);
+                return null;
+            }
+
+            const wavelengthValue = row.wavelength ? parseFloat(row.wavelength) : undefined;
+
+            const transceiverData: Partial<Transceiver> = {
+                interface: parentInterface,
+                snapshot: snapshot,
+                device: device,
+                name: `${parentInterface.name} transceiver`,
+                status: row.status,
+                duplex: row.duplex,
+                type: row.type,
+                mode: row.mode,
+                vendor_pn: row.vendor_pn,
+                lanes: row.lanes,
+                wavelength: !isNaN(wavelengthValue) ? wavelengthValue : undefined,
+                rx_power: typeof row.rx_power_dbm === 'number' ? row.rx_power_dbm : undefined,
+                tx_power: typeof row.tx_power_dbm === 'number' ? row.tx_power_dbm : undefined,
+            };
+
+            return transceiverData;
+        }).filter((t): t is Partial<Transceiver> => t !== null);
+
+        if (transceiversToUpsert.length === 0) {
+            return;
+        }
+
+        await this.trxRepo.upsert(
+            transceiversToUpsert,
+            ['interface', 'device', 'snapshot']
+        );
     }
 
     private async ingestTransceiverVerbose(block: ParserBlock, snapshot: Snapshot, device: Device): Promise<void> {
         const ifaceName: string | undefined = block?.interface;
-        if (!ifaceName) return;
+        if (!ifaceName) {
+            return;
+        }
 
-        let iface = await this.ifaceRepo.findOne({
-            where: {name: ifaceName, device: {id: device.id}, snapshot: {id: snapshot.id}},
-            relations: ["device", "snapshot"],
-        });
+        let iface = this.interfaceCache.get(ifaceName);
 
         if (!iface) {
-            iface = this.ifaceRepo.create({name: ifaceName, device, snapshot});
+            console.warn(`[ingestTransceiverVerbose] Interface '${ifaceName}' not in cache. Creating on-the-fly.`);
+            iface = this.ifaceRepo.create({ name: ifaceName, device, snapshot });
             await this.ifaceRepo.save(iface);
+            this.interfaceCache.set(ifaceName, iface);
         }
 
-        let tx = await this.trxRepo.findOne({
-            where: {interface: {id: iface.id}, device: {id: device.id}, snapshot: {id: snapshot.id}},
-            relations: ["interface", "device", "snapshot"],
-        });
-        if (!tx) {
-            tx = this.trxRepo.create({
-                name: `${ifaceName} transceiver`,
-                interface: iface,
-                device,
-                snapshot,
-                serial_number: block?.manufacture_information?.manu_serial_number,
-                wavelength: block?.common_information?.wavelength,
-                tx_power: block?.diagnostic_information?.tx_power,
-                rx_power: block?.diagnostic_information?.rx_power,
-                tx_warning_min: block?.diagnostic_information?.tx_power_low_threshold,
-                tx_warning_max: block?.diagnostic_information?.tx_power_high_threshold,
-                rx_warning_min: block?.diagnostic_information?.rx_power_low_threshold,
-                rx_warning_max: block?.diagnostic_information?.rx_power_high_threshold,
-            });
-        }
+        const transceiverData: Partial<Transceiver> = {
+            interface: iface,
+            device: device,
+            snapshot: snapshot,
 
-        const diag = block?.diagnostic_information || {};
-        const common = block?.common_information || {};
-        if (typeof common.wavelength === "number") tx.wavelength = common.wavelength;
-        if (typeof diag["tx_power"] === "number") tx.tx_power = diag["tx_power"];
-        if (typeof diag["rx_power"] === "number") tx.rx_power = diag["rx_power"];
+            name: `${iface.name} transceiver`,
+            serial_number: block?.manufacture_information?.manu_serial_number,
+            wavelength: block?.common_information?.wavelength,
+            tx_power: block?.diagnostic_information?.tx_power,
+            rx_power: block?.diagnostic_information?.rx_power,
+            tx_warning_min: block?.diagnostic_information?.tx_power_low_threshold,
+            tx_warning_max: block?.diagnostic_information?.tx_power_high_threshold,
+            rx_warning_min: block?.diagnostic_information?.rx_power_low_threshold,
+            rx_warning_max: block?.diagnostic_information?.rx_power_high_threshold,
+        };
 
-        await this.trxRepo.save(tx);
+        await this.trxRepo.upsert(
+            [transceiverData],
+            ['interface', 'device', 'snapshot']
+        );
     }
 
     private async ingestNeighbors(block: ParserBlock, device: Device): Promise<void> {
@@ -244,6 +314,41 @@ export class ParsedDtoIngestor {
             interfacesToUpsert,
             ['name', 'device', 'snapshot']
         );
+    }
+
+    private normalizeInterfaceName(shortName: string, moduleType: string): string | null {
+        const numericPartMatch = shortName.match(/(\d+(\/\d+)*)/);
+        if (!numericPartMatch) {
+            return null;
+        }
+
+        const numericPart = numericPartMatch[0];
+
+        let prefix: string | null = null;
+
+        const lowerModuleType = moduleType.toLowerCase();
+
+        if (lowerModuleType.includes('100g')) {
+            prefix = '100GE';
+        } else if (lowerModuleType.includes('40g')) {
+            prefix = '40GE';
+        } else if (lowerModuleType.includes('25g')) {
+            prefix = '25GE';
+        } else if (lowerModuleType.includes('10g')) {
+            prefix = 'GigabitEthernet';
+        } else if (lowerModuleType.includes('1g') || lowerModuleType.includes('esfp')) {
+            prefix = 'GigabitEthernet';
+        } else if (lowerModuleType.includes('fe') || lowerModuleType.includes('100m')) {
+            prefix = 'FastEthernet';
+        } else {
+            return null;
+        }
+
+        return `${prefix}${numericPart}`;
+    }
+
+    private initCaches(): void {
+        this.interfaceCache = new Map<string, Interface>();
     }
 }
 export default ParsedDtoIngestor;

@@ -19,7 +19,7 @@ export const AppDataSource = new DataSource({
   type: "sqlite",
   database: dbPath,
   synchronize: false,
-  logging: true,
+  logging: false,
   entities: [Snapshot, Device, Interface, Transceiver, DeviceNeighbor, Option, Alarm, ARPRecord],
   migrations: [migrationsPath],
 });

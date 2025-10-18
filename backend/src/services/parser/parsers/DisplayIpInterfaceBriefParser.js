@@ -11,7 +11,7 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
                 name: 'summary_line',
                 regex: /^The number of interface that is (?<State>UP|DOWN) in (?<Type>Physical|Protocol) is (?<Count>\d+)/,
                 handler: (match) => {
-                    const { State, Type, Count } = match.groups;
+                    const {State, Type, Count} = match.groups;
                     const key = `${Type.toLowerCase()}_${State.toLowerCase()}`;
                     this.data.summary[key] = parseInt(Count, 10);
                 }
@@ -20,14 +20,17 @@ class DisplayIpInterfaceBriefParser extends BaseParser {
                 name: 'data_row',
                 regex: /^(?<Interface>\S+)\s+(?<IPAddressMask>.+?)\s+(?<Physical>\S+)\s+(?<Protocol>\S+)\s+(?<VPN>\S+)\s*$/,
                 handler: (match) => {
-                    const { Interface, IPAddressMask, Physical, Protocol, VPN } = match.groups;
+                    const {Interface, IPAddressMask, Physical, Protocol, VPN} = match.groups;
 
                     if (Interface === 'Interface' && IPAddressMask.startsWith('IP Address/Mask')) {
                         return;
                     }
 
+                    let interfaceName = match.groups.Interface;
+                    interfaceName = interfaceName.replace(/\(.*?\)$/, '');
+
                     this.data.interfaces.push({
-                        interface: Interface,
+                        interface: interfaceName,
                         ip_address_mask: IPAddressMask.trim() === 'unassigned' ? null : IPAddressMask.trim(),
                         physical: Physical,
                         protocol: Protocol,

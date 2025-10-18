@@ -119,10 +119,13 @@ class DisplayInterfaceParser extends BaseParser {
   startBlock(line, match) {
     super.startBlock(line, match);
     this.sub_parser_mode = null;
+
+    let interfaceName = match.groups.iface;
+    interfaceName = interfaceName.replace(/\(.*?\)$/, '');
     
     this.data = {
       ...this.data,
-      interface: match.groups.iface,
+      interface: interfaceName,
       state: match.groups.state || null,
       protocol_status: null,
       description: null,

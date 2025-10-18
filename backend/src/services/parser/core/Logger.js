@@ -59,15 +59,15 @@ class Logger {
   }
 
   error(message, meta = {}) {
-    this.log('error', message, meta);
+    // this.log('error', message, meta);
   }
 
   warn(message, meta = {}) {
-    this.log('warn', message, meta);
+    // this.log('warn', message, meta);
   }
 
   info(message, meta = {}) {
-    this.log('info', message, meta);
+    // this.log('info', message, meta);
   }
 
   debug(message, meta = {}) {

@@ -24,6 +24,24 @@ export class Transceiver {
     device!: Device;
 
     @Column({ type: "varchar", nullable: true })
+    status?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    duplex?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    type?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    mode?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    vendor_pn?: string;
+
+    @Column({ type: "json", nullable: true })
+    lanes?: any;
+
+    @Column({ type: "varchar", nullable: true })
     serial_number?: string;
 
     @Column({ type: "float", nullable: true })
