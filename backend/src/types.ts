@@ -15,4 +15,7 @@ export const TYPES = {
     AIPromptBuilder: Symbol.for("AIPromptBuilder"),
     AIAgent: Symbol.for("AIAgent"),
     SnapshotService: Symbol.for("SnapshotService"),
+    AlarmRepository: Symbol.for("AlarmRepository"),
+    ARPRecordRepository: Symbol.for("ARPRecordRepository"),
+    IIngestor: Symbol.for("IIngestor"),
 };

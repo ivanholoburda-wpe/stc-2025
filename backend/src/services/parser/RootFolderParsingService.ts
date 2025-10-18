@@ -48,7 +48,7 @@ export class RootFolderParsingService {
             const options = {maxErrors: 200, continueOnError: true, validateResults: true, logLevel: "info"};
             const results = await this.parser.parse(logFilePath, options);
 
-            const ingestor = new ParsedDtoIngestor(this.dataSource);
+            const ingestor = new ParsedDtoIngestor();
             await ingestor.ingest(results, snapshot, device);
 
             return {folder: folderName, deviceId: device.id};

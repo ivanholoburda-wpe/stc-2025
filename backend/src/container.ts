@@ -22,6 +22,15 @@ import {AIPromptBuilder} from "./services/ai-agent/AIPromptBuilder";
 import {AIAgent} from "./services/ai-agent/AIAgent";
 import { ISnapshotService, SnapshotService } from "./services/snapshot/SnapshotService"
 import {SnapshotHandler} from "./handlers/SnapshotHandler";
+import {AlarmRepository, IAlarmRepository} from "./repositories/AlarmRepository";
+import {ARPRecordRepository, IARPRecordRepository} from "./repositories/ARPRecordRepository";
+import {IIngestor} from "./services/ingestion/ingestors/IIngestor";
+import {InterfaceBriefIngestor} from "./services/ingestion/ingestors/InterfaceBriefIngestor";
+import {IpInterfaceBriefIngestor} from "./services/ingestion/ingestors/IpInterfaceBriefIngestor";
+import {TransceiverBriefIngestor} from "./services/ingestion/ingestors/TransceiverBriefIngestor";
+import {TransceiverVerboseIngestor} from "./services/ingestion/ingestors/TransceiverVerboseIngestor";
+import {AlarmIngestor} from "./services/ingestion/ingestors/AlarmIngestor";
+import {ArpIngestor} from "./services/ingestion/ingestors/ArpIngestor";
 
 const container = new Container();
 
@@ -34,6 +43,8 @@ container.bind<IOptionRepository>(TYPES.OptionRepository).to(OptionRepository);
 container.bind<ISnapshotRepository>(TYPES.SnapshotRepository).to(SnapshotRepository);
 container.bind<ITransceiverRepository>(TYPES.TransceiverRepository).to(TransceiverRepository);
 container.bind<IInterfaceRepository>(TYPES.InterfaceRepository).to(InterfaceRepository);
+container.bind<IAlarmRepository>(TYPES.AlarmRepository).to(AlarmRepository);
+container.bind<IARPRecordRepository>(TYPES.ARPRecordRepository).to(ARPRecordRepository);
 
 // Bind Service
 container.bind<IDeviceService>(TYPES.DeviceService).to(DeviceService);
@@ -50,5 +61,13 @@ container.bind<ISnapshotService>(TYPES.SnapshotService).to(SnapshotService);
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
 container.bind<SnapshotHandler>(SnapshotHandler).toSelf();
+
+// Ingestors
+container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(IpInterfaceBriefIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(TransceiverBriefIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(TransceiverVerboseIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(AlarmIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(ArpIngestor);
 
 export { container };
