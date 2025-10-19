@@ -43,7 +43,7 @@ class DisplayArpAllParser extends BaseParser {
       this.data.summary.total = parseInt(summaryMatch.groups.total, 10);
       return true;
     }
-    if (trimmedLine.startsWith('Redirect:')) { // Игнорируем вторую строку сводки
+    if (trimmedLine.startsWith('Redirect:')) { 
         return true;
     }
 
