@@ -23,17 +23,15 @@ class DisplayStpBriefParser extends BaseParser {
     return line.trim().startsWith('Protocol Status');
   }
 
-  /**
-   * Инициализация структуры данных
-   */
+  
   startBlock(line, match) {
     super.startBlock(line, match);
     this.data = {
       type: this.name,
     };
     
-    // 🔥 ИСПРАВЛЕНИЕ ЗДЕСЬ:
-    // Немедленно обрабатываем первую строку, которую мы использовали как точку входа.
+    
+    
     this.parseLine(line);
   }
 

@@ -8,7 +8,7 @@ class DisplayHealthParser extends BaseParser {
     this.rules = [
       {
         name: 'health_data_row',
-        regex: /^\s*(?<slot>\d+)\s+(?<component>\S+)\s+(?<cpu_usage>\d+)%\s+(?<mem_percent>\d+)%\s+(?<mem_used>\d+)MB\/(?<mem_total>\d+)MB\s*$/,
+        regex: /^\s*(?<slot>\d+)\s+(?<component>[A-Za-z0-9()\/_.-]+(?:\s+[A-Za-z0-9()\/_.-]+)?)\s+(?<cpu_usage>\d+)%\s+(?<mem_percent>\d+)%\s+(?<mem_used>\d+)MB\/(?<mem_total>\d+)MB(?:\s+.*)?$/,
         handler: (match) => {
           this.data.components.push({
             slot: parseInt(match.groups.slot, 10),
@@ -19,6 +19,11 @@ class DisplayHealthParser extends BaseParser {
             memory_total_mb: parseInt(match.groups.mem_total, 10),
           });
         }
+      },
+      {
+        name: 'ignore_cpu_core_row',
+        regex: /^cpu\d+\s+\d+%$/,
+        handler: () => {}
       },
       {
         name: 'ignore_lines',
