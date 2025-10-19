@@ -14,6 +14,8 @@ export interface IInterfaceRepository {
 
     findByNameAndDevice(name: string, deviceId: number, snapshotId: number): Promise<Interface | null>;
 
+    findByNamesAndDeviceIds(names: string[], deviceIds: number[], snapshotId: number): Promise<Interface[]>;
+
     create(iface: Partial<Interface>): Promise<Interface>;
 
     update(id: number, iface: Partial<Interface>): Promise<Interface | null>;
@@ -75,6 +77,21 @@ export class InterfaceRepository implements IInterfaceRepository {
                 device: {id: deviceId},
                 snapshot: {id: snapshotId}
             }
+        });
+    }
+
+    async findByNamesAndDeviceIds(names: string[], deviceIds: number[], snapshotId: number): Promise<Interface[]> {
+        if (names.length === 0 || deviceIds.length === 0) {
+            return [];
+        }
+
+        return await this.repository.find({
+            where: {
+                name: In(names),
+                device: { id: In(deviceIds) },
+                snapshot: { id: snapshotId }
+            },
+            relations: ["device"]
         });
     }
 

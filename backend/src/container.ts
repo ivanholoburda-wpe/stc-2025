@@ -31,6 +31,41 @@ import {TransceiverBriefIngestor} from "./services/ingestion/ingestors/Transceiv
 import {TransceiverVerboseIngestor} from "./services/ingestion/ingestors/TransceiverVerboseIngestor";
 import {AlarmIngestor} from "./services/ingestion/ingestors/AlarmIngestor";
 import {ArpIngestor} from "./services/ingestion/ingestors/ArpIngestor";
+import {BfdRepository, IBfdRepository} from "./repositories/BfdSessionRepository";
+import {BfdIngestor} from "./services/ingestion/ingestors/BfdIngestor";
+import {IStpRepository, StpRepository} from "./repositories/StpRepository";
+import {StpIngestor} from "./services/ingestion/ingestors/StpIngestor";
+import {SysnameIngestor} from "./services/ingestion/ingestors/SysnameIngestor";
+import {HardwareComponentRepository, IHardwareComponentRepository} from "./repositories/HardwareComponentRepository";
+import {HardwareComponentIngestor} from "./services/ingestion/ingestors/HardwareComponentIngestor";
+import {IpuDetailIngestor} from "./services/ingestion/ingestors/IpuDetailIngestor";
+import {PowerDetailIngestor} from "./services/ingestion/ingestors/PowerDetailIngestor";
+import {FanDetailIngestor} from "./services/ingestion/ingestors/FanDetailIngestor";
+import {BgpPeerRepository, IBgpPeerRepository} from "./repositories/BgpPeerRepository";
+import {BgpPeerIngestor} from "./services/ingestion/ingestors/BgpPeerIngestor";
+import {BgpEvpnPeerIngestor} from "./services/ingestion/ingestors/BgpEvpnPeerIngestor";
+import {IStorageSummaryRepository, StorageSummaryRepository} from "./repositories/StorageSummaryRepository";
+import {StorageSummaryIngestor} from "./services/ingestion/ingestors/StorageSummaryIngestor";
+import {CpuUsageRepository, ICpuUsageRepository} from "./repositories/CpuUsageRepository";
+import {CpuUsageIngestor} from "./services/ingestion/ingestors/CpuUsageIngestor";
+import {IIsisPeerRepository, IsisPeerRepository} from "./repositories/IsisPeerRepository";
+import {IsisPeerIngestor} from "./services/ingestion/ingestors/IsisPeerIngestor";
+import {IPatchInfoRepository, PatchInfoRepository} from "./repositories/PatchInfoRepository";
+import {PatchInfoIngestor} from "./services/ingestion/ingestors/PatchInfoIngestor";
+import {IIpRouteRepository, IpRouteRepository} from "./repositories/IpRouteRepository";
+import {IpRouteIngestor} from "./services/ingestion/ingestors/IpRouteIngestor";
+import {ILicenseInfoRepository, LicenseInfoRepository} from "./repositories/LicenseInfoRepository";
+import {LicenseInfoIngestor} from "./services/ingestion/ingestors/LicenseInfoIngestor";
+import {IMplsL2vcRepository, MplsL2vcRepository} from "./repositories/MplsL2vcRepository";
+import {MplsL2vcIngestor} from "./services/ingestion/ingestors/MplsL2vcIngestor";
+import {IOspfInterfaceRepository, OspfInterfaceRepository} from "./repositories/OspfInterfaceRepository";
+import {OspfInterfaceIngestor} from "./services/ingestion/ingestors/OspfInterfaceIngestor";
+import {IVpnInstanceRepository, VpnInstanceRepository} from "./repositories/VpnInstanceRepository";
+import {VpnInstanceIngestor} from "./services/ingestion/ingestors/VpnInstanceIngestor";
+import {IPhysicalLinkRepository, PhysicalLinkRepository} from "./repositories/PhysicalLinkRepository";
+import {LldpNeighborIngestor} from "./services/ingestion/ingestors/LldpNeighborIngestor";
+import {ITopologyService, TopologyService} from "./services/topology/TopologyService";
+import {TopologyHandler} from "./handlers/TopologyHandler";
 
 const container = new Container();
 
@@ -45,6 +80,12 @@ container.bind<ITransceiverRepository>(TYPES.TransceiverRepository).to(Transceiv
 container.bind<IInterfaceRepository>(TYPES.InterfaceRepository).to(InterfaceRepository);
 container.bind<IAlarmRepository>(TYPES.AlarmRepository).to(AlarmRepository);
 container.bind<IARPRecordRepository>(TYPES.ARPRecordRepository).to(ARPRecordRepository);
+container.bind<IBfdRepository>(TYPES.BfdRepository).to(BfdRepository);
+container.bind<IStpRepository>(TYPES.StpRepository).to(StpRepository);
+container.bind<IHardwareComponentRepository>(TYPES.HardwareComponentRepository).to(HardwareComponentRepository);
+container.bind<IBgpPeerRepository>(TYPES.BgpPeerRepository).to(BgpPeerRepository);
+container.bind<IStorageSummaryRepository>(TYPES.StorageSummaryRepository).to(StorageSummaryRepository);
+container.bind<ICpuUsageRepository>(TYPES.CpuUsageRepository).to(CpuUsageRepository);
 
 // Bind Service
 container.bind<IDeviceService>(TYPES.DeviceService).to(DeviceService);
@@ -56,11 +97,20 @@ container.bind<IAIClient>(TYPES.AIClient).to(GeminiClient).inSingletonScope();
 container.bind<AIPromptBuilder>(TYPES.AIPromptBuilder).to(AIPromptBuilder);
 container.bind<AIAgent>(TYPES.AIAgent).to(AIAgent);
 container.bind<ISnapshotService>(TYPES.SnapshotService).to(SnapshotService);
+container.bind<IIsisPeerRepository>(TYPES.IsisPeerRepository).to(IsisPeerRepository);
+container.bind<IPatchInfoRepository>(TYPES.PatchInfoRepository).to(PatchInfoRepository);
+container.bind<IIpRouteRepository>(TYPES.IpRouteRepository).to(IpRouteRepository);
+container.bind<ILicenseInfoRepository>(TYPES.LicenseInfoRepository).to(LicenseInfoRepository);
+container.bind<IMplsL2vcRepository>(TYPES.MplsL2vcRepository).to(MplsL2vcRepository);
+container.bind<IOspfInterfaceRepository>(TYPES.OspfInterfaceRepository).to(OspfInterfaceRepository);
+container.bind<IVpnInstanceRepository>(TYPES.VpnInstanceRepository).to(VpnInstanceRepository);
+container.bind<IPhysicalLinkRepository>(TYPES.PhysicalLinkRepository).to(PhysicalLinkRepository);
+container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
 
-// Bind Handler
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
 container.bind<SnapshotHandler>(SnapshotHandler).toSelf();
+container.bind<TopologyHandler>(TopologyHandler).toSelf();
 
 // Ingestors
 container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);
@@ -69,5 +119,24 @@ container.bind<IIngestor>(TYPES.IIngestor).to(TransceiverBriefIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(TransceiverVerboseIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(AlarmIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(ArpIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BfdIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(StpIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(SysnameIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(HardwareComponentIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(IpuDetailIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(PowerDetailIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(FanDetailIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpPeerIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpEvpnPeerIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(StorageSummaryIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(CpuUsageIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(IsisPeerIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(PatchInfoIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(IpRouteIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(LicenseInfoIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(MplsL2vcIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(OspfInterfaceIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(VpnInstanceIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(LldpNeighborIngestor);
 
 export { container };

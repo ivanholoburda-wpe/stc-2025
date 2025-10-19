@@ -39,18 +39,14 @@ export class SnapshotRepository implements ISnapshotRepository {
     }
 
     async findLatest(): Promise<Snapshot | null> {
-        return await this.repository.findOne({
+        const snapshots = await this.repository.find({
             order: {
                 created_at: 'DESC'
             },
-            relations: {
-                devices: {
-                    interfaces: {
-                        transceivers: true,
-                    },
-                },
-            }
+            take: 1,
         });
+
+        return snapshots.length > 0 ? snapshots[0] : null;
     }
 
     async create(snapshot: Partial<Snapshot>): Promise<Snapshot> {

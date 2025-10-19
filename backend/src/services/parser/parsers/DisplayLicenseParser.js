@@ -1,4 +1,4 @@
-const BaseParser = require('../../../../../../Users/Professional/Desktop/stc-2025-parser/parser/core/BaseParser');
+const BaseParser = require('../core/BaseParser');
 
 class DisplayLicenseInfoParser extends BaseParser {
     constructor() {

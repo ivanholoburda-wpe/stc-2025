@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import type {DataSource, DataSource as TypeOrmDataSource} from "typeorm";
+import type {DataSource } from "typeorm";
 import {Snapshot} from "../../models/Snapshot";
 import {Device} from "../../models/Device";
 import {ParsedDtoIngestor} from "../ingestion/ParsedDtoIngestor";
@@ -55,6 +55,7 @@ export class RootFolderParsingService {
         });
 
         const devices = await Promise.all(tasks);
+
         return {snapshotId: snapshot.id, devices};
     }
 

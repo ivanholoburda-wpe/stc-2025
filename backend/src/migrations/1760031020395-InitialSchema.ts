@@ -50,8 +50,7 @@ export class InitialSchema1760031020395 implements MigrationInterface {
                                      "id"                     integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                                      "hostname"               varchar NOT NULL,
                                      "model"                  varchar,
-                                     "first_seen_snapshot_id" integer,
-                                     CONSTRAINT "UQ_e023ebbcffcaf361d28bcf00799" UNIQUE ("hostname")
+                                     "first_seen_snapshot_id" integer
                                  )`);
         await queryRunner.query(`CREATE TABLE "snapshots"
                                  (
@@ -165,7 +164,6 @@ export class InitialSchema1760031020395 implements MigrationInterface {
                                      "hostname"               varchar NOT NULL,
                                      "model"                  varchar,
                                      "first_seen_snapshot_id" integer,
-                                     CONSTRAINT "UQ_e023ebbcffcaf361d28bcf00799" UNIQUE ("hostname"),
                                      CONSTRAINT "FK_87caa3cfd7a616cbda27518977f" FOREIGN KEY ("first_seen_snapshot_id") REFERENCES "snapshots" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
                                  )`);
         await queryRunner.query(`INSERT INTO "temporary_devices"("id", "hostname", "model", "first_seen_snapshot_id")
@@ -182,8 +180,7 @@ export class InitialSchema1760031020395 implements MigrationInterface {
                                      "id"                     integer PRIMARY KEY AUTOINCREMENT NOT NULL,
                                      "hostname"               varchar NOT NULL,
                                      "model"                  varchar,
-                                     "first_seen_snapshot_id" integer,
-                                     CONSTRAINT "UQ_e023ebbcffcaf361d28bcf00799" UNIQUE ("hostname")
+                                     "first_seen_snapshot_id" integer
                                  )`);
         await queryRunner.query(`INSERT INTO "devices"("id", "hostname", "model", "first_seen_snapshot_id")
                                  SELECT "id", "hostname", "model", "first_seen_snapshot_id"

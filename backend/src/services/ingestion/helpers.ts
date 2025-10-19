@@ -28,3 +28,38 @@ export function normalizeInterfaceName(shortName: string, moduleType: string): s
 
     return `${prefix}${numericPart}`;
 }
+
+export function normalizeInterfaceNameLLDP(shortName: string): string {
+    const match = shortName.match(/^([a-zA-Z-]+)(\d+.*)$/);
+
+    if (!match) {
+        return shortName;
+    }
+
+    const prefix = match[1].toUpperCase();
+    const numericPart = match[2];
+
+    switch (prefix) {
+        case 'GE':
+            return `GigabitEthernet${numericPart}`;
+        case 'XGE':
+            return `XGigabitEthernet${numericPart}`;
+        case 'FE':
+            return `FastEthernet${numericPart}`;
+        case 'ETH':
+            return `Ethernet${numericPart}`;
+
+        case 'GIGABITETHERNET':
+        case 'XGIGABITETHERNET':
+        case 'ETHERNET':
+        case '25GE':
+        case '40GE':
+        case '100GE':
+        case 'VLANIF':
+        case 'LOOPBACK':
+            return shortName;
+
+        default:
+            return shortName;
+    }
+}

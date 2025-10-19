@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getDeviceById: (id) => ipcRenderer.invoke('get-device-by-id', id),
     getAllSnapshots: () => ipcRenderer.invoke('get-snapshots'),
     analyzeSnapshot: (snapshotId, prompt) => ipcRenderer.invoke('analyze-snapshot', snapshotId, prompt),
+    getTopology: () => ipcRenderer.invoke('get-topology'),
 });
 
 contextBridge.exposeInMainWorld('configAPI', {

@@ -1,4 +1,5 @@
 import {Snapshot} from "./snapshot";
+import {Topology} from "./topology";
 
 export interface ParsingResult {
   success: boolean,
@@ -38,6 +39,7 @@ interface ElectronAPI {
   getAllSnapshots: () => Promise<APIResult<Snapshot[]>>;
   createDevice: (device: { hostname: string; model?: string }) => Promise<APIResult<Device>>;
   analyzeSnapshot: (snapshotId: number, prompt: string) => Promise<APIResult<string>>;
+  getTopology: () => Promise<APIResult<Topology>>;
 }
 
 /**

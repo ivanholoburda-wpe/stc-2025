@@ -7,6 +7,7 @@ import {DeviceHandler} from './backend/src/handlers/DeviceHandler';
 import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
 import { TYPES } from './backend/src/types';
 import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
+import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -37,6 +38,7 @@ app.whenReady().then(async () => {
         const parsingHandler = container.get(ParsingHandler);
         const deviceHandler = container.get(DeviceHandler);
         const snapshotHandler = container.get(SnapshotHandler);
+        const topologyHandler = container.get(TopologyHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -52,6 +54,10 @@ app.whenReady().then(async () => {
 
         ipcMain.handle('analyze-snapshot', async (event, snapshotId, prompt) => {
             return await snapshotHandler.analyzeSnapshot(snapshotId, prompt);
+        })
+
+        ipcMain.handle('get-topology', async () => {
+            return await topologyHandler.getTopology();
         })
     } catch (error) {
         console.error('Database initialization failed:', error);
