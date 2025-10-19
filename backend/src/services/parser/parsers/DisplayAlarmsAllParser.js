@@ -31,7 +31,7 @@ class DisplayAlarmAllParser extends BaseParser {
         index: parseInt(match.groups.Index, 10),
         level: match.groups.Level,
         date: match.groups.Date,
-        time: match.groups.Time.replace(/\s+DST$/, ''), // Убираем DST для чистоты
+        time: match.groups.Time.replace(/\s+DST$/, ''), 
         info: match.groups.Info.trim(),
       };
 
