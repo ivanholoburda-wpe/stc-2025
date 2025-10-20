@@ -30,7 +30,7 @@ const dbPath = path.join(app.getPath("userData"), "local.db");
 const migrationsPath = path.resolve(__dirname, '..', 'migrations', '*.js');
 
 export const AppDataSource = new DataSource({
-  type: "sqlite",
+  type: "better-sqlite3",
   database: dbPath,
   synchronize: false,
   logging: false,

@@ -77,3 +77,5 @@ yarn.lock
 pnpm-lock.yaml
 *.txt
 logs
+package-lock.json
+package.json
