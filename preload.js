@@ -8,6 +8,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAllSnapshots: () => ipcRenderer.invoke('get-snapshots'),
     analyzeSnapshot: (snapshotId, prompt) => ipcRenderer.invoke('analyze-snapshot', snapshotId, prompt),
     getTopology: () => ipcRenderer.invoke('get-topology'),
+    getAvailableMetrics: () => ipcRenderer.invoke('get-available-metrics'),
+    getTimeSeries: (metricId, deviceId, options) => ipcRenderer.invoke('get-time-series', metricId, deviceId, options),
 });
 
 contextBridge.exposeInMainWorld('configAPI', {

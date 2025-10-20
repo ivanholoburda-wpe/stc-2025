@@ -32,5 +32,8 @@ export const TYPES = {
     OspfInterfaceRepository: Symbol.for("OspfInterfaceRepository"),
     VpnInstanceRepository: Symbol.for("VpnInstanceRepository"),
     PhysicalLinkRepository: Symbol.for("PhysicalLinkRepository"),
-    TopologyService: Symbol.for("TopologyService")
+    TopologyService: Symbol.for("TopologyService"),
+    AnalyticsRepository: Symbol.for("AnalyticsRepository"),
+    IMetricProvider: Symbol.for("IMetricProvider"),
+    AnalyticsService: Symbol.for("AnalyticsService"),
 };

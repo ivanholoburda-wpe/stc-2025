@@ -7,8 +7,10 @@ import { DevicesView } from './components/views/DevicesView';
 import { PlaceholderView } from './components/views/PlaceholderView';
 import { AiView } from './components/views/AiView';
 import { TopologyView } from './components/views/TopologyView';
-import { Device, APIResult, ParsingResult } from './api/types';
+import { APIResult, ParsingResult } from './api/types';
+import {Device} from "./api/devices";
 import { useConfig } from './hooks/useConfig';
+import {AnalyticsView} from "./components/views/AnalyticsView";
 
 const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports'] as const;
 export type ExtendedViewId = typeof extendedViewIds[number];
@@ -120,6 +122,7 @@ export function App() {
                 return <TopologyView />;
             case 'ai': return <AiView />;
             case 'analytics':
+                return <AnalyticsView />;
             case 'alerts':
             case 'reports':
                 return <PlaceholderView title={viewTitles[activeView]} />;
