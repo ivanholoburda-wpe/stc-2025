@@ -36,12 +36,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: portable-exe
-          path: path/to/your/portable/exe
+          path: |
+            dist/STC*.exe
 
       - name: Create Release
         if: github.ref == 'refs/heads/feature/ci/cd-pipeline-build-release'
         uses: softprops/action-gh-release@v2
         with:
-          files: path/to/your/portable/exe/*
+          files: dist/STC*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
