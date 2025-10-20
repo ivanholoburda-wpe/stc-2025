@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAvailableMetrics: () => ipcRenderer.invoke('get-available-metrics'),
     getTimeSeries: (metricId, deviceId, options) => ipcRenderer.invoke('get-time-series', metricId, deviceId, options),
     getAlarms: (snapshotId) => ipcRenderer.invoke('get-alarms', snapshotId),
+    getDeviceDetailsForSummary: (deviceId, snapshotId) => ipcRenderer.invoke('get-details-for-summary', deviceId, snapshotId),
+    getInterfacesForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-interfaces-for-device', deviceId, snapshotId),
+    getRoutingForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-routing-for-device', deviceId, snapshotId),
+    getProtocolsForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-protocols-for-device', deviceId, snapshotId),
+    getHardwareForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-hardware-for-device', deviceId, snapshotId),
+    getVpnForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-vpn-for-device', deviceId, snapshotId),
 });
 
 contextBridge.exposeInMainWorld('configAPI', {
