@@ -32,6 +32,7 @@
   "dependencies": {
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "inversify": "^7.10.2",
@@ -41,7 +42,6 @@
     "recharts": "^3.3.0",
     "reflect-metadata": "^0.2.2",
     "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
     "typeorm": "^0.3.27"
   },
@@ -66,7 +66,7 @@
   },
   "build": {
     "appId": "com.example.hackathon",
-    "productName": "HackathonApp",
+    "productName": "STC-Toolkit",
     "files": [
       "dist/**",
       "preload.js",
@@ -80,11 +80,10 @@
     },
     "asar": true,
     "win": {
-      "target": [
-        "nsis"
-      ],
+      "target": "portable",
       "icon": "build/icon.ico"
     },
+    "artifactName": "STC-Toolkit-0.1.0-win-x64.exe",
     "nsis": {
       "oneClick": true,
       "perMachine": false,
@@ -100,5 +99,14 @@
       ],
       "icon": "build/icons"
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivanholoburda-wpe/stc-2025.git"
+  },
+  "types": "./dist/index.d.ts",
+  "bugs": {
+    "url": "https://github.com/ivanholoburda-wpe/stc-2025/issues"
+  },
+  "homepage": "https://github.com/ivanholoburda-wpe/stc-2025#readme"
 }
