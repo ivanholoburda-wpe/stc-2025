@@ -83,7 +83,7 @@
       "target": "portable",
       "icon": "build/icon.ico"
     },
-    "artifactName": "STC-Toolkit-0.1.0-win-x64.exe",
+    "artifactName": "STC-Toolkit-${version}-win-${arch}.exe",
     "nsis": {
       "oneClick": true,
       "perMachine": false,
