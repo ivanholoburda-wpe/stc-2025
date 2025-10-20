@@ -9,6 +9,7 @@ import { TYPES } from './backend/src/types';
 import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
 import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
 import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
+import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -41,6 +42,7 @@ app.whenReady().then(async () => {
         const snapshotHandler = container.get(SnapshotHandler);
         const topologyHandler = container.get(TopologyHandler);
         const analyticsHandler = container.get(AnalyticsHandler);
+        const alaramsHandler = container.get(AlarmsHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -69,6 +71,10 @@ app.whenReady().then(async () => {
         ipcMain.handle('get-time-series', async (event, metricId, deviceId, options) => {
             return await analyticsHandler.getAnalytics(metricId, deviceId, options);
         });
+
+        ipcMain.handle('get-alarms', async (event, snapshotId) => {
+            return await alaramsHandler.getAllBySnapshot(snapshotId);
+        })
     } catch (error) {
         console.error('Database initialization failed:', error);
     }
