@@ -13,7 +13,7 @@ import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
-        width: 1024,
+        width: 1200,
         height: 700,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -50,6 +50,25 @@ app.whenReady().then(async () => {
 
         ipcMain.handle('get-devices', async () => {
             return await deviceHandler.getAllDevices();
+        });
+
+        ipcMain.handle('get-details-for-summary', (event, deviceId, snapshotId) => {
+            return deviceHandler.getDetailsForSummary(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-interfaces-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getInterfacesForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-routing-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getRoutingForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-protocols-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getProtocolsForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-hardware-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getHardwareForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-vpn-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getVpnForDevice(deviceId, snapshotId);
         });
 
         ipcMain.handle('get-snapshots', async () => {

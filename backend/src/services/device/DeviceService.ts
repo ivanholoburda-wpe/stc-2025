@@ -14,6 +14,18 @@ export interface IDeviceService {
     updateDevice(id: number, deviceData: Partial<Device>): Promise<Device | null>;
 
     deleteDevice(id: number): Promise<boolean>;
+
+    getDetailsForSummary(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithInterfaces(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithRouting(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithProtocols(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithHardware(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithVpn(deviceId: number, snapshotId: number): Promise<Device | null>;
 }
 
 @injectable()
@@ -28,6 +40,30 @@ export class DeviceService implements IDeviceService {
         const latestSnapshot = await this.snapshotRepository.findLatest();
 
         return await this.deviceRepository.findAll(latestSnapshot.id);
+    }
+
+    async getDetailsForSummary(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findForSummary(deviceId, snapshotId);
+    }
+
+    async getDetailsWithInterfaces(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithInterfaces(deviceId, snapshotId);
+    }
+
+    async getDetailsWithRouting(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithRouting(deviceId, snapshotId);
+    }
+
+    async getDetailsWithProtocols(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithProtocols(deviceId, snapshotId);
+    }
+
+    async getDetailsWithHardware(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithHardware(deviceId, snapshotId);
+    }
+
+    async getDetailsWithVpn(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithVpn(deviceId, snapshotId);
     }
 
     async getDeviceById(id: number): Promise<Device | null> {

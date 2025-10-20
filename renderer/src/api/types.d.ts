@@ -1,6 +1,18 @@
 import {Snapshot} from "./snapshot";
 import {Topology} from "./topology";
-import {Device} from "./devices";
+import {
+    Device,
+    Interface,
+    IpRoute,
+    BfdSession,
+    BgpPeer,
+    IsisPeer,
+    ARPRecord,
+    HardwareComponent,
+    MplsL2vc,
+    OspfDetail,
+    VpnInstance,
+} from "./devices";
 
 export interface ParsingResult {
     success: boolean,
@@ -22,8 +34,27 @@ interface ElectronAPI {
     analyzeSnapshot: (snapshotId: number, prompt: string) => Promise<APIResult<string>>;
     getTopology: () => Promise<APIResult<Topology>>;
     getAvailableMetrics: () => Promise<APIResult<Metric[]>>;
-    getTimeSeries: (metricId: string, deviceId: number, options?: { interfaceName?: string }) => Promise<APIResult<TimeSeriesDataPoint[]>>;
+    getTimeSeries: (metricId: string, deviceId: number, options?: {
+        interfaceName?: string
+    }) => Promise<APIResult<TimeSeriesDataPoint[]>>;
     getAlarms: (snapshotId: number) => Promise<APIResult<Alarm[]>>;
+    getDeviceDetailsForSummary: (deviceId: number, snapshotId: number) => Promise<APIResult<Partial<Device>>>;
+    getInterfacesForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<Interface[]>>;
+    getRoutingForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<{
+        ipRoutes: IpRoute[],
+        arpRecords: ARPRecord[]
+    }>>;
+    getProtocolsForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<{
+        bgpPeers: BgpPeer[],
+        ospfDetails: OspfDetail[],
+        isisPeers: IsisPeer[],
+        bfdSessions: BfdSession[]
+    }>>;
+    getHardwareForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<HardwareComponent[]>>;
+    getVpnForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<{
+        mplsL2vcs: MplsL2vc[],
+        vpnInstances: VpnInstance[]
+    }>>;
 }
 
 interface ConfigAPI {
