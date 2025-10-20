@@ -78,6 +78,7 @@ import {BfdUpSessionsCountProvider} from "./services/analytics/providers/BfdUpSe
 import {AlarmsCriticalCountProvider} from "./services/analytics/providers/AlarmsCriticalCountProvider";
 import {AnalyticsService} from "./services/analytics/AnalyticsService";
 import {AnalyticsHandler} from "./handlers/AnalyticsHandler";
+import {AlarmsHandler} from "./handlers/AlarmsHandler";
 
 const container = new Container();
 
@@ -126,6 +127,7 @@ container.bind<ParsingHandler>(ParsingHandler).toSelf();
 container.bind<SnapshotHandler>(SnapshotHandler).toSelf();
 container.bind<TopologyHandler>(TopologyHandler).toSelf();
 container.bind<AnalyticsHandler>(AnalyticsHandler).toSelf();
+container.bind<AlarmsHandler>(AlarmsHandler).toSelf();
 
 // Ingestors
 container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);

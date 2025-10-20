@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getTopology: () => ipcRenderer.invoke('get-topology'),
     getAvailableMetrics: () => ipcRenderer.invoke('get-available-metrics'),
     getTimeSeries: (metricId, deviceId, options) => ipcRenderer.invoke('get-time-series', metricId, deviceId, options),
+    getAlarms: (snapshotId) => ipcRenderer.invoke('get-alarms', snapshotId),
 });
 
 contextBridge.exposeInMainWorld('configAPI', {

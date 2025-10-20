@@ -11,6 +11,7 @@ import { APIResult, ParsingResult } from './api/types';
 import {Device} from "./api/devices";
 import { useConfig } from './hooks/useConfig';
 import {AnalyticsView} from "./components/views/AnalyticsView";
+import {AlertsView} from "./components/views/AlertsView";
 
 const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports'] as const;
 export type ExtendedViewId = typeof extendedViewIds[number];
@@ -124,6 +125,7 @@ export function App() {
             case 'analytics':
                 return <AnalyticsView />;
             case 'alerts':
+                return <AlertsView />;
             case 'reports':
                 return <PlaceholderView title={viewTitles[activeView]} />;
             default:

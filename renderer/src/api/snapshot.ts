@@ -4,7 +4,7 @@ export interface Snapshot {
     id: number;
     created_at: string;
     root_folder_path: string;
-    description: string;
+    description?: string;
 }
 
 export async function getSnapshots(): Promise<APIResult<Snapshot[]>> {

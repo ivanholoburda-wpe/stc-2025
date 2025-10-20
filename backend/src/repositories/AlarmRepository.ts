@@ -6,6 +6,7 @@ import { TYPES } from "../types";
 
 export interface IAlarmRepository {
     insertMany(alarms: Partial<Alarm>[]): Promise<void>;
+    getAllBySnapshot(snapshotId: number): Promise<Alarm[]>;
 }
 
 @injectable()
@@ -16,9 +17,21 @@ export class AlarmRepository implements IAlarmRepository {
         this.repository = dataSource.getRepository(Alarm);
     }
 
-    async insertMany(alarms: Partial<Alarm>[]): Promise<void> {
+    public async insertMany(alarms: Partial<Alarm>[]): Promise<void> {
         if (alarms.length === 0) return;
 
         await this.repository.insert(alarms);
+    }
+
+    public async getAllBySnapshot(snapshotId: number): Promise<Alarm[]> {
+        return this.repository.find({
+            where: {
+                snapshot: { id: snapshotId }
+            },
+            order: {
+                date: 'DESC',
+                time: 'DESC'
+            }
+        });
     }
 }

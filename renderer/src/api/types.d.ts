@@ -23,6 +23,7 @@ interface ElectronAPI {
     getTopology: () => Promise<APIResult<Topology>>;
     getAvailableMetrics: () => Promise<APIResult<Metric[]>>;
     getTimeSeries: (metricId: string, deviceId: number, options?: { interfaceName?: string }) => Promise<APIResult<TimeSeriesDataPoint[]>>;
+    getAlarms: (snapshotId: number) => Promise<APIResult<Alarm[]>>;
 }
 
 interface ConfigAPI {
