@@ -2,9 +2,11 @@ import {injectable, inject} from "inversify";
 import {Repository, DataSource, In} from "typeorm";
 import {Device} from "../models/Device";
 import {TYPES} from "../types";
+import {Snapshot} from "../models/Snapshot";
+import {SnapshotRepository} from "./SnapshotRepository";
 
 export interface IDeviceRepository {
-    findAll(): Promise<Device[]>;
+    findAll(snapshotId: number): Promise<Device[]>;
 
     findById(id: number): Promise<Device | null>;
 
@@ -23,14 +25,23 @@ export interface IDeviceRepository {
 export class DeviceRepository implements IDeviceRepository {
     private repository: Repository<Device>;
 
-    constructor(@inject(TYPES.DataSource) private dataSource: DataSource) {
+    constructor(
+        @inject(TYPES.DataSource) private dataSource: DataSource,
+        @inject(TYPES.SnapshotRepository) private snapshotRepository: SnapshotRepository
+    ) {
         this.repository = dataSource.getRepository(Device);
     }
 
-    async findAll(): Promise<Device[]> {
-        return await this.repository.find({
-            relations: ["firstSeenSnapshot", "interfaces", "transceivers"]
-        });
+    async findAll(snapshotId: number): Promise<Device[]> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.firstSeenSnapshot", "firstSeenSnapshot")
+            .leftJoinAndSelect(
+                "device.interfaces",
+                "interface",
+                "interface.snapshot_id = :snapshotId",
+                { snapshotId }
+            )
+            .getMany();
     }
 
     async findById(id: number): Promise<Device | null> {

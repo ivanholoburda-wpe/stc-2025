@@ -1,5 +1,5 @@
 import React from 'react';
-import { Device } from '../../api/types';
+import { Device } from '../../api/devices';
 
 interface DevicesViewProps {
   devices: Device[];

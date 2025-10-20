@@ -1,39 +1,48 @@
-import { injectable, inject } from "inversify";
-import { Device } from "../../models/Device";
-import { IDeviceRepository } from "../../repositories/DeviceRepository";
-import { TYPES } from "../../types"
+import {injectable, inject} from "inversify";
+import {Device} from "../../models/Device";
+import {IDeviceRepository} from "../../repositories/DeviceRepository";
+import {TYPES} from "../../types"
+import {ISnapshotRepository} from "../../repositories/SnapshotRepository";
 
 export interface IDeviceService {
-  getAllDevices(): Promise<Device[]>;
-  getDeviceById(id: number): Promise<Device | null>;
-  createDevice(deviceData: Partial<Device>): Promise<Device>;
-  updateDevice(id: number, deviceData: Partial<Device>): Promise<Device | null>;
-  deleteDevice(id: number): Promise<boolean>;
+    getAllDevices(): Promise<Device[]>;
+
+    getDeviceById(id: number): Promise<Device | null>;
+
+    createDevice(deviceData: Partial<Device>): Promise<Device>;
+
+    updateDevice(id: number, deviceData: Partial<Device>): Promise<Device | null>;
+
+    deleteDevice(id: number): Promise<boolean>;
 }
 
 @injectable()
 export class DeviceService implements IDeviceService {
-  constructor(
-    @inject(TYPES.DeviceRepository) private deviceRepository: IDeviceRepository
-  ) {}
+    constructor(
+        @inject(TYPES.DeviceRepository) private deviceRepository: IDeviceRepository,
+        @inject(TYPES.SnapshotRepository) private readonly snapshotRepository: ISnapshotRepository,
+    ) {
+    }
 
-  async getAllDevices(): Promise<Device[]> {
-    return await this.deviceRepository.findAll();
-  }
+    async getAllDevices(): Promise<Device[]> {
+        const latestSnapshot = await this.snapshotRepository.findLatest();
 
-  async getDeviceById(id: number): Promise<Device | null> {
-    return await this.deviceRepository.findById(id);
-  }
+        return await this.deviceRepository.findAll(latestSnapshot.id);
+    }
 
-  async createDevice(deviceData: Partial<Device>): Promise<Device> {
-    return await this.deviceRepository.create(deviceData);
-  }
+    async getDeviceById(id: number): Promise<Device | null> {
+        return await this.deviceRepository.findById(id);
+    }
 
-  async updateDevice(id: number, deviceData: Partial<Device>): Promise<Device | null> {
-    return await this.deviceRepository.update(id, deviceData);
-  }
+    async createDevice(deviceData: Partial<Device>): Promise<Device> {
+        return await this.deviceRepository.create(deviceData);
+    }
 
-  async deleteDevice(id: number): Promise<boolean> {
-    return await this.deviceRepository.delete(id);
-  }
+    async updateDevice(id: number, deviceData: Partial<Device>): Promise<Device | null> {
+        return await this.deviceRepository.update(id, deviceData);
+    }
+
+    async deleteDevice(id: number): Promise<boolean> {
+        return await this.deviceRepository.delete(id);
+    }
 }

@@ -10,7 +10,10 @@ export class Device {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ type: "varchar" })
+    @Column({type: "varchar"})
+    folder_name!: string;
+
+    @Column({ type: "varchar", nullable: true })
     hostname!: string;
 
     @Column({ type: "varchar", nullable: true })

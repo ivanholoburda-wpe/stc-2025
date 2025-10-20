@@ -31,10 +31,11 @@ export class RootFolderParsingService {
         const tasks = deviceFolders.map(async (deviceFolderAbsPath: string) => {
             const folderName = path.basename(deviceFolderAbsPath);
 
-            let device = await deviceRepo.findOne({where: {hostname: folderName}});
+            let device = await deviceRepo.findOne({where: {folder_name: folderName}});
 
             if (!device) {
                 device = deviceRepo.create({
+                    folder_name: folderName,
                     hostname: folderName,
                     firstSeenSnapshot: snapshot
                 });
