@@ -49,6 +49,9 @@ jobs:
         if: github.ref == 'refs/heads/feature/ci/cd-pipeline-build-release'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: "build-${{ github.run_number }}"
+          target_commitish: ${{ github.sha }} 
+          name: "Build ${{ github.run_number }}"
           files: dist/STC*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
