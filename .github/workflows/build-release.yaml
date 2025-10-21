@@ -3,7 +3,7 @@ name: Build and Release Portable EXE
 on:
   push:
     tags:
-      - "**"
+      - "v*"
 
 permissions:
   contents: write
@@ -25,12 +25,6 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      - name: Build main process
-        run: npm run build:main
-
-      - name: Build renderer process
-        run: npm run build:renderer
 
       - name: Electron rebuild (better-sqlite3)
         run: npx electron-rebuild -f -w better-sqlite3 -v $env:ELECTRON_VERSION

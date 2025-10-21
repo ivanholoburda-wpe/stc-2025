@@ -6,14 +6,15 @@
   "type": "commonjs",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
-    "build:portable": "electron-builder build --win portable",
     "dev": "run-p dev:renderer dev:electron",
     "dev:renderer": "vite --config renderer/vite.config.js",
     "predev:electron": "npm run build:main",
     "dev:electron": "npm run copy:preload && wait-on tcp:5173 && cross-env NODE_ENV=development electron .",
-    "copy:preload": "cp preload.js dist/preload.js",
+    "copy:preload": "node scripts/copy-preload.js",
     "build:main": "tsc && npm run copy:preload",
     "build": "run-s build:main build:renderer build:electron",
+    "prebuild:portable": "run-s build:main build:renderer",
+    "build:portable": "electron-builder build --win portable",
     "build:renderer": "vite build --config renderer/vite.config.js",
     "build:electron": "electron-builder -w --dir",
     "pack:win": "electron-builder -w",
@@ -41,7 +42,6 @@
     "react-graph-vis": "^1.0.7",
     "recharts": "^3.3.0",
     "reflect-metadata": "^0.2.2",
-    "sqlite": "^5.1.1",
     "ts-node": "^10.9.2",
     "typeorm": "^0.3.27"
   },
@@ -65,40 +65,35 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.example.hackathon",
-    "productName": "STC-Toolkit",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/build/Release/*.node"
+    ],
+    "compression": "maximum",
     "files": [
       "dist/**",
       "preload.js",
-      "package.json"
+      "package.json",
+      "!**/*.map",
+      "!**/README{,.*}",
+      "!**/*.md",
+      "!**/LICENSE{,.*}",
+      "!**/CHANGELOG{,.*}",
+      "!**/doc{,s}/**",
+      "!**/test{,s}/**",
+      "!**/example{,s}/**",
+      "!**/demo/**"
     ],
-    "directories": {
-      "buildResources": "build"
-    },
-    "extraMetadata": {
-      "main": "dist/index.js"
-    },
-    "asar": true,
     "win": {
       "target": "portable",
       "icon": "build/icon.ico"
     },
-    "artifactName": "STC-Toolkit-${version}-win-${arch}.exe",
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false
-    },
-    "mac": {
-      "category": "public.app-category.productivity",
-      "icon": "build/icon.icns"
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "icon": "build/icons"
-    }
+    "electronLanguages": [
+      "en-US",
+      "ru",
+      "uk"
+    ],
+    "artifactName": "STC-Toolkit-${version}-win-${arch}.exe"
   },
   "repository": {
     "type": "git",
