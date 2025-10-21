@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Electron rebuild (better-sqlite3)
         run: npx electron-rebuild -f -w better-sqlite3 -v $env:ELECTRON_VERSION
