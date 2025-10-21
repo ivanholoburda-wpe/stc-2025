@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAllSnapshots: () => ipcRenderer.invoke('get-snapshots'),
     analyzeSnapshot: (snapshotId, prompt) => ipcRenderer.invoke('analyze-snapshot', snapshotId, prompt),
     getTopology: () => ipcRenderer.invoke('get-topology'),
+    exportFlatReport: (snapshotId) => ipcRenderer.invoke('export:flat-report', { snapshotId })
 });
 
 contextBridge.exposeInMainWorld('configAPI', {

@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain} from 'electron';
+import {app, BrowserWindow, ipcMain, dialog} from 'electron';
 import path from 'path';
 import {AppDataSource} from './backend/src/database/data-source';
 import {container} from './backend/src/container';
@@ -8,6 +8,7 @@ import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
 import { TYPES } from './backend/src/types';
 import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
 import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
+import { ExportHandler } from "./backend/src/handlers/ExportHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -39,6 +40,7 @@ app.whenReady().then(async () => {
         const deviceHandler = container.get(DeviceHandler);
         const snapshotHandler = container.get(SnapshotHandler);
         const topologyHandler = container.get(TopologyHandler);
+        const exportHandler = container.get(ExportHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -58,6 +60,10 @@ app.whenReady().then(async () => {
 
         ipcMain.handle('get-topology', async () => {
             return await topologyHandler.getTopology();
+        })
+
+        ipcMain.handle('export:flat-report', async (_event, { snapshotId }: { snapshotId: number }) => {
+            return await exportHandler.exportFlatReport(snapshotId);
         })
     } catch (error) {
         console.error('Database initialization failed:', error);

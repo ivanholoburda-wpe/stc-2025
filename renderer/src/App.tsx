@@ -9,6 +9,7 @@ import { AiView } from './components/views/AiView';
 import { TopologyView } from './components/views/TopologyView';
 import { Device, APIResult, ParsingResult } from './api/types';
 import { useConfig } from './hooks/useConfig';
+import { ReportsView } from './components/views/ReportView';
 
 const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports'] as const;
 export type ExtendedViewId = typeof extendedViewIds[number];
@@ -122,6 +123,7 @@ export function App() {
             case 'analytics':
             case 'alerts':
             case 'reports':
+                return <ReportsView />;
                 return <PlaceholderView title={viewTitles[activeView]} />;
             default:
                 return <DashboardView onReadFile={handleReadFile} parsingResult={parsingResult} />;

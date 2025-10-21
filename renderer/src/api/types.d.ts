@@ -30,6 +30,11 @@ export interface APIResult<T> {
   error?: string;
 }
 
+export type IPCResponse = {
+    success: boolean;
+    message: string;
+    path?: string;
+};
 /**
  * Інтерфейс, що визначає функції, доступні через `window.electronAPI`.
  */
@@ -40,6 +45,7 @@ interface ElectronAPI {
   createDevice: (device: { hostname: string; model?: string }) => Promise<APIResult<Device>>;
   analyzeSnapshot: (snapshotId: number, prompt: string) => Promise<APIResult<string>>;
   getTopology: () => Promise<APIResult<Topology>>;
+  exportFlatReport: (snapshotId: number) => Promise<IPCResponse>;
 }
 
 /**

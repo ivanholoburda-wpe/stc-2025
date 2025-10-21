@@ -66,6 +66,8 @@ import {IPhysicalLinkRepository, PhysicalLinkRepository} from "./repositories/Ph
 import {LldpNeighborIngestor} from "./services/ingestion/ingestors/LldpNeighborIngestor";
 import {ITopologyService, TopologyService} from "./services/topology/TopologyService";
 import {TopologyHandler} from "./handlers/TopologyHandler";
+import { IExportService, ExportService } from './services/export/ExportService';
+import { ExportHandler } from './handlers/ExportHandler';
 
 const container = new Container();
 
@@ -111,6 +113,7 @@ container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
 container.bind<SnapshotHandler>(SnapshotHandler).toSelf();
 container.bind<TopologyHandler>(TopologyHandler).toSelf();
+container.bind<ExportHandler>(ExportHandler).toSelf();
 
 // Ingestors
 container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);
@@ -138,5 +141,7 @@ container.bind<IIngestor>(TYPES.IIngestor).to(MplsL2vcIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(OspfInterfaceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(VpnInstanceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(LldpNeighborIngestor);
+
+container.bind<IExportService>(TYPES.ExportService).to(ExportService);
 
 export { container };
