@@ -28,7 +28,7 @@ export const ReportsView: React.FC = () => {
                         setSelectedSnapshotId(snapshotsResult.data[0].id.toString());
                     }
                 } else {
-                    setStatus({ message: snapshotsResult.error || 'Не вдалося завантажити знімки.', isError: true });
+                    setStatus({ message: snapshotsResult.error || 'Unable to load snapshots', isError: true });
                 }
 
                 if (reportsResult.success && reportsResult.data) {
@@ -37,10 +37,10 @@ export const ReportsView: React.FC = () => {
                         setSelectedReportId(reportsResult.data[0].id);
                     }
                 } else {
-                    setStatus({ message: reportsResult.error || 'Не вдалося завантажити список звітів.', isError: true });
+                    setStatus({ message: reportsResult.error || 'Unable to load reports list', isError: true });
                 }
             } catch (err) {
-                setStatus({ message: `Критична помилка: ${(err as Error).message}`, isError: true });
+                setStatus({ message: `Critical: ${(err as Error).message}`, isError: true });
             } finally {
                 setLoading(prev => ({ ...prev, initial: false }));
             }
@@ -48,29 +48,28 @@ export const ReportsView: React.FC = () => {
         fetchInitialData();
     }, []);
 
-    // 2. Обробник натискання кнопки "Сгенерувати"
     const handleExport = async () => {
         if (!selectedSnapshotId || !selectedReportId) {
-            setStatus({ message: 'Будь ласка, оберіть знімок та тип звіту.', isError: true });
+            setStatus({ message: 'Please, provide the snapshot', isError: true });
             return;
         }
 
         setLoading(prev => ({ ...prev, export: true }));
-        setStatus({ message: 'Генерація звіту...', isError: false });
+        setStatus({ message: 'Generating report...', isError: false });
 
         try {
             const result = await exportReport(selectedReportId, parseInt(selectedSnapshotId));
 
             if (result.success) {
-                setStatus({ message: `✅ Звіт успішно збережено: ${result.path}`, isError: false });
+                setStatus({ message: `Report saved: ${result.path}`, isError: false });
             } else {
                 const errorMsg = result.message === 'Export cancelled.'
-                    ? 'Скасовано користувачем.'
-                    : `🚫 Помилка: ${result.message}`;
+                    ? 'Canceled'
+                    : `Error: ${result.message}`;
                 setStatus({ message: errorMsg, isError: true });
             }
         } catch (err) {
-            setStatus({ message: `🚫 Критична помилка: ${(err as Error).message}`, isError: true });
+            setStatus({ message: `Critical error: ${(err as Error).message}`, isError: true });
         } finally {
             setLoading(prev => ({ ...prev, export: false }));
         }
@@ -80,16 +79,16 @@ export const ReportsView: React.FC = () => {
 
     return (
         <div className="p-6 bg-gray-900 text-white flex-1 overflow-auto">
-            <h2 className="text-2xl font-semibold mb-6 text-gray-100">Генерація звітів</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-100">Report generation</h2>
 
             <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
                 {loading.initial ? (
-                    <p className="text-gray-400">Завантаження доступних опцій...</p>
+                    <p className="text-gray-400">Loading...</p>
                 ) : (
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                             <div>
-                                <label htmlFor="snapshot-select" className="block text-sm font-medium text-gray-300 mb-2">Оберіть знімок:</label>
+                                <label htmlFor="snapshot-select" className="block text-sm font-medium text-gray-300 mb-2">Choose snapshot:</label>
                                 <select
                                     id="snapshot-select"
                                     value={selectedSnapshotId}
@@ -105,7 +104,7 @@ export const ReportsView: React.FC = () => {
                             </div>
 
                             <div>
-                                <label htmlFor="report-select" className="block text-sm font-medium text-gray-300 mb-2">Оберіть тип звіту:</label>
+                                <label htmlFor="report-select" className="block text-sm font-medium text-gray-300 mb-2">Choose report type:</label>
                                 <select
                                     id="report-select"
                                     value={selectedReportId}
@@ -128,7 +127,7 @@ export const ReportsView: React.FC = () => {
                                 ) : (
                                     <DownloadIcon className="w-5 h-5 mr-2" />
                                 )}
-                                {loading.export ? 'В процесі...' : 'Сгенерувати звіт'}
+                                {loading.export ? 'In progress...' : 'Generate report'}
                             </button>
                         </div>
 

@@ -4,52 +4,51 @@ export const REPORT_REGISTRY: ReportDefinition[] = [
     {
         id: 'hardware_inventory_report',
         label: 'Hardware Inventory',
-        description: 'Створює повний список усіх апаратних компонентів (плати, блоки живлення і т.д.) у мережі.'
+        description: 'Generates a complete list of all hardware components (boards, power supplies, etc.) in the network.'
     },
     {
         id: 'transceiver_inventory_report',
         label: 'Transceiver Inventory',
-        description: 'Створює повний список усіх оптичних трансиверів у мережі з їхніми параметрами.'
+        description: 'Generates a complete list of all optical transceivers in the network with their parameters.'
     },
     {
         id: 'software_license_report',
         label: 'Software & License Audit',
-        description: 'Створює звіт по версіях ПЗ, патчах та ліцензіях на всіх пристроях.'
+        description: 'Generates a report on software versions, patches, and licenses on all devices.'
     },
     {
         id: 'full_arp_report',
         label: 'Full ARP/MAC Table',
-        description: 'Створює зведений звіт по всіх ARP-записах у мережі для відстеження IP- та MAC-адрес.'
+        description: 'Generates a consolidated report of all ARP entries in the network for tracking IP and MAC addresses.'
     },
     {
         id: 'network_health_report',
         label: 'Network Health Summary',
-        description: 'Створює зведений звіт по ключових показниках "здоров\'я" (CPU, диски, аларми, BGP) для всіх пристроїв.'
+        description: 'Generates a summary report on key health metrics (CPU, disks, alarms, BGP) for all devices.'
     },
     {
         id: 'down_ports_report',
         label: 'Unused/Down Ports Report',
-        description: 'Створює звіт по всіх портах, що знаходяться в стані Down або Administratively Down.'
+        description: 'Generates a report of all ports that are in a Down or Administratively Down state.'
     },
     {
         id: 'interface_details_report',
         label: 'Flat Interface & Neighbor Report',
-        description: 'Створює один великий аркуш з усіма інтерфейсами та інформацією про їхніх LLDP-сусідів.'
+        description: 'Generates a single large sheet with all interfaces and information about their LLDP neighbors.'
     },
     {
         id: 'per_device_interface_report',
         label: 'Interface Status (Per Device)',
-        description: 'Створює XLSX-файл з окремим аркушем для кожного пристрою, що показує стан його інтерфейсів.'
+        description: 'Generates an XLSX file with a separate sheet for each device, showing its interface status.'
     },
     {
         id: 'ip_route_per_device_report',
         label: 'IP Route Table (Per Device)',
-        description: 'Створює XLSX-файл з окремим аркушем для кожного пристрою, що показує його таблицю маршрутизації.'
+        description: 'Generates an XLSX file with a separate sheet for each device, showing its routing table.'
     },
     {
         id: 'igp_details_report',
         label: 'IGP Details Report',
-        description: 'Створює детальний звіт по всіх IGP-протоколах (OSPF, IS-IS) у мережі.'
+        description: 'Generates a detailed report on all IGP protocols (OSPF, IS-IS) in the network.'
     },
 ];
-
