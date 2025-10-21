@@ -7,8 +7,11 @@ import { DevicesView } from './components/views/DevicesView';
 import { PlaceholderView } from './components/views/PlaceholderView';
 import { AiView } from './components/views/AiView';
 import { TopologyView } from './components/views/TopologyView';
-import { Device, APIResult, ParsingResult } from './api/types';
+import { APIResult, ParsingResult } from './api/types';
+import {Device} from "./api/devices";
 import { useConfig } from './hooks/useConfig';
+import {AnalyticsView} from "./components/views/AnalyticsView";
+import {AlertsView} from "./components/views/AlertsView";
 import { ReportsView } from './components/views/ReportView';
 
 const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports'] as const;
@@ -28,11 +31,7 @@ const viewTitles: Record<ExtendedViewId, string> = {
 export function App() {
     const [activeView, setActiveView] = useState<ExtendedViewId>('dashboard');
     const [parsingResult, setParsingResult] = useState<ParsingResult>();
-    const [devices, setDevices] = useState<Device[]>([]);
-    const [loading, setLoading] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
-
-    const { isOffline, loading: configLoading } = useConfig();
 
     const handleShowMessage = (message: string) => {
         setModalMessage(message);
@@ -51,58 +50,6 @@ export function App() {
         }
     }, []);
 
-    const handleGetDevices = useCallback(async () => {
-        setLoading(true);
-        try {
-            if (window.electronAPI) {
-                const result: APIResult<Device[]> = await window.electronAPI.getDevices();
-                if (result.success) {
-                    setDevices(result.data || []);
-                } else {
-                    handleShowMessage('Error: ' + result.error);
-                }
-            } else {
-                console.warn('electronAPI not found. Using mock data.');
-                setDevices([
-                    { id: 1, hostname: 'mock-device-1', model: 'Mock Model X' },
-                    { id: 2, hostname: 'mock-device-2', model: 'Mock Model Y', firstSeenSnapshot: { id: 100, created_at: new Date().toISOString(), root_folder_path: '/mock' } },
-                ]);
-            }
-        } catch (error) {
-            handleShowMessage('Error fetching devices: ' + (error as Error).message);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    const handleCreateTestDevice = useCallback(async () => {
-        try {
-            if (window.electronAPI) {
-                const result: APIResult<Device> = await window.electronAPI.createDevice({
-                    hostname: `test-device-${Date.now()}`,
-                    model: 'Test Model',
-                });
-                if (result.success && result.data) {
-                    handleShowMessage('Device created: ' + result.data.hostname);
-                    handleGetDevices(); // Оновити список
-                } else if (result.error) {
-                    handleShowMessage('Error: ' + result.error);
-                }
-            } else {
-                console.warn('electronAPI not found. Cannot create device.');
-                handleShowMessage('Cannot create device in browser mode.');
-            }
-        } catch (error) {
-            handleShowMessage('Error while creating device: ' + (error as Error).message);
-        }
-    }, [handleGetDevices]);
-
-    // Завантажити пристрої при першому відкритті сторінки "Devices"
-    useEffect(() => {
-        if (activeView === 'devices') {
-            handleGetDevices();
-        }
-    }, [activeView, handleGetDevices]);
 
     const renderActiveView = () => {
         switch (activeView) {
@@ -110,18 +57,15 @@ export function App() {
                 return <DashboardView onReadFile={handleReadFile} parsingResult={parsingResult} />;
             case 'devices':
                 return (
-                    <DevicesView
-                        devices={devices}
-                        loading={loading}
-                        onGetDevices={handleGetDevices}
-                        onCreateDevice={handleCreateTestDevice}
-                    />
+                    <DevicesView/>
                 );
             case 'topology':
                 return <TopologyView />;
             case 'ai': return <AiView />;
             case 'analytics':
+                return <AnalyticsView />;
             case 'alerts':
+                return <AlertsView />;
             case 'reports':
                 return <ReportsView />;
                 return <PlaceholderView title={viewTitles[activeView]} />;

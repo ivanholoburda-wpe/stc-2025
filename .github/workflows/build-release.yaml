@@ -1,0 +1,49 @@
+name: Build and Release Portable EXE
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    env:
+      ELECTRON_VERSION: "38.3.0"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Electron rebuild (better-sqlite3)
+        run: npx electron-rebuild -f -w better-sqlite3 -v $env:ELECTRON_VERSION
+
+      - name: Build portable exe
+        run: npm run build:portable
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: portable-exe
+          path: dist/STC*.exe
+          if-no-files-found: error
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}  
+          name: Release ${{ github.ref_name }}    
+          files: dist/STC*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -33,5 +33,8 @@ export const TYPES = {
     VpnInstanceRepository: Symbol.for("VpnInstanceRepository"),
     PhysicalLinkRepository: Symbol.for("PhysicalLinkRepository"),
     TopologyService: Symbol.for("TopologyService"),
-    ExportService: Symbol.for('ExportService')
+    ExportService: Symbol.for('ExportService'),
+    AnalyticsRepository: Symbol.for("AnalyticsRepository"),
+    IMetricProvider: Symbol.for("IMetricProvider"),
+    AnalyticsService: Symbol.for("AnalyticsService"),
 };

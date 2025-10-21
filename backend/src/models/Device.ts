@@ -1,16 +1,32 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm"
-import { Snapshot } from "./Snapshot"
-import { Interface } from "./Interface"
-import { Transceiver } from "./Transceiver"
-import { DeviceNeighbor } from "./DeviceNeighbor"
-import { Alarm } from "./Alarm"
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from "typeorm";
+import { Snapshot } from "./Snapshot";
+import { Interface } from "./Interface";
+import { Transceiver } from "./Transceiver";
+import { Alarm } from "./Alarm";
+import { ARPRecord } from "./ARPRecord";
+import { BfdSession } from "./BfdSession";
+import { BgpPeer } from "./BgpPeer";
+import { CpuUsageSummary } from "./CpuUsageSummary";
+import { HardwareComponent } from "./HardwareComponent";
+import { IpRoute } from "./IpRoute";
+import { IsisPeer } from "./IsisPeer";
+import { LicenseInfo } from "./LicenseInfo";
+import { MplsL2vc } from "./MplsL2vc";
+import { OspfInterfaceDetail } from "./OspfInterfaceDetail";
+import { PatchInfo } from "./PatchInfo";
+import { StorageSummary } from "./StorageSummary";
+import { StpConfiguration } from "./StpConfiguration";
+import { VpnInstance } from "./VpnInstance";
 
 @Entity({ name: "devices" })
 export class Device {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    @Column({ type: "varchar" })
+    @Column({type: "varchar"})
+    folder_name!: string;
+
+    @Column({ type: "varchar", nullable: true })
     hostname!: string;
 
     @Column({ type: "varchar", nullable: true })
@@ -26,12 +42,48 @@ export class Device {
     @OneToMany(() => Transceiver, (transceiver: Transceiver) => transceiver.device)
     transceivers?: Transceiver[];
 
-    @OneToMany(() => DeviceNeighbor, (neighbor: DeviceNeighbor) => neighbor.firstDevice)
-    firstDeviceNeighbors?: DeviceNeighbor[];
-
-    @OneToMany(() => DeviceNeighbor, (neighbor: DeviceNeighbor) => neighbor.secondDevice)
-    secondDeviceNeighbors?: DeviceNeighbor[];
-
     @OneToMany(() => Alarm, (alarm: Alarm) => alarm.device)
     alarms?: Alarm[];
+
+    @OneToMany(() => ARPRecord, (record) => record.device)
+    arpRecords?: ARPRecord[];
+
+    @OneToMany(() => BfdSession, (session) => session.device)
+    bfdSessions?: BfdSession[];
+
+    @OneToMany(() => BgpPeer, (peer) => peer.device)
+    bgpPeers?: BgpPeer[];
+
+    @OneToMany(() => CpuUsageSummary, (summary) => summary.device)
+    cpuSummaries?: CpuUsageSummary[];
+
+    @OneToMany(() => HardwareComponent, (component) => component.device)
+    hardwareComponents?: HardwareComponent[];
+
+    @OneToMany(() => IpRoute, (route) => route.device)
+    ipRoutes?: IpRoute[];
+
+    @OneToMany(() => IsisPeer, (peer) => peer.device)
+    isisPeers?: IsisPeer[];
+
+    @OneToMany(() => LicenseInfo, (info) => info.device)
+    licenseInfos?: LicenseInfo[];
+
+    @OneToMany(() => MplsL2vc, (vc) => vc.device)
+    mplsL2vcs?: MplsL2vc[];
+
+    @OneToMany(() => OspfInterfaceDetail, (detail) => detail.device)
+    ospfInterfaceDetails?: OspfInterfaceDetail[];
+
+    @OneToMany(() => PatchInfo, (info) => info.device)
+    patchInfos?: PatchInfo[];
+
+    @OneToMany(() => StorageSummary, (summary) => summary.device)
+    storageSummaries?: StorageSummary[];
+
+    @OneToMany(() => StpConfiguration, (config) => config.device)
+    stpConfigurations?: StpConfiguration[];
+
+    @OneToMany(() => VpnInstance, (instance) => instance.device)
+    vpnInstances?: VpnInstance[];
 }

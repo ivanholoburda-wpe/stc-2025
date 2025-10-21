@@ -76,4 +76,3 @@ release/
 yarn.lock
 pnpm-lock.yaml
 *.txt
-logs

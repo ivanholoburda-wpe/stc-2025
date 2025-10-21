@@ -1,5 +1,8 @@
-
-import { IPCResponse } from './types.d';
+type IPCResponse = {
+    success: boolean;
+    message: string;
+    path?: string;
+};
 
 export const exportApi = {
     flatReport: (snapshotId: number): Promise<IPCResponse> => {

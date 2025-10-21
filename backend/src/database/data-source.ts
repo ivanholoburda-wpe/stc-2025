@@ -5,7 +5,6 @@ import { Snapshot } from "../models/Snapshot";
 import { Device } from "../models/Device";
 import { Interface } from "../models/Interface";
 import { Transceiver } from "../models/Transceiver";
-import { DeviceNeighbor } from "../models/DeviceNeighbor";
 import { Option } from "../models/Option";
 import { app } from "electron";
 import { Alarm } from "../models/Alarm";
@@ -30,7 +29,7 @@ const dbPath = path.join(app.getPath("userData"), "local.db");
 const migrationsPath = path.resolve(__dirname, '..', 'migrations', '*.js');
 
 export const AppDataSource = new DataSource({
-  type: "sqlite",
+  type: "better-sqlite3",
   database: dbPath,
   synchronize: false,
   logging: false,
@@ -39,7 +38,6 @@ export const AppDataSource = new DataSource({
       Device,
       Interface,
       Transceiver,
-      DeviceNeighbor,
       Option,
       Alarm,
       ARPRecord,

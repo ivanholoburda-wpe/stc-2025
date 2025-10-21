@@ -2,9 +2,11 @@ import {injectable, inject} from "inversify";
 import {Repository, DataSource, In} from "typeorm";
 import {Device} from "../models/Device";
 import {TYPES} from "../types";
+import {Snapshot} from "../models/Snapshot";
+import {SnapshotRepository} from "./SnapshotRepository";
 
 export interface IDeviceRepository {
-    findAll(): Promise<Device[]>;
+    findAll(snapshotId: number): Promise<Device[]>;
 
     findById(id: number): Promise<Device | null>;
 
@@ -17,20 +19,104 @@ export interface IDeviceRepository {
     update(id: number, device: Partial<Device>): Promise<Device | null>;
 
     delete(id: number): Promise<boolean>;
+
+    findForSummary(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithInterfaces(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithRouting(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithProtocols(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithHardware(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithVpn(deviceId: number, snapshotId: number): Promise<Device | null>;
 }
 
 @injectable()
 export class DeviceRepository implements IDeviceRepository {
     private repository: Repository<Device>;
 
-    constructor(@inject(TYPES.DataSource) private dataSource: DataSource) {
+    constructor(
+        @inject(TYPES.DataSource) private dataSource: DataSource,
+        @inject(TYPES.SnapshotRepository) private snapshotRepository: SnapshotRepository
+    ) {
         this.repository = dataSource.getRepository(Device);
     }
 
-    async findAll(): Promise<Device[]> {
-        return await this.repository.find({
-            relations: ["firstSeenSnapshot", "interfaces", "transceivers"]
-        });
+    async findAll(snapshotId: number): Promise<Device[]> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.firstSeenSnapshot", "firstSeenSnapshot")
+            .leftJoinAndSelect(
+                "device.interfaces",
+                "interface",
+                "interface.snapshot_id = :snapshotId",
+                {snapshotId}
+            )
+            .getMany();
+    }
+
+    async findForSummary(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.cpuSummaries", "cpuSummary", "cpuSummary.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("device.storageSummaries", "storageSummary", "storageSummary.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("device.licenseInfos", "licenseInfo", "licenseInfo.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("device.patchInfos", "patchInfo", "patchInfo.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("device.stpConfigurations", "stpConfig", "stpConfig.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithInterfaces(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.interfaces", "interface", "interface.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("interface.transceivers", "transceiver")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithRouting(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.ipRoutes", "ipRoute", "ipRoute.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("ipRoute.interface", "ipRouteInterface") // Пов'язаний інтерфейс для маршруту
+            .leftJoinAndSelect("device.arpRecords", "arpRecord", "arpRecord.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithProtocols(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.bgpPeers", "bgpPeer", "bgpPeer.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("device.ospfInterfaceDetails", "ospfDetail", "ospfDetail.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("ospfDetail.interface", "ospfInterface")
+            .leftJoinAndSelect("device.isisPeers", "isisPeer", "isisPeer.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("isisPeer.interface", "isisInterface")
+            .leftJoinAndSelect("device.bfdSessions", "bfdSession", "bfdSession.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("bfdSession.interface", "bfdInterface")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithHardware(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.hardwareComponents", "hardwareComponent", "hardwareComponent.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithVpn(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.mplsL2vcs", "mplsL2vc", "mplsL2vc.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("mplsL2vc.interface", "mplsInterface")
+            .leftJoinAndSelect("device.vpnInstances", "vpnInstance", "vpnInstance.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
     }
 
     async findById(id: number): Promise<Device | null> {

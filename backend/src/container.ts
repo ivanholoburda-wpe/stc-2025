@@ -68,6 +68,19 @@ import {ITopologyService, TopologyService} from "./services/topology/TopologySer
 import {TopologyHandler} from "./handlers/TopologyHandler";
 import { IExportService, ExportService } from './services/export/ExportService';
 import { ExportHandler } from './handlers/ExportHandler';
+import {AnalyticsRepository, IAnalyticsRepository} from "./repositories/AnalyticsRepository";
+import {IMetricProvider} from "./services/analytics/providers/IMetricProvider";
+import {CpuSystemUsageProvider} from "./services/analytics/providers/CpuSystemUsageProvider";
+import {StorageFreeMbProvider} from "./services/analytics/providers/StorageFreeMbProvider";
+import {ArpTotalCountProvider} from "./services/analytics/providers/ArpTotalCountProvider";
+import {TransceiverRxPowerProvider} from "./services/analytics/providers/TransceiverRxPowerProvider";
+import {TransceiverTxPowerProvider} from "./services/analytics/providers/TransceiverTxPowerProvider";
+import {InterfaceStatusProvider} from "./services/analytics/providers/InterfaceStatusProvider";
+import {BfdUpSessionsCountProvider} from "./services/analytics/providers/BfdUpSessionsCountProvider";
+import {AlarmsCriticalCountProvider} from "./services/analytics/providers/AlarmsCriticalCountProvider";
+import {AnalyticsService} from "./services/analytics/AnalyticsService";
+import {AnalyticsHandler} from "./handlers/AnalyticsHandler";
+import {AlarmsHandler} from "./handlers/AlarmsHandler";
 
 const container = new Container();
 
@@ -88,6 +101,7 @@ container.bind<IHardwareComponentRepository>(TYPES.HardwareComponentRepository).
 container.bind<IBgpPeerRepository>(TYPES.BgpPeerRepository).to(BgpPeerRepository);
 container.bind<IStorageSummaryRepository>(TYPES.StorageSummaryRepository).to(StorageSummaryRepository);
 container.bind<ICpuUsageRepository>(TYPES.CpuUsageRepository).to(CpuUsageRepository);
+container.bind<IAnalyticsRepository>(TYPES.AnalyticsRepository).to(AnalyticsRepository);
 
 // Bind Service
 container.bind<IDeviceService>(TYPES.DeviceService).to(DeviceService);
@@ -108,12 +122,16 @@ container.bind<IOspfInterfaceRepository>(TYPES.OspfInterfaceRepository).to(OspfI
 container.bind<IVpnInstanceRepository>(TYPES.VpnInstanceRepository).to(VpnInstanceRepository);
 container.bind<IPhysicalLinkRepository>(TYPES.PhysicalLinkRepository).to(PhysicalLinkRepository);
 container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
+container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
+container.bind<IExportService>(TYPES.ExportService).to(ExportService);
 
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
 container.bind<SnapshotHandler>(SnapshotHandler).toSelf();
 container.bind<TopologyHandler>(TopologyHandler).toSelf();
 container.bind<ExportHandler>(ExportHandler).toSelf();
+container.bind<AnalyticsHandler>(AnalyticsHandler).toSelf();
+container.bind<AlarmsHandler>(AlarmsHandler).toSelf();
 
 // Ingestors
 container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);
@@ -142,6 +160,14 @@ container.bind<IIngestor>(TYPES.IIngestor).to(OspfInterfaceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(VpnInstanceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(LldpNeighborIngestor);
 
-container.bind<IExportService>(TYPES.ExportService).to(ExportService);
+// Analytics providers
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(CpuSystemUsageProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(StorageFreeMbProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(AlarmsCriticalCountProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(ArpTotalCountProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(BfdUpSessionsCountProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(InterfaceStatusProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(TransceiverRxPowerProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(TransceiverTxPowerProvider);
 
 export { container };

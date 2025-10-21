@@ -9,10 +9,12 @@ import { TYPES } from './backend/src/types';
 import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
 import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
 import { ExportHandler } from "./backend/src/handlers/ExportHandler";
+import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
+import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
-        width: 1024,
+        width: 1200,
         height: 700,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
@@ -41,6 +43,8 @@ app.whenReady().then(async () => {
         const snapshotHandler = container.get(SnapshotHandler);
         const topologyHandler = container.get(TopologyHandler);
         const exportHandler = container.get(ExportHandler);
+        const analyticsHandler = container.get(AnalyticsHandler);
+        const alaramsHandler = container.get(AlarmsHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -48,6 +52,25 @@ app.whenReady().then(async () => {
 
         ipcMain.handle('get-devices', async () => {
             return await deviceHandler.getAllDevices();
+        });
+
+        ipcMain.handle('get-details-for-summary', (event, deviceId, snapshotId) => {
+            return deviceHandler.getDetailsForSummary(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-interfaces-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getInterfacesForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-routing-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getRoutingForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-protocols-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getProtocolsForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-hardware-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getHardwareForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-vpn-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getVpnForDevice(deviceId, snapshotId);
         });
 
         ipcMain.handle('get-snapshots', async () => {
@@ -64,6 +87,18 @@ app.whenReady().then(async () => {
 
         ipcMain.handle('export:flat-report', async (_event, { snapshotId }: { snapshotId: number }) => {
             return await exportHandler.exportFlatReport(snapshotId);
+        })
+
+        ipcMain.handle('get-available-metrics', async () => {
+            return await analyticsHandler.getAvailableMetrics();
+        });
+
+        ipcMain.handle('get-time-series', async (event, metricId, deviceId, options) => {
+            return await analyticsHandler.getAnalytics(metricId, deviceId, options);
+        });
+
+        ipcMain.handle('get-alarms', async (event, snapshotId) => {
+            return await alaramsHandler.getAllBySnapshot(snapshotId);
         })
     } catch (error) {
         console.error('Database initialization failed:', error);
