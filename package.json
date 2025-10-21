@@ -64,6 +64,12 @@
     "vite": "^5.4.8",
     "wait-on": "^7.2.0"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.25.4",
+    "@rollup/rollup-win32-x64-msvc": "^4.25.4",
+    "@rollup/rollup-darwin-arm64": "^4.25.4",
+    "@rollup/rollup-darwin-x64": "^4.25.4"
+  }
   "build": {
     "asar": true,
     "asarUnpack": [
