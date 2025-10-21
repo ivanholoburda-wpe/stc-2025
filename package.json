@@ -69,7 +69,7 @@
     "@rollup/rollup-win32-x64-msvc": "^4.25.4",
     "@rollup/rollup-darwin-arm64": "^4.25.4",
     "@rollup/rollup-darwin-x64": "^4.25.4"
-  }
+  },
   "build": {
     "asar": true,
     "asarUnpack": [
