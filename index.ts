@@ -5,10 +5,10 @@ import {container} from './backend/src/container';
 import {ParsingHandler} from './backend/src/handlers/ParsingHandler';
 import {DeviceHandler} from './backend/src/handlers/DeviceHandler';
 import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
-import { TYPES } from './backend/src/types';
-import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
+import {TYPES} from './backend/src/types';
+import {DefaultOptionsSeeder} from './backend/src/services/seeders/OptionsSeeder';
 import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
-import { ExportHandler } from "./backend/src/handlers/ExportHandler";
+import {ExportHandler} from "./backend/src/handlers/ExportHandler";
 import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
 import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
 
@@ -85,10 +85,6 @@ app.whenReady().then(async () => {
             return await topologyHandler.getTopology();
         })
 
-        ipcMain.handle('export:flat-report', async (_event, { snapshotId }: { snapshotId: number }) => {
-            return await exportHandler.exportFlatReport(snapshotId);
-        })
-
         ipcMain.handle('get-available-metrics', async () => {
             return await analyticsHandler.getAvailableMetrics();
         });
@@ -100,6 +96,13 @@ app.whenReady().then(async () => {
         ipcMain.handle('get-alarms', async (event, snapshotId) => {
             return await alaramsHandler.getAllBySnapshot(snapshotId);
         })
+
+        ipcMain.handle('get-available-reports', () => {
+            return exportHandler.getAvailableReports();
+        });
+        ipcMain.handle('export-report', (event, reportId, snapshotId) => {
+            return exportHandler.exportReport(reportId, snapshotId);
+        });
     } catch (error) {
         console.error('Database initialization failed:', error);
     }

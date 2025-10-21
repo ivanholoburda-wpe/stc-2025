@@ -81,6 +81,18 @@ import {AlarmsCriticalCountProvider} from "./services/analytics/providers/Alarms
 import {AnalyticsService} from "./services/analytics/AnalyticsService";
 import {AnalyticsHandler} from "./handlers/AnalyticsHandler";
 import {AlarmsHandler} from "./handlers/AlarmsHandler";
+import {IReportProvider} from "./services/export/providers/IReportProvider";
+import {HardwareInventoryReportProvider} from "./services/export/providers/HardwareInventoryReportProvider";
+import {TransceiverInventoryReportProvider} from "./services/export/providers/TransceiverInventoryReportProvider";
+import {SoftwareLicenseReportProvider} from "./services/export/providers/SoftwareLicenseReportProvider";
+import {NetworkHealthReportProvider} from "./services/export/providers/NetworkHealthReportProvider";
+import {DownPortsReportProvider} from "./services/export/providers/DownPortsReportProvider";
+import {ArpReportProvider} from "./services/export/providers/ArpReportProvider";
+import {PerDeviceInterfaceReportProvider} from "./services/export/providers/PerDeviceInterfaceReportProvider";
+import {IgpReportProvider} from "./services/export/providers/IgpReportProvider";
+import {IpRoutePerDeviceReportProvider} from "./services/export/providers/IpRoutePerDeviceReportProvider";
+import {InterfaceReportProvider} from "./services/export/providers/InterfaceReportProvider";
+import {IReportRepository, ReportRepository} from "./repositories/ReportRepository";
 
 const container = new Container();
 
@@ -102,6 +114,7 @@ container.bind<IBgpPeerRepository>(TYPES.BgpPeerRepository).to(BgpPeerRepository
 container.bind<IStorageSummaryRepository>(TYPES.StorageSummaryRepository).to(StorageSummaryRepository);
 container.bind<ICpuUsageRepository>(TYPES.CpuUsageRepository).to(CpuUsageRepository);
 container.bind<IAnalyticsRepository>(TYPES.AnalyticsRepository).to(AnalyticsRepository);
+container.bind<IReportRepository>(TYPES.ReportRepository).to(ReportRepository);
 
 // Bind Service
 container.bind<IDeviceService>(TYPES.DeviceService).to(DeviceService);
@@ -169,5 +182,18 @@ container.bind<IMetricProvider>(TYPES.IMetricProvider).to(BfdUpSessionsCountProv
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(InterfaceStatusProvider);
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(TransceiverRxPowerProvider);
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(TransceiverTxPowerProvider);
+
+// Bind Report Providers
+container.bind<IReportProvider>(TYPES.IReportProvider).to(HardwareInventoryReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(TransceiverInventoryReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(SoftwareLicenseReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(NetworkHealthReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(DownPortsReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(ArpReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(PerDeviceInterfaceReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(IgpReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(IpRoutePerDeviceReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(InterfaceReportProvider);
+
 
 export { container };

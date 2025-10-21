@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getProtocolsForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-protocols-for-device', deviceId, snapshotId),
     getHardwareForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-hardware-for-device', deviceId, snapshotId),
     getVpnForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-vpn-for-device', deviceId, snapshotId),
+    getAvailableReports: () => ipcRenderer.invoke('get-available-reports'),
+    exportReport: (reportId, snapshotId) => ipcRenderer.invoke('export-report', reportId, snapshotId),
 });
 
 contextBridge.exposeInMainWorld('configAPI', {

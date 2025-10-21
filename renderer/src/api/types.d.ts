@@ -1,5 +1,7 @@
 import {Snapshot} from "./snapshot";
 import {Topology} from "./topology";
+import {ExportResult, ReportDefinition} from "./export";
+
 import {
     Device,
     Interface,
@@ -26,9 +28,6 @@ export interface APIResult<T> {
     error?: string;
 }
 
-/**
- * Інтерфейс, що визначає функції, доступні через `window.electronAPI`.
- */
 interface ElectronAPI {
     runParsing: () => Promise<ParsingResult>;
     getDevices: () => Promise<APIResult<Device[]>>;
@@ -59,6 +58,8 @@ interface ElectronAPI {
         mplsL2vcs: MplsL2vc[],
         vpnInstances: VpnInstance[]
     }>>;
+    getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
+    exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
 }
 
 interface ConfigAPI {

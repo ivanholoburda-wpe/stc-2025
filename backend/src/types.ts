@@ -37,4 +37,6 @@ export const TYPES = {
     AnalyticsRepository: Symbol.for("AnalyticsRepository"),
     IMetricProvider: Symbol.for("IMetricProvider"),
     AnalyticsService: Symbol.for("AnalyticsService"),
+    ReportRepository: Symbol.for("ReportRepository"),
+    IReportProvider: Symbol.for("IReportProvider"),
 };
