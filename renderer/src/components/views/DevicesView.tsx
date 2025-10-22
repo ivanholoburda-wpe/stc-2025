@@ -263,7 +263,7 @@ export function DevicesView() {
                 <td className="py-2 px-3 font-mono">{r.ip_address}</td>
                 <td className="py-2 px-3 font-mono">{r.mac_address}</td>
                 <td className="py-2 px-3">{r.type}</td>
-                <td className="py-2 px-3 font-mono">{r.interface?.name}</td>
+                <td className="py-2 px-3 font-mono">{r.interface}</td>
                 <td className="py-2 px-3">{r.vlan}</td>
             </tr>)}</Table></InfoCard>
         </div>
