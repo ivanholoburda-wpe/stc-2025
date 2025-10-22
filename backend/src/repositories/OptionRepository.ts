@@ -6,6 +6,7 @@ import { TYPES } from "../types";
 export interface IOptionRepository {
     findByOptionName(option_name: string): Promise<Option | null>;
     updateOrCreate(option_name: string, option_value: string): Promise<Option>;
+    getAll(): Promise<Option[]>;
 }
 
 @injectable()
@@ -14,6 +15,10 @@ export class OptionRepository implements IOptionRepository {
 
     constructor(@inject(TYPES.DataSource) private dataSource: DataSource) {
         this.repository = dataSource.getRepository(Option);
+    }
+
+    async getAll(): Promise<Option[]> {
+        return await this.repository.find();
     }
 
     async findByOptionName(option_name: string): Promise<Option | null> {

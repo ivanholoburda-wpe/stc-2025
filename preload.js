@@ -23,7 +23,5 @@ contextBridge.exposeInMainWorld('configAPI', {
     isOfflineMode: () => ipcRenderer.invoke('config:is-offline'),
     getAiModelKey: () => ipcRenderer.invoke('config:get-ai-key'),
     getSettings: () => ipcRenderer.invoke('config:get-settings'),
-    setNetworkMode: (isOffline) => ipcRenderer.invoke('config:set-network-mode', isOffline),
-    setAiModelKey: (key) => ipcRenderer.invoke('config:set-ai-model-key', key),
-    setAiPromptStart: (prompt) => ipcRenderer.invoke('config:set-ai-prompt-start', prompt),
+    updateSetting: (key, value) => ipcRenderer.invoke('config:update-setting', key, value),
 });

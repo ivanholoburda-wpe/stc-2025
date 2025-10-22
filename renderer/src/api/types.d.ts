@@ -61,9 +61,7 @@ interface ConfigAPI {
     isOfflineMode: () => Promise<boolean>;
     getAiModelKey: () => Promise<string | null>;
     getSettings: () => Promise<{ isOffline: boolean; aiModelKey: string; aiPromptStart: string }>;
-    setNetworkMode: (isOffline: boolean) => Promise<void>;
-    setAiModelKey: (key: string) => Promise<void>;
-    setAiPromptStart: (prompt: string) => Promise<void>;
+    updateSetting: (key: string, value: string) => Promise<void>;
 }
 
 declare global {

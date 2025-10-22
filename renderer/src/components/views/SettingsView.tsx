@@ -22,9 +22,10 @@ export function SettingsView() {
 
     const handleSave = useCallback(async () => {
         try {
-            await settingsApi.setNetworkMode(!isOnline);
-            await settingsApi.setAiModelKey(aiModelKey);
-            await settingsApi.setAiPromptStart(aiPromptStart);
+            const mode = isOnline ? 'online' : 'offline';
+            await settingsApi.updateSetting('mode', mode);
+            await settingsApi.updateSetting('ai_model_key', aiModelKey);
+            await settingsApi.updateSetting('ai_prompt_start', aiPromptStart);
             setStatusMessage('Settings saved successfully!');
             setTimeout(() => setStatusMessage(''), 3000);
         } catch (error) {

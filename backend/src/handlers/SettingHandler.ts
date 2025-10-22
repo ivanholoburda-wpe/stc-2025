@@ -9,14 +9,10 @@ export class SettingHandler {
     ) {}
 
     async getSettings() {
-        const isOffline = await this.configService.isOfflineMode();
-        const aiModelKey = (await this.configService.getAiModelKey()) || '';
-        const aiPromptStart = (await this.configService.getAiPromptStart()) || '';
-
-        return { isOffline, aiModelKey, aiPromptStart };
+        return await this.configService.getAllSettings();
     }
 
-    async setNetworkMode(isOffline: boolean) {
-        await this.configService.setOfflineMode(isOffline);
+    async updateSetting(key: string, value: string) {
+        await this.configService.setSetting(key, value);
     }
 }

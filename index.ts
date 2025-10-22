@@ -11,7 +11,6 @@ import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
 import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
 import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
 import {SettingHandler} from "./backend/src/handlers/SettingHandler";
-import {IConfigurationService} from "./backend/src/services/config/ConfigurationService";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -46,23 +45,13 @@ app.whenReady().then(async () => {
         const analyticsHandler = container.get(AnalyticsHandler);
         const alaramsHandler = container.get(AlarmsHandler);
         const settingHandler = container.get(SettingHandler);
-        const configService = container.get<IConfigurationService>(TYPES.ConfigurationService);
 
-        // Settings handlers
         ipcMain.handle('config:get-settings', async () => {
             return await settingHandler.getSettings();
         });
 
-        ipcMain.handle('config:set-network-mode', async (event, isOffline: boolean) => {
-            return await settingHandler.setNetworkMode(isOffline);
-        });
-
-        ipcMain.handle('config:set-ai-model-key', async (event, key: string) => {
-            return await configService.setAiModelKey(key);
-        });
-
-        ipcMain.handle('config:set-ai-prompt-start', async (event, prompt: string) => {
-            return await configService.setAiPromptStart(prompt);
+        ipcMain.handle('config:update-setting', async (event, key: string, value: string) => {
+            return await settingHandler.updateSetting(key, value);
         });
 
         ipcMain.handle('run-parsing', async () => {
