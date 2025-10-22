@@ -1,6 +1,7 @@
 import {Snapshot} from "./snapshot";
 import {Topology} from "./topology";
 import {ExportResult, ReportDefinition} from "./export";
+import {AppOptions} from "./options";
 
 import {
     Device,
@@ -60,6 +61,8 @@ interface ElectronAPI {
     }>>;
     getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
     exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
+    getAllOptions: () => Promise<APIResult<AppOptions>>;
+    updateOptions: (options: AppOptions) => Promise<APIResult<void>>
 }
 
 interface ConfigAPI {

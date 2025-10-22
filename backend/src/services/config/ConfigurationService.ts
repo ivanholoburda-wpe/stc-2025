@@ -4,11 +4,11 @@ import { IOptionRepository } from "../../repositories/OptionRepository";
 
 export interface IConfigurationService {
     isOfflineMode(): Promise<boolean>
-    setOfflineMode(isOffline: boolean): Promise<void>;
-    getAiModelKey(): Promise<string | null>
-    setAiModelKey(key: string): Promise<void>;
-    getAiPromptStart(): Promise<string | null>
-    setAiPromptStart(prompt: string): Promise<void>
+    getOption(optionName: string, defaultValue: string | null): Promise<string | null>
+    setOption(optionName: string, value: string): Promise<void>
+    getAllOptions(): Promise<Record<string, string>>;
+    getAiPromptStart(): Promise<string | null>;
+    getAiModelKey(): Promise<string | null>;
 }
 
 @injectable()
@@ -20,47 +20,50 @@ export class ConfigurationService implements IConfigurationService {
     ) {}
 
     public async isOfflineMode(): Promise<boolean> {
-        const modeValue = await this.getOptionValue('mode', 'offline');
+        const modeValue = await this.getOption('mode', 'offline');
         return modeValue === 'offline';
     }
 
-    public async getAiModelKey(): Promise<string | null> {
-        return await this.getOptionValue('ai_model_key', null);
-    }
-
-    public async setOfflineMode(isOffline: boolean): Promise<void> {
-        const modeValue = isOffline ? 'offline' : 'online';
-        await this.optionRepository.updateOrCreate('mode', modeValue);
-        this.settingsCache.set('mode', modeValue);
-    }
-
-    public async setAiModelKey(key: string): Promise<void> {
-        await this.optionRepository.updateOrCreate('ai_model_key', key);
-        this.settingsCache.set('ai_model_key', key);
-    }
-
     public async getAiPromptStart(): Promise<string | null> {
-        return await this.getOptionValue('ai_model_key', null);
+        return await this.getOption('ai_prompt_start', '');
     }
 
-    public async setAiPromptStart(prompt: string): Promise<void> {
-        await this.optionRepository.updateOrCreate('ai_prompt_start', prompt);
-        this.settingsCache.set('ai_prompt_start', prompt);
+    public async getAiModelKey(): Promise<string | null> {
+        return await this.getOption('ai_model_key', '');
     }
 
-    private async getOptionValue(optionName: string, defaultValue: string | null): Promise<string | null> {
+    public async getOption(optionName: string, defaultValue: string | null = null): Promise<string | null> {
         if (this.settingsCache.has(optionName)) {
             return this.settingsCache.get(optionName)!;
         }
 
         const option = await this.optionRepository.findByOptionName(optionName);
-        
+
         const value = option ? option.option_value : defaultValue;
-        
+
         if (value !== null) {
             this.settingsCache.set(optionName, value);
         }
-        
+
         return value;
+    }
+
+    public async setOption(optionName: string, value: string): Promise<void> {
+        await this.optionRepository.updateOrCreate(optionName, value);
+
+        this.settingsCache.set(optionName, value);
+    }
+
+    public async getAllOptions(): Promise<Record<string, string>> {
+        const allOptions = await this.optionRepository.findAll();
+
+        this.settingsCache.clear();
+        const optionsRecord: Record<string, string> = {};
+        for (const option of allOptions) {
+            this.settingsCache.set(option.option_name, option.option_value);
+            optionsRecord[option.option_name] = option.option_value;
+        }
+
+        return optionsRecord;
     }
 }

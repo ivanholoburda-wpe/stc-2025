@@ -93,6 +93,7 @@ import {IgpReportProvider} from "./services/export/providers/IgpReportProvider";
 import {IpRoutePerDeviceReportProvider} from "./services/export/providers/IpRoutePerDeviceReportProvider";
 import {InterfaceReportProvider} from "./services/export/providers/InterfaceReportProvider";
 import {IReportRepository, ReportRepository} from "./repositories/ReportRepository";
+import {ConfigurationHandler} from "./handlers/ConfigurationHandler";
 
 const container = new Container();
 
@@ -145,6 +146,7 @@ container.bind<TopologyHandler>(TopologyHandler).toSelf();
 container.bind<ExportHandler>(ExportHandler).toSelf();
 container.bind<AnalyticsHandler>(AnalyticsHandler).toSelf();
 container.bind<AlarmsHandler>(AlarmsHandler).toSelf();
+container.bind<ConfigurationHandler>(ConfigurationHandler).toSelf();
 
 // Ingestors
 container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);
