@@ -1,15 +1,17 @@
-import {app, BrowserWindow, ipcMain} from 'electron';
+import {app, BrowserWindow, ipcMain, dialog} from 'electron';
 import path from 'path';
 import {AppDataSource} from './backend/src/database/data-source';
 import {container} from './backend/src/container';
 import {ParsingHandler} from './backend/src/handlers/ParsingHandler';
 import {DeviceHandler} from './backend/src/handlers/DeviceHandler';
 import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
-import { TYPES } from './backend/src/types';
-import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
+import {TYPES} from './backend/src/types';
+import {DefaultOptionsSeeder} from './backend/src/services/seeders/OptionsSeeder';
 import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
+import {ExportHandler} from "./backend/src/handlers/ExportHandler";
 import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
 import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
+import {ConfigurationHandler} from "./backend/src/handlers/ConfigurationHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -41,8 +43,10 @@ app.whenReady().then(async () => {
         const deviceHandler = container.get(DeviceHandler);
         const snapshotHandler = container.get(SnapshotHandler);
         const topologyHandler = container.get(TopologyHandler);
+        const exportHandler = container.get(ExportHandler);
         const analyticsHandler = container.get(AnalyticsHandler);
         const alaramsHandler = container.get(AlarmsHandler);
+        const configurationHandler = container.get(ConfigurationHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -94,6 +98,25 @@ app.whenReady().then(async () => {
         ipcMain.handle('get-alarms', async (event, snapshotId) => {
             return await alaramsHandler.getAllBySnapshot(snapshotId);
         })
+
+        ipcMain.handle('get-available-reports', () => {
+            return exportHandler.getAvailableReports();
+        });
+        ipcMain.handle('export-report', (event, reportId, snapshotId) => {
+            return exportHandler.exportReport(reportId, snapshotId);
+        });
+
+        ipcMain.handle('get-all-options', () => {
+            return configurationHandler.getAllOptions();
+        });
+
+        ipcMain.handle('update-options', (event, options) => {
+            return configurationHandler.updateOptions(options);
+        });
+
+        ipcMain.handle('config:is-offline-mode', () => {
+            return configurationHandler.isOfflineMode();
+        });
     } catch (error) {
         console.error('Database initialization failed:', error);
     }

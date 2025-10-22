@@ -3,7 +3,7 @@ import { Snapshot } from "./Snapshot";
 import { Device } from "./Device";
 
 @Entity({ name: "bgp_peers" })
-@Unique(["peer_ip", "address_family", "device", "snapshot"]) // 👈 Уникальный ключ
+@Unique(["peer_ip", "address_family", "device", "snapshot"])
 export class BgpPeer {
     @PrimaryGeneratedColumn()
     id!: number;

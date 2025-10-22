@@ -1,5 +1,8 @@
 import {Snapshot} from "./snapshot";
 import {Topology} from "./topology";
+import {ExportResult, ReportDefinition} from "./export";
+import {AppOptions} from "./options";
+
 import {
     Device,
     Interface,
@@ -34,6 +37,7 @@ interface ElectronAPI {
     analyzeSnapshot: (snapshotId: number, prompt: string) => Promise<APIResult<string>>;
     getTopology: () => Promise<APIResult<Topology>>;
     getAvailableMetrics: () => Promise<APIResult<Metric[]>>;
+    exportFlatReport: (snapshotId: number) => Promise<IPCResponse>;
     getTimeSeries: (metricId: string, deviceId: number, options?: {
         interfaceName?: string
     }) => Promise<APIResult<TimeSeriesDataPoint[]>>;
@@ -55,6 +59,10 @@ interface ElectronAPI {
         mplsL2vcs: MplsL2vc[],
         vpnInstances: VpnInstance[]
     }>>;
+    getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
+    exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
+    getAllOptions: () => Promise<APIResult<AppOptions>>;
+    updateOptions: (options: AppOptions) => Promise<APIResult<void>>
 }
 
 interface ConfigAPI {

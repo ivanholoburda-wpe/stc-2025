@@ -8,12 +8,12 @@ import { PlaceholderView } from './components/views/PlaceholderView';
 import { AiView } from './components/views/AiView';
 import { TopologyView } from './components/views/TopologyView';
 import { APIResult, ParsingResult } from './api/types';
-import {Device} from "./api/devices";
-import { useConfig } from './hooks/useConfig';
 import {AnalyticsView} from "./components/views/AnalyticsView";
 import {AlertsView} from "./components/views/AlertsView";
+import { ReportsView } from './components/views/ReportView';
+import {SettingsView} from "./components/views/SettingsView";
 
-const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports'] as const;
+const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports', 'settings'] as const;
 export type ExtendedViewId = typeof extendedViewIds[number];
 
 
@@ -25,6 +25,7 @@ const viewTitles: Record<ExtendedViewId, string> = {
     analytics: 'Analytics',
     alerts: 'Alerts',
     reports: 'Reports',
+    settings: 'Settings',
 };
 
 export function App() {
@@ -66,7 +67,9 @@ export function App() {
             case 'alerts':
                 return <AlertsView />;
             case 'reports':
-                return <PlaceholderView title={viewTitles[activeView]} />;
+                return <ReportsView />;
+            case 'settings':
+                return <SettingsView />;
             default:
                 return <DashboardView onReadFile={handleReadFile} parsingResult={parsingResult} />;
         }

@@ -1,37 +1,35 @@
 import fs from "fs/promises";
 import path from "path";
-import type {DataSource } from "typeorm";
-import {Snapshot} from "../../models/Snapshot";
-import {Device} from "../../models/Device";
-import {ParsedDtoIngestor} from "../ingestion/ParsedDtoIngestor";
-import {inject, injectable} from "inversify";
-import {TYPES} from "../../types";
-import {LogsParserService} from "./LogsParserService";
+import type { DataSource } from "typeorm";
+import { Snapshot } from "../../models/Snapshot";
+import { Device } from "../../models/Device";
+import { ParsedDtoIngestor } from "../ingestion/ParsedDtoIngestor";
+import { inject, injectable } from "inversify";
+import { TYPES } from "../../types";
+import { LogsParserService } from "./LogsParserService";
 
 @injectable()
 export class RootFolderParsingService {
     constructor(
         @inject(TYPES.DataSource) private dataSource: DataSource,
         @inject(TYPES.LogsParserService) private parser: LogsParserService,
-    ) {
-    }
+    ) {}
 
     async run(rootFolderPath: string): Promise<any> {
         const snapshotRepo = this.dataSource.getRepository(Snapshot);
         const deviceRepo = this.dataSource.getRepository(Device);
 
-        const snapshot = snapshotRepo.create({root_folder_path: rootFolderPath});
+        const snapshot = snapshotRepo.create({ root_folder_path: rootFolderPath });
         await snapshotRepo.save(snapshot);
 
-        const entries = await fs.readdir(rootFolderPath, {withFileTypes: true});
+        const entries = await fs.readdir(rootFolderPath, { withFileTypes: true });
         const deviceFolders = entries
             .filter((entry) => entry.isDirectory())
             .map((entry) => path.join(rootFolderPath, entry.name));
 
         const tasks = deviceFolders.map(async (deviceFolderAbsPath: string) => {
             const folderName = path.basename(deviceFolderAbsPath);
-
-            let device = await deviceRepo.findOne({where: {folder_name: folderName}});
+            let device = await deviceRepo.findOne({ where: { folder_name: folderName } });
 
             if (!device) {
                 device = deviceRepo.create({
@@ -40,39 +38,35 @@ export class RootFolderParsingService {
                     firstSeenSnapshot: snapshot
                 });
                 await deviceRepo.save(device);
-            } else {
-                device.firstSeenSnapshot = snapshot;
-                await deviceRepo.save(device);
             }
 
-            const logFilePath = await this.resolveLogFile(deviceFolderAbsPath);
-            const options = {maxErrors: 200, continueOnError: true, validateResults: true, logLevel: "info"};
-            const results = await this.parser.parse(logFilePath, options);
+            const logFilePaths = await this.resolveLogFiles(deviceFolderAbsPath);
+            if (logFilePaths.length === 0) {
+                console.warn(`No log files found in ${deviceFolderAbsPath}, skipping device.`);
+                return { folder: folderName, status: 'skipped' };
+            }
 
             const ingestor = new ParsedDtoIngestor();
-            await ingestor.ingest(results, snapshot, device);
+            const options = { maxErrors: 200, continueOnError: true, validateResults: true, logLevel: "info" };
 
-            return {folder: folderName, deviceId: device.id};
+            for (const logFilePath of logFilePaths) {
+                console.log(`Parsing file: ${logFilePath}`);
+                const results = await this.parser.parse(logFilePath, options);
+
+                if (results.success && results.data && results.data.length > 0) {
+                    await ingestor.ingest(results, snapshot, device);
+                }
+            }
+
+            return { folder: folderName, deviceId: device.id, status: 'processed' };
         });
 
         const devices = await Promise.all(tasks);
-
-        return {snapshotId: snapshot.id, devices};
+        return { snapshotId: snapshot.id, devices };
     }
 
-    private async resolveLogFile(deviceFolderAbsPath: string): Promise<string> {
-        const preferred = [
-            "huawei_config.txt",
-            "config.txt",
-            "logs.txt",
-            "output.txt",
-            "device.log",
-        ];
+    private async resolveLogFiles(deviceFolderAbsPath: string): Promise<string[]> {
         const files = await fs.readdir(deviceFolderAbsPath);
-        const preferredHit = preferred
-            .map((n) => path.join(deviceFolderAbsPath, n))
-            .find((full) => files.includes(path.basename(full)));
-        if (preferredHit) return preferredHit;
 
         const stats = await Promise.all(
             files.map(async (f: string) => ({
@@ -81,16 +75,14 @@ export class RootFolderParsingService {
                 st: await fs.stat(path.join(deviceFolderAbsPath, f))
             }))
         );
-        const textish = stats.filter((s: any) => s.st.isFile() && (s.name.endsWith(".txt") || s.name.endsWith(".log")));
-        if (textish.length > 0) {
-            textish.sort((a: any, b: any) => b.st.size - a.st.size);
-            return textish[0].full;
-        }
 
-        const any = stats.find((s: any) => s.st.isFile());
-        if (!any) throw new Error(`No log files found in ${deviceFolderAbsPath}`);
-        return any.full;
+        const textishFiles = stats
+            .filter((s: any) => s.st.isFile() && (s.name.endsWith(".txt") || s.name.endsWith(".log")))
+            .sort((a: any, b: any) => b.st.size - a.st.size);
+
+        return textishFiles.map(f => f.full);
     }
 }
 
 export default RootFolderParsingService;
+

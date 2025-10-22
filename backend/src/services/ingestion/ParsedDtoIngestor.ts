@@ -5,7 +5,7 @@ import {TYPES} from "../../types";
 import {Snapshot} from "../../models/Snapshot";
 import {Device} from "../../models/Device";
 import {IngestionContext} from "./ingestors/IngestionContext";
-import {ParserBlock, ParserResults} from "./ingestors/types";
+import { ParserResults } from "./ingestors/types";
 
 export class ParsedDtoIngestor {
     private readonly ingestors: IIngestor[];
@@ -16,12 +16,6 @@ export class ParsedDtoIngestor {
     }
 
     async ingest(results: ParserResults, snapshot: Snapshot, device: Device): Promise<void> {
-        results.data.forEach((block) => {
-            if (block.type === 'display_device_block') {
-                console.log(block)
-            }
-        })
-
         if (!results?.data || !Array.isArray(results.data)) {
             return;
         }

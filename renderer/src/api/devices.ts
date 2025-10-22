@@ -60,7 +60,7 @@ export type ARPRecord = {
     ip_address: string;
     mac_address: string;
     type?: string;
-    interface?: Interface;
+    interface?: string;
     vlan?: number;
 };
 export type BfdSession = {

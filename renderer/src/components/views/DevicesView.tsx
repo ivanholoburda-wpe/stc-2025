@@ -50,9 +50,7 @@ const ErrorDisplay = ({error}: { error: string }) => <div
 const NoDataDisplay = ({message}: { message: string }) => <div
     className="p-6 flex items-center justify-center text-gray-500">{message}</div>;
 
-// --- Основний компонент ---
 export function DevicesView() {
-    // State
     const [devices, setDevices] = useState<Device[]>([]);
     const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
@@ -75,7 +73,6 @@ export function DevicesView() {
     const [loading, setLoading] = useState({initial: true, tab: false});
     const [error, setError] = useState('');
 
-    // 1. Завантаження початкових даних
     useEffect(() => {
         const fetchInitialData = async () => {
             setLoading(prev => ({...prev, initial: true}));
@@ -99,7 +96,6 @@ export function DevicesView() {
         fetchInitialData();
     }, []);
 
-    // 2. Скидання даних та завантаження базових деталей
     useEffect(() => {
         if (!selectedDeviceId || !selectedSnapshotId) return;
         setInterfaces(null);
@@ -108,7 +104,7 @@ export function DevicesView() {
         setHardware(null);
         setVpn(null);
         setSummaryDetails(null);
-        setActiveTab('Summary'); // Завжди повертаємось на Summary при зміні вибору
+        setActiveTab('Summary');
 
         const fetchBaseDetails = async () => {
             setLoading(prev => ({...prev, tab: true}));
@@ -267,7 +263,7 @@ export function DevicesView() {
                 <td className="py-2 px-3 font-mono">{r.ip_address}</td>
                 <td className="py-2 px-3 font-mono">{r.mac_address}</td>
                 <td className="py-2 px-3">{r.type}</td>
-                <td className="py-2 px-3 font-mono">{r.interface?.name}</td>
+                <td className="py-2 px-3 font-mono">{r.interface}</td>
                 <td className="py-2 px-3">{r.vlan}</td>
             </tr>)}</Table></InfoCard>
         </div>
