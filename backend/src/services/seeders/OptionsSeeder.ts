@@ -16,7 +16,11 @@ export class DefaultOptionsSeeder {
 
 
         for (const defaultOption of defaultOptions) {
-            await this.optionRepository.updateOrCreate(defaultOption.name, defaultOption.value);
+            const existing = await this.optionRepository.findByOptionName(defaultOption.name);
+            if (!existing) {
+                await this.optionRepository.updateOrCreate(defaultOption.name, defaultOption.value);
+                console.log(`Seeded option: ${defaultOption.name}`);
+            }
         }
     }
 }

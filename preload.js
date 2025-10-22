@@ -20,5 +20,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
 });
 
 contextBridge.exposeInMainWorld('configAPI', {
-    isOfflineMode: () => ipcRenderer.invoke('config:is-offline-mode'),
-})
+    isOfflineMode: () => ipcRenderer.invoke('config:is-offline'),
+    getAiModelKey: () => ipcRenderer.invoke('config:get-ai-key'),
+    getSettings: () => ipcRenderer.invoke('config:get-settings'),
+    setNetworkMode: (isOffline) => ipcRenderer.invoke('config:set-network-mode', isOffline),
+    setAiModelKey: (key) => ipcRenderer.invoke('config:set-ai-model-key', key),
+    setAiPromptStart: (prompt) => ipcRenderer.invoke('config:set-ai-prompt-start', prompt),
+});

@@ -10,6 +10,7 @@ import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeed
 import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
 import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
 import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
+import {SettingHandler} from "./backend/src/handlers/SettingHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -43,6 +44,9 @@ app.whenReady().then(async () => {
         const topologyHandler = container.get(TopologyHandler);
         const analyticsHandler = container.get(AnalyticsHandler);
         const alaramsHandler = container.get(AlarmsHandler);
+        const settingHandler = container.get(SettingHandler);
+
+        settingHandler.register();
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();

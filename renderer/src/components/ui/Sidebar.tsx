@@ -12,7 +12,7 @@ import {
     NetworkIcon,
 } from '../../icons';
 
-export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'topology';
+export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'topology' | 'settings';
 
 interface NavItem {
     id: ViewId;
@@ -73,7 +73,12 @@ export const Sidebar: React.FC<SidebarProps> = ({activeView, setActiveView}) => 
 
             <div className="mt-auto flex flex-col gap-y-1">
                 <button
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-400 hover:bg-gray-800 hover:text-white transition-colors">
+                    onClick={() => setActiveView('settings')}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors ${
+                        activeView === 'settings'
+                            ? 'bg-gray-700 text-white'
+                            : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    }`}>
                     <SettingsIcon className="w-5 h-5"/>
                     <span>Settings</span>
                 </button>
