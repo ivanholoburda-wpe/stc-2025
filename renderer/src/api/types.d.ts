@@ -17,6 +17,15 @@ import {
     VpnInstance,
 } from "./devices";
 
+export type OptionType = 'toggle' | 'text' | 'textarea' | 'secret' | 'number' | 'select';
+
+export interface OptionWithType {
+    id: number;
+    option_name: string;
+    option_value: string;
+    option_type: OptionType;
+}
+
 export interface ParsingResult {
     success: boolean,
     data: any,
@@ -61,7 +70,7 @@ interface ElectronAPI {
     }>>;
     getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
     exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
-    getAllOptions: () => Promise<APIResult<AppOptions>>;
+    getAllOptionsWithTypes: () => Promise<APIResult<OptionWithType[]>>;
     updateOptions: (options: AppOptions) => Promise<APIResult<void>>
 }
 

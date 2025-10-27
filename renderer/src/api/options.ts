@@ -1,19 +1,21 @@
 export type AppOptions = Record<string, string>;
 
-import { APIResult } from "./types";
+import { APIResult, OptionWithType } from "./types";
 
-export async function getAllOptions(): Promise<APIResult<AppOptions>> {
+
+
+export async function getAllOptionsWithTypes(): Promise<APIResult<OptionWithType[]>> {
     if (window.electronAPI) {
-        return window.electronAPI.getAllOptions();
+        return window.electronAPI.getAllOptionsWithTypes();
     }
-    console.warn("electronAPI not found. Using mock options.");
+    console.warn("electronAPI not found. Using mock options with types.");
     return Promise.resolve({
         success: true,
-        data: {
-            'mode': 'offline',
-            'ai_model_key': 'mock_key',
-            'ai_prompt_start': 'Default prompt'
-        }
+        data: [
+            { id: 1, option_name: 'mode', option_value: 'offline', option_type: 'toggle' },
+            { id: 2, option_name: 'ai_model_key', option_value: 'mock_key', option_type: 'secret' },
+            { id: 3, option_name: 'ai_prompt_start', option_value: 'Default prompt', option_type: 'textarea' }
+        ]
     });
 }
 
