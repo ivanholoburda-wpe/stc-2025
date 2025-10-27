@@ -10,7 +10,7 @@ export class AddOptionTypeToOptions20240610123456 implements MigrationInterface 
         if (!hasOptionTypeColumn) {
             await queryRunner.query(`ALTER TABLE "options" ADD COLUMN "option_type" varchar NOT NULL DEFAULT 'text'`);
 
-            await queryRunner.query(`UPDATE "options" SET "option_type" = 'select' WHERE "option_name" = 'mode'`);
+            await queryRunner.query(`UPDATE "options" SET "option_type" = 'toggle' WHERE "option_name" = 'mode'`);
             await queryRunner.query(`UPDATE "options" SET "option_type" = 'secret' WHERE "option_name" = 'ai_model_key'`);
             await queryRunner.query(`UPDATE "options" SET "option_type" = 'textarea' WHERE "option_name" = 'ai_prompt_start'`);
         }
