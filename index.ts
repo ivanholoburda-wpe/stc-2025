@@ -1,17 +1,57 @@
-import {app, BrowserWindow, ipcMain, dialog} from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
-import {AppDataSource} from './backend/src/database/data-source';
-import {container} from './backend/src/container';
-import {ParsingHandler} from './backend/src/handlers/ParsingHandler';
-import {DeviceHandler} from './backend/src/handlers/DeviceHandler';
-import {SnapshotHandler} from "./backend/src/handlers/SnapshotHandler";
-import {TYPES} from './backend/src/types';
-import {DefaultOptionsSeeder} from './backend/src/services/seeders/OptionsSeeder';
-import {TopologyHandler} from "./backend/src/handlers/TopologyHandler";
-import {ExportHandler} from "./backend/src/handlers/ExportHandler";
-import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
-import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
-import {ConfigurationHandler} from "./backend/src/handlers/ConfigurationHandler";
+import { AppDataSource } from './backend/src/database/data-source';
+import { container } from './backend/src/container';
+import { ParsingHandler } from './backend/src/handlers/ParsingHandler';
+import { DeviceHandler } from './backend/src/handlers/DeviceHandler';
+import { SnapshotHandler } from './backend/src/handlers/SnapshotHandler';
+import { TYPES } from './backend/src/types';
+import { DefaultOptionsSeeder } from './backend/src/services/seeders/OptionsSeeder';
+import { TopologyHandler } from './backend/src/handlers/TopologyHandler';
+import { ExportHandler } from './backend/src/handlers/ExportHandler';
+import { AnalyticsHandler } from './backend/src/handlers/AnalyticsHandler';
+import { AlarmsHandler } from './backend/src/handlers/AlarmsHandler';
+import { ConfigurationHandler } from './backend/src/handlers/ConfigurationHandler';
+import { exportAllToBigQuery } from './backend/src/services/bq/BigQueryService';
+import fs from 'fs';
+
+function registerGcpIpcHandlers() {
+    ipcMain.removeHandler('gcloud:select-key');
+    ipcMain.removeHandler('bq:export');
+
+    ipcMain.handle('gcloud:select-key', async () => {
+        const { canceled, filePaths } = await dialog.showOpenDialog({
+            title: 'Select Service Account JSON',
+            properties: ['openFile'],
+            filters: [{ name: 'JSON', extensions: ['json'] }],
+        });
+        if (canceled || !filePaths[0]) return { ok: false };
+
+        const keyPath = filePaths[0];
+
+        const cfgDir = path.join(app.getPath('userData'), 'gcloud');
+        fs.mkdirSync(cfgDir, { recursive: true });
+        fs.writeFileSync(path.join(cfgDir, 'sa_key_path.txt'), keyPath, 'utf8');
+
+        process.env.GOOGLE_APPLICATION_CREDENTIALS = keyPath;
+
+        return { ok: true, keyPath };
+    });
+
+    ipcMain.handle('bq:export', async () => {
+        try {
+            const result = await exportAllToBigQuery();
+            return { ok: true, summary: result };
+        } catch (e: any) {
+            console.error('[bq:export] FAILED:', e);
+            const details = e?.errors ?? e?.stack ?? e;
+            const message = e?.message || e?.name || 'Unknown error';
+            return { ok: false, error: message, details };
+        }
+    });
+
+    console.log('[main] GCP IPC handlers registered');
+}
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -19,6 +59,9 @@ function createWindow(): void {
         height: 700,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false,
         },
     });
 
@@ -31,6 +74,8 @@ function createWindow(): void {
 }
 
 app.whenReady().then(async () => {
+    registerGcpIpcHandlers();
+
     try {
         await AppDataSource.initialize();
         await AppDataSource.runMigrations();
