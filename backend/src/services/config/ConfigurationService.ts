@@ -1,12 +1,13 @@
 import { injectable, inject } from "inversify";
 import { TYPES } from "../../types";
 import { IOptionRepository } from "../../repositories/OptionRepository";
+import { Option } from "../../models/Option";
 
 export interface IConfigurationService {
     isOfflineMode(): Promise<boolean>
     getOption(optionName: string, defaultValue: string | null): Promise<string | null>
     setOption(optionName: string, value: string): Promise<void>
-    getAllOptions(): Promise<Record<string, string>>;
+    getAllOptionsWithTypes(): Promise<Option[]>;
     getAiPromptStart(): Promise<string | null>;
     getAiModelKey(): Promise<string | null>;
 }
@@ -54,16 +55,9 @@ export class ConfigurationService implements IConfigurationService {
         this.settingsCache.set(optionName, value);
     }
 
-    public async getAllOptions(): Promise<Record<string, string>> {
-        const allOptions = await this.optionRepository.findAll();
-
-        this.settingsCache.clear();
-        const optionsRecord: Record<string, string> = {};
-        for (const option of allOptions) {
-            this.settingsCache.set(option.option_name, option.option_value);
-            optionsRecord[option.option_name] = option.option_value;
-        }
-
-        return optionsRecord;
+    public async getAllOptionsWithTypes(): Promise<Option[]> {
+        return await this.optionRepository.findAll();
     }
+
+
 }

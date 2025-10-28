@@ -8,12 +8,14 @@ export class ConfigurationHandler {
         @inject(TYPES.ConfigurationService) private configService: IConfigurationService
     ) {}
 
-    async getAllOptions() {
+
+
+    async getAllOptionsWithTypes() {
         try {
-            const options = await this.configService.getAllOptions();
+            const options = await this.configService.getAllOptionsWithTypes();
             return { success: true, data: options };
         } catch (error) {
-            console.error('[ConfigurationHandler] getAllOptions failed', error);
+            console.error('[ConfigurationHandler] getAllOptionsWithTypes failed', error);
             return { success: false, error: (error as Error).message };
         }
     }

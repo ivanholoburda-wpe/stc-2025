@@ -106,8 +106,8 @@ app.whenReady().then(async () => {
             return exportHandler.exportReport(reportId, snapshotId);
         });
 
-        ipcMain.handle('get-all-options', () => {
-            return configurationHandler.getAllOptions();
+        ipcMain.handle('get-all-options-with-types', () => {
+            return configurationHandler.getAllOptionsWithTypes();
         });
 
         ipcMain.handle('update-options', (event, options) => {
