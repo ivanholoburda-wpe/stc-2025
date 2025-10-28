@@ -9,10 +9,10 @@ import {
     SettingsIcon,
     LogOutIcon,
     DownloadIcon, SparklesIcon,
-    NetworkIcon,
+    NetworkIcon, DatabaseIcon,
 } from '../../icons';
 
-export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'topology' | 'settings';
+export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'topology' | 'settings' | 'bigquery';
 
 interface NavItem {
     id: ViewId;
@@ -31,6 +31,7 @@ const navItems: NavItem[] = [
     {id: 'analytics', label: 'Analytics', icon: BarChart3Icon},
     {id: 'topology', label: 'Topology', icon: NetworkIcon},
     {id: 'ai', label: 'AI Assistant', icon: SparklesIcon},
+    { id: 'bigquery', label: 'BigQuery', icon: DatabaseIcon },
     {id: 'alerts', label: 'Alerts', icon: BellIcon},
     {id: 'reports', label: 'Reports', icon: FileTextIcon},
 ];

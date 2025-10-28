@@ -111,3 +111,11 @@ export const NetworkIcon: React.FC<IconProps> = (props) => (
         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
     </Icon>
 );
+
+export const DatabaseIcon: React.FC<IconProps> = (props) => (
+    <Icon {...props}>
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M3 5V19A9 3 0 0 0 21 19V5" />
+        <path d="M3 12A9 3 0 0 0 21 12" />
+    </Icon>
+);

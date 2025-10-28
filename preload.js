@@ -27,3 +27,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 contextBridge.exposeInMainWorld('configAPI', {
     isOfflineMode: () => ipcRenderer.invoke('config:is-offline-mode'),
 })
+
+contextBridge.exposeInMainWorld('gcloud', {
+    selectKey: () => ipcRenderer.invoke('gcloud:select-key'),
+    exportToBigQuery: () => ipcRenderer.invoke('bq:export'),
+});

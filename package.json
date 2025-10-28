@@ -31,6 +31,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/bigquery": "^8.1.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "better-sqlite3": "^12.4.1",
