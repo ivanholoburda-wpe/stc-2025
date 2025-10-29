@@ -23,6 +23,18 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Extract version from tag
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Tag must look like v1.2.3 or v1.2.3-rc.1" }
+          $version = $tag.TrimStart('v')
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          Write-Host "Building version $version"
+
+      - name: Set package.json version
+        run: npm version $env:APP_VERSION --no-git-tag-version
+
       - name: Install dependencies
         run: npm ci
 
@@ -42,8 +54,9 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}  
-          name: Release ${{ github.ref_name }}    
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           files: dist/STC*.exe
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

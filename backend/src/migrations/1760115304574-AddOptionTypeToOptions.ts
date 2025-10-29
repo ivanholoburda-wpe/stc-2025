@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddOptionTypeToOptions20240610123456 implements MigrationInterface {
-    name = 'AddOptionTypeToOptions20240610123456'
+export class AddOptionTypeToOptions1760115304574 implements MigrationInterface {
+    name = 'AddOptionTypeToOptions1760115304574'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         const table = await queryRunner.getTable("options");
