@@ -4,7 +4,7 @@ import { ParsingResult } from '../../api/types';
 
 interface DashboardViewProps {
   onReadFile: () => Promise<void>;
-  parsingResult: ParsingResult;
+  parsingResult?: ParsingResult;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onReadFile, parsingResult }) => (
