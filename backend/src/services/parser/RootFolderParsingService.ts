@@ -16,7 +16,6 @@ export class RootFolderParsingService {
     ) {}
 
     async run(rootFolderPath: string): Promise<any> {
-        // Validate the provided path before creating a snapshot
         if (!rootFolderPath || typeof rootFolderPath !== 'string') {
             throw new Error('Invalid root folder path');
         }
