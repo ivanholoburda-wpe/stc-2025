@@ -16,6 +16,14 @@ export class RootFolderParsingService {
     ) {}
 
     async run(rootFolderPath: string): Promise<any> {
+        if (!rootFolderPath || typeof rootFolderPath !== 'string') {
+            throw new Error('Invalid root folder path');
+        }
+        const stat = await fs.stat(rootFolderPath).catch(() => null as any);
+        if (!stat || !stat.isDirectory()) {
+            throw new Error('Selected path is not a directory or does not exist');
+        }
+
         const snapshotRepo = this.dataSource.getRepository(Snapshot);
         const deviceRepo = this.dataSource.getRepository(Device);
 

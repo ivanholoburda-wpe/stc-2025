@@ -41,7 +41,13 @@ export function App() {
         try {
             if (window.electronAPI) {
                 const content = await window.electronAPI.runParsing();
-                setParsingResult(content);
+                if (content && content.success) {
+                    setParsingResult(content);
+                } else {
+                    setParsingResult(undefined);
+                    const msg = content && content.message ? content.message : 'Folder selection was cancelled or failed';
+                    handleShowMessage(msg);
+                }
             } else {
                 console.warn('electronAPI not found. Running in browser mode.');
             }

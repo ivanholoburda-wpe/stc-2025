@@ -22,7 +22,8 @@ export class ParsingHandler {
             properties: ['openDirectory'],
         });
 
-        if (canceled || !filePaths) {
+        const noSelection = !Array.isArray(filePaths) || filePaths.length === 0 || !filePaths[0];
+        if (canceled || noSelection) {
             return {
                 success: false,
                 data: [],
@@ -32,11 +33,19 @@ export class ParsingHandler {
 
         const directory = filePaths[0];
 
-        const result = await this.parsingService.run(directory);
-        return {
-            success: true,
-            data: result,
-            message: "Data parsed successfully",
-        };
+        try {
+            const result = await this.parsingService.run(directory);
+            return {
+                success: true,
+                data: result,
+                message: "Data parsed successfully",
+            };
+        } catch (error) {
+            return {
+                success: false,
+                data: [],
+                message: (error as Error).message || "Failed to parse selected folder",
+            };
+        }
     }
 }
