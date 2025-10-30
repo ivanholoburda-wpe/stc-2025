@@ -22,7 +22,9 @@ export class ParsingHandler {
             properties: ['openDirectory'],
         });
 
-        if (canceled || !filePaths) {
+        // Treat cancel or empty selection as failure and do not start parsing
+        const noSelection = !Array.isArray(filePaths) || filePaths.length === 0 || !filePaths[0];
+        if (canceled || noSelection) {
             return {
                 success: false,
                 data: [],
