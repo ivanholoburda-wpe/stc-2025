@@ -49,7 +49,6 @@ class DisplayBgpEvpnPeerParser extends BaseParser {
         return super.isBlockComplete(line);
     }
 
-    // --- 🔥 ДОДАНО ВІДСУТНІ ДОПОМІЖНІ МЕТОДИ 🔥 ---
 
     _addPeer(targetArray, groups) {
         targetArray.push({
@@ -84,7 +83,10 @@ class DisplayBgpEvpnPeerParser extends BaseParser {
         }
     }
 
-    _normalizeKey(key) { return key.trim().toLowerCase().replace(/\s+/g, '_'); }
+    _normalizeKey(key) {
+        return key.trim().toLowerCase().replace(/\s+/g, '_');
+    }
+
     _parseValue(value) {
         const trimmed = value.trim();
         if (trimmed.includes('.') || trimmed.includes('*')) return trimmed;

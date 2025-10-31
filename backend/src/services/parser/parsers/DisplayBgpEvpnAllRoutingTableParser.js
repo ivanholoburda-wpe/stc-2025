@@ -1,13 +1,9 @@
 const BaseParser = require('../core/BaseParser');
 
-// 🔥 ИЗМЕНЕНИЕ 1: Regex стали более надежными
 
-// REGEX: Основной маршрут (с Network).
-// Ищем не-жадно (?<status>.+?), затем ОБЯЗАТЕЛЬНЫЙ (?<network>\S+[\.:]\S+)
 const REGEX_PRIMARY_ROUTE = /^(?<status>.+?)\s+(?<network>\S+[\.:]\S+)\s+(?<nexthop>\S+)$/;
 
-// REGEX: Вторичный маршрут (без Network).
-// Ищем не-жадно (?<status>.+?), затем ОБЯЗАТЕЛЬНЫЕ 2+ пробела (?<nexthop>\S+)
+
 const REGEX_SECONDARY_ROUTE = /^(?<status>.+?)\s{2,}(?<nexthop>\S+)$/;
 
 
@@ -53,7 +49,7 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
     parseLine(line) {
         const trimmedLine = line.trim();
 
-        // 1. Игнорируемые строки
+
         if (!trimmedLine ||
             trimmedLine.startsWith('Status codes:') ||
             trimmedLine.startsWith('Origin :') ||
@@ -62,10 +58,7 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
             return true;
         }
 
-        // ... (Код для 'asMatch', 'routerIdMatch', 'instanceMatch', 'rdMatch', 'adCountMatch' остается прежним) ...
-        // (Я его опущу для краткости, он у вас верный)
 
-        // 2. Глобальная информация
         let asMatch = trimmedLine.match(/^Local AS number\s*:\s*(?<as>\S+)/i);
         if (asMatch) {
             this.data.global_info.local_as = asMatch.groups.as;
@@ -78,7 +71,7 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
             return true;
         }
 
-        // 3. Определение "Контейнера" (Контекста)
+
         if (trimmedLine.startsWith('EVPN address family:')) {
             this.currentContainer = this.data.evpn_address_family;
             this.currentRD = null;
@@ -100,7 +93,7 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
             return true;
         }
 
-        // --- 4. Данные внутри контейнера ---
+
         if (!this.currentContainer) {
             return true;
         }
@@ -123,7 +116,7 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
             return true;
         }
 
-        // 5. Парсинг маршрутов
+
         let targetRouteArray = null;
         if (this.currentContainer === this.data.evpn_address_family) {
             if (this.currentRD) targetRouteArray = this.currentRD.routes;
@@ -135,18 +128,16 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
             return true;
         }
 
-        // --- 🔥 ИЗМЕНЕНИЕ 2: Меняем порядок проверки ---
 
-        // 5a. Основной маршрут (с Network) - ПРОВЕРЯТЬ ПЕРВЫМ
         let primaryMatch = trimmedLine.match(REGEX_PRIMARY_ROUTE);
         if (primaryMatch) {
             const route = this._createRouteObject(primaryMatch.groups);
             targetRouteArray.push(route);
-            this.lastPrimaryRoute = route; // Запоминаем его
+            this.lastPrimaryRoute = route;
             return true;
         }
 
-        // 5b. Вторичный маршрут (без Network) - ПРОВЕРЯТЬ ВТОРЫМ
+
         let secondaryMatch = trimmedLine.match(REGEX_SECONDARY_ROUTE);
         if (secondaryMatch) {
             const path = this._createRouteObject(secondaryMatch.groups);
@@ -156,23 +147,21 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
                 }
                 this.lastPrimaryRoute.secondary_paths.push(path);
             } else {
-                targetRouteArray.push(path); // 'Осиротевший' путь
+                targetRouteArray.push(path);
             }
             return true;
         }
 
-        // --------------------------------------------------
 
-        // Если ничего не подошло
         return super.parseLine(line);
     }
 
-    // --- Вспомогательные методы ---
+
     _createRouteObject(groups) {
         return {
-            // trim() нужен, т.к. `.+?` может захватить лишний пробел в конце статуса
+
             status: groups.status.trim(),
-            network: this._parseValue(groups.network), // Будет undefined (->null) для secondary
+            network: this._parseValue(groups.network),
             next_hop: this._parseValue(groups.nexthop)
         };
     }
@@ -184,5 +173,5 @@ class DisplayBgpEvpnRoutingTableParser extends BaseParser {
     }
 }
 
-// Экспортируем класс
+
 module.exports = DisplayBgpEvpnRoutingTableParser;

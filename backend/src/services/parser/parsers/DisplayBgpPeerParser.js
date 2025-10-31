@@ -6,10 +6,7 @@ class DisplayBgpGlobalPeerParser extends BaseParser {
         this.name = 'display_bgp_global_peer_block';
     }
 
-    /**
-     * 🔥 ТОЧКА ВХОДУ: Реагує ТІЛЬКИ на 'display bgp peer'
-     * і переконується, що це не evpn/vpnv4/vpnv6
-     */
+
     isEntryPoint(line) {
         return line.includes('display bgp peer') &&
             !line.includes('evpn') &&
@@ -24,36 +21,34 @@ class DisplayBgpGlobalPeerParser extends BaseParser {
             global_info: {},
             peers: [],
         };
-        // Не обробляємо перший рядок (команду)
+
     }
 
     parseLine(line) {
         const trimmedLine = line.trim();
 
-        // --- 1. Ігноруємо порожні рядки та заголовки таблиці ---
+
         if (!trimmedLine || trimmedLine.startsWith('Peer      ')) {
             return true;
         }
 
-        // --- 2. Парсимо глобальну інформацію ---
+
         let kvMatch = trimmedLine.match(/^(?<key>BGP local router ID|Local AS number|Total number of peers|Peers in established state)\s*:\s*(?<value>.*)/i);
         if (kvMatch) {
             this._parseGlobalInfo(kvMatch.groups);
             return true;
         }
 
-        // --- 3. Парсимо рядок піра ---
-        // \S+ для peer та as, щоб обробляти IP, '*****' та цифри
+
         const peerMatch = trimmedLine.match(/^(?<peer>\S+)\s+(?<v>\d+)\s+(?<as>\S+)\s+(?<msg_rcvd>\d+)\s+(?<msg_sent>\d+)\s+(?<out_q>\d+)\s+(?<up_down>\S+)\s+(?<state>\S+)\s+(?<pref_rcv>\d+)$/);
         if (peerMatch) {
             this._addPeer(this.data.peers, peerMatch.groups);
             return true;
         }
 
-        return true; // Ігноруємо рядки, що не збіглися
+        return true;
     }
 
-    // --- Допоміжні методи ---
 
     _addPeer(targetArray, groups) {
         targetArray.push({
@@ -88,25 +83,26 @@ class DisplayBgpGlobalPeerParser extends BaseParser {
         }
     }
 
-    _normalizeKey(key) { return key.trim().toLowerCase().replace(/\s+/g, '_'); }
+    _normalizeKey(key) {
+        return key.trim().toLowerCase().replace(/\s+/g, '_');
+    }
+
     _parseValue(value) {
         const trimmed = value.trim();
         if (trimmed.includes('.') || trimmed.includes('*')) return trimmed;
         const num = parseInt(trimmed, 10);
         return !isNaN(num) && String(num) === trimmed ? num : trimmed;
     }
+
     isBlockComplete(line) {
         const trimmedLine = line.trim();
 
-        // 1. Якщо рядок порожній, ми ТОЧНО НЕ завершуємо блок
+
         if (!trimmedLine) {
-            return false; // Наказуємо продовжувати парсинг
+            return false;
         }
 
-        // 2. Для всіх інших рядків (не порожніх) -
-        // ми використовуємо стандартну логіку з BaseParser.
-        // Вона повинна коректно ловити командний рядок (<...>)
-        // або початок іншого блоку.
+
         return super.isBlockComplete(line);
     }
 }

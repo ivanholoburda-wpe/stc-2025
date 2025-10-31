@@ -26,8 +26,7 @@ class DisplayPortVlanParser extends BaseParser {
 
         if (!trimmedLine ||
             trimmedLine.startsWith('---') ||
-            (line.includes('Port') && line.includes('Link Type') && line.includes('PVID')))
-        {
+            (line.includes('Port') && line.includes('Link Type') && line.includes('PVID'))) {
             this.lastPortEntry = null;
             return true;
         }

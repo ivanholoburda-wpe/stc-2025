@@ -13,9 +13,9 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
 
     startBlock(line, match) {
         super.startBlock(line, match);
-        // Убедимся, что this.data инициализируется правильно
+
         this.data = {
-            ...this.data, // Сохраняем 'type', 'raw_line', 'parsed_at' из BaseParser
+            ...this.data,
             global_info: {},
             vpn_instances: [],
         };
@@ -37,15 +37,17 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
 
         const vpnHeaderMatch = trimmedLine.match(/^VPN-Instance\s+(?<name>[^,]+),\s+Router ID\s+(?<router_id>\S+):/);
         if (vpnHeaderMatch) {
-            const newVpn = { name: vpnHeaderMatch.groups.name.trim(), router_id: vpnHeaderMatch.groups.router_id, peers: [] };
+            const newVpn = {
+                name: vpnHeaderMatch.groups.name.trim(),
+                router_id: vpnHeaderMatch.groups.router_id,
+                peers: []
+            };
             this.data.vpn_instances.push(newVpn);
             this.currentVpnInstance = newVpn;
             return true;
         }
 
-        // --- 🔥 ИЗМЕНЕНИЕ 1: Регулярное выражение исправлено ---
-        // (?<state>\S+) -> (?<state>.+?)   (чтобы захватить состояния с пробелами, например "Idle (Admin)")
-        // (?<pref_rcv>\d+) -> (?<pref_rcv>\S+) (чтобы захватить дефис '-' вместо числа)
+
         const peerMatch = trimmedLine.match(/^(?<peer>\S+)\s+(?<v>\d+)\s+(?<as>\S+)\s+(?<msg_rcvd>\d+)\s+(?<msg_sent>\d+)\s+(?<out_q>\d+)\s+(?<up_down>\S+)\s+(?<state>.+?)\s+(?<pref_rcv>\S+)$/);
 
         if (this.currentVpnInstance && peerMatch) {
@@ -53,22 +55,20 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
             return true;
         }
 
-        // Если строка не распознана, базовый класс BaseParser добавит 'Unrecognized line'
-        // Но мы можем вернуть false, чтобы он это сделал
-        return super.parseLine(line); // Передаем не-trimmed, т.к. parseLine в BaseParser делает trim
+
+        return super.parseLine(line);
     }
 
     isBlockComplete(line) {
         const trimmedLine = line.trim();
-        // Пустая строка не должна завершать блок, если мы внутри
+
         if (!trimmedLine) {
             return false;
         }
-        // Используем логику BaseParser для завершения
+
         return super.isBlockComplete(line);
     }
 
-    // --- Вспомогательные методы ---
 
     _addPeer(targetArray, groups) {
         targetArray.push({
@@ -79,11 +79,9 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
             msg_sent: parseInt(groups.msg_sent, 10),
             out_queue: parseInt(groups.out_q, 10),
             up_down_time: groups.up_down,
-            state: groups.state.trim(), // Добавляем trim() на случай лишних пробелов
+            state: groups.state.trim(),
 
-            // --- 🔥 ИЗМЕНЕНИЕ 2: Используем _parseValue для обработки '-' ---
-            // parseInt(groups.pref_rcv, 10) вернет NaN для '-',
-            // а _parseValue вернет саму строку '-' или число
+
             prefixes_received: this._parseValue(groups.pref_rcv),
         });
     }
@@ -101,7 +99,7 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
                 this.data.global_info['total_peers'] = this._parseValue(value);
             }
         } else if (key === 'peers_in_established_state') {
-            // Этот 'else if' нужен, только если 'Total number' не содержит 'Peers in established state'
+
             if (!this.data.global_info['established_peers']) {
                 this.data.global_info['established_peers'] = this._parseValue(value);
             }
@@ -110,11 +108,13 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
         }
     }
 
-    _normalizeKey(key) { return key.trim().toLowerCase().replace(/\s+/g, '_'); }
+    _normalizeKey(key) {
+        return key.trim().toLowerCase().replace(/\s+/g, '_');
+    }
 
     _parseValue(value) {
         const trimmed = value.trim();
-        // Расширяем защиту для строк, которые не являются числами
+
         if (trimmed === '-' || trimmed === '***' || trimmed.includes('.') || trimmed.includes(':')) {
             return trimmed;
         }
@@ -123,5 +123,5 @@ class DisplayBgpVpnv6PeerParser extends BaseParser {
     }
 }
 
-// Не забудьте экспортировать класс
+
 module.exports = DisplayBgpVpnv6PeerParser;

@@ -39,7 +39,7 @@ class DisplayEthTrunkDetailParser extends BaseParser {
     parseLine(line) {
         const trimmedLine = line.trim();
 
-        // 0. Перевірка на новий Eth-Trunk
+
         const entryMatch = line.match(/^Eth-Trunk(?<id>\d+)'s state information is:/);
         if (entryMatch) {
             if (!this.currentTrunk || this.currentTrunk.id !== parseInt(entryMatch.groups.id, 10)) {
@@ -50,15 +50,14 @@ class DisplayEthTrunkDetailParser extends BaseParser {
 
         if (!this.currentTrunk) return true;
 
-        // 1. Ігноруємо порожні рядки та роздільники
+
         if (!trimmedLine || trimmedLine.startsWith('---')) {
             return true;
         }
 
-        // === КІНЦЕВИЙ АВТОМАТ (STATE MACHINE) ===
 
         if (this.currentState === 'parsing_local_info') {
-            // 2. Перевірка на перехід до таблиць
+
             if (trimmedLine.startsWith('ActorPortName')) {
                 this.currentState = 'parsing_lacp_actor';
                 return true;
@@ -72,9 +71,7 @@ class DisplayEthTrunkDetailParser extends BaseParser {
                 return true;
             }
 
-            // 3. 🔥 ВИПРАВЛЕНА ЛОГІКА: Парсимо кілька пар "ключ:значення" в рядку
-            // Ця регулярка шукає ключ (до двокрапки) і значення (до наступного ключа або кінця рядка)
-            // Вона також враховує, що ключ може починатися з пробілів (як у рядку 'Working Mode...')
+
             const kvPairsRegex = /\s*(?<key>[^:]+?):\s*(?<value>.*?)(?=\s{2,}[^:]+:|$)/g;
 
             let match;
@@ -85,9 +82,9 @@ class DisplayEthTrunkDetailParser extends BaseParser {
 
                     this.currentTrunk.local_info[key] = value;
 
-                    // 🔥 Ключовий момент: Визначаємо режим роботи
+
                     if (key === 'working_mode') {
-                        // Перевіряємо, чи значення ПОЧИНАЄТЬСЯ з 'Normal' або 'Static'
+
                         if (String(value).startsWith('Normal')) {
                             this.currentTrunk.mode_type = 'Manual';
                         } else if (String(value).startsWith('Static')) {
@@ -99,7 +96,7 @@ class DisplayEthTrunkDetailParser extends BaseParser {
             return true;
         }
 
-        // --- СТАН: Розбір таблиці Actor (LACP) ---
+
         if (this.currentState === 'parsing_lacp_actor') {
             if (trimmedLine.startsWith('Partner:')) {
                 this.currentState = 'parsing_lacp_partner';
@@ -121,9 +118,9 @@ class DisplayEthTrunkDetailParser extends BaseParser {
             return true;
         }
 
-        // --- СТАН: Розбір таблиці Partner (LACP) ---
+
         if (this.currentState === 'parsing_lacp_partner') {
-            if (trimmedLine.startsWith('ActorPortName')) return true; // Ігноруємо заголовок
+            if (trimmedLine.startsWith('ActorPortName')) return true;
             const partnerMatch = trimmedLine.match(/^(?<name>\S+)\s+(?<sys_pri>\d+)\s+(?<sys_id>\S+)\s+(?<port_pri>\d+)\s+(?<port_no>\d+)\s+(?<port_key>\d+)\s+(?<port_state>\d+)$/);
             if (partnerMatch) {
                 this.currentTrunk.partner_ports.push({
@@ -139,7 +136,7 @@ class DisplayEthTrunkDetailParser extends BaseParser {
             return true;
         }
 
-        // --- СТАН: Розбір таблиці портів (Normal/Manual) ---
+
         if (this.currentState === 'parsing_normal_ports') {
             const normalMatch = trimmedLine.match(/^(?<name>\S+)\s+(?<status>\S+)\s+(?<weight>\d+)$/);
             if (normalMatch) {
@@ -156,7 +153,7 @@ class DisplayEthTrunkDetailParser extends BaseParser {
     }
 
     _normalizeKey(key) {
-        // Чистимо ключ від зайвих символів, наприклад, 'Local:'
+
         return key.trim().toLowerCase().replace('local:', '').trim().replace(/\s+/g, '_');
     }
 

@@ -1,14 +1,9 @@
 const BaseParser = require('../core/BaseParser');
 
-/**
- * Регулярное выражение для основного маршрута (у которого есть 'Network').
- */
+
 const REGEX_PRIMARY_ROUTE = /^(?<status>\S+)\s+(?<network>\S+)\s+(?<nexthop>\S+)\s+(?<med>\S*)\s+(?<locprf>\S*)\s+(?<prefval>\S+)\s+(?<path>.*)$/;
 
-/**
- * Регулярное выражение для вторичного маршрута (где 'Network' пуст).
- * Ключевое отличие - \s{2,} (два или более пробела) после 'status'.
- */
+
 const REGEX_SECONDARY_ROUTE = /^(?<status>\S+)\s{2,}(?<nexthop>\S+)\s+(?<med>\S*)\s+(?<locprf>\S*)\s+(?<prefval>\S+)\s+(?<path>.*)$/;
 
 
@@ -39,7 +34,7 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
     isBlockComplete(line) {
         const trimmedLine = line.trim();
         if (!trimmedLine) {
-            return false; // Продолжаем парсинг
+            return false;
         }
         return super.isBlockComplete(line);
     }
@@ -47,7 +42,7 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
     parseLine(line) {
         const trimmedLine = line.trim();
 
-        // 1. Пропускаем пустые строки и заголовки
+
         if (!trimmedLine ||
             trimmedLine.startsWith('Status codes:') ||
             trimmedLine.startsWith('RPKI validation codes:') ||
@@ -55,7 +50,7 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
             return true;
         }
 
-        // 2. Глобальная информация
+
         let routerIdMatch = trimmedLine.match(/^BGP Local router ID is (?<router_id>\S+)/i);
         if (routerIdMatch) {
             this.data.global_info.local_router_id = routerIdMatch.groups.router_id;
@@ -68,7 +63,7 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
             return true;
         }
 
-        // 3. Новый Route Distinguisher (RD)
+
         let rdMatch = trimmedLine.match(/^Route Distinguisher: (?<rd>\S+)/i);
         if (rdMatch) {
             this.currentRD = {
@@ -80,14 +75,12 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
             return true;
         }
 
-        // 4. Парсинг маршрутов (только если мы внутри RD)
+
         if (!this.currentRD) {
-            return true; // Ждем RD
+            return true;
         }
 
-        // --- 🔥 ИСПРАВЛЕНИЕ: МЕНЯЕМ БЛОКИ МЕСТАМИ ---
 
-        // 4a. Пытаемся распознать ВТОРИЧНЫЙ маршрут (без Network) ПЕРВЫМ
         let secondaryMatch = trimmedLine.match(REGEX_SECONDARY_ROUTE);
         if (secondaryMatch) {
             const path = this._createRouteObject(secondaryMatch.groups);
@@ -103,22 +96,19 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
             return true;
         }
 
-        // 4b. Пытаемся распознать ОСНОВНОЙ маршрут (с Network) ВТОРЫМ
+
         let primaryMatch = trimmedLine.match(REGEX_PRIMARY_ROUTE);
         if (primaryMatch) {
             const route = this._createRouteObject(primaryMatch.groups);
             this.currentRD.routes.push(route);
-            this.lastPrimaryRoute = route; // Сохраняем как последний основной
+            this.lastPrimaryRoute = route;
             return true;
         }
 
-        // ---------------------------------------------
 
-        // Если ничего не совпало, передаем в BaseParser (он сообщит об ошибке)
         return super.parseLine(line);
     }
 
-    // --- Вспомогательные методы ---
 
     _createRouteObject(groups) {
         return {
@@ -152,5 +142,5 @@ class DisplayBgpVpnv4RoutingTableParser extends BaseParser {
     }
 }
 
-// Экспортируем класс
+
 module.exports = DisplayBgpVpnv4RoutingTableParser;

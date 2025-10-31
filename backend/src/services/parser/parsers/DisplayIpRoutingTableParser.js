@@ -1,14 +1,11 @@
 const BaseParser = require('../core/BaseParser');
 
-/**
- * Парсер для вывода команды 'display ip routing-table statistics'.
- * Собирает сводную информацию и статистику по каждому протоколу.
- */
+
 class DisplayIpRoutingTableStatisticsParser extends BaseParser {
     constructor() {
         super();
         this.name = 'display_ip_routing_table_statistics_block';
-        this.priority = 9; // Чуть выше, чем у 'display_ip_routing_table_block'
+        this.priority = 9;
 
         this.rules = [
             {
@@ -20,8 +17,8 @@ class DisplayIpRoutingTableStatisticsParser extends BaseParser {
             },
             {
                 name: 'protocol_stats',
-                // Захватывает строки типа: DIRECT 20 20 35 15 15
-                // или Total 299 295 3077 2778 2778
+
+
                 regex: /^(?<proto>\S+)\s+(?<total>\d+)\s+(?<active>\d+)\s+(?<added>\d+)\s+(?<deleted>\d+)\s+(?<freed>\d+)\s*$/,
                 handler: (match) => {
                     const entry = {
@@ -33,7 +30,7 @@ class DisplayIpRoutingTableStatisticsParser extends BaseParser {
                         freed_routes: parseInt(match.groups.freed, 10)
                     };
 
-                    // Строку 'Total' сохраняем отдельно
+
                     if (entry.protocol.toLowerCase() === 'total') {
                         this.data.totals = entry;
                     } else {
@@ -43,10 +40,10 @@ class DisplayIpRoutingTableStatisticsParser extends BaseParser {
             },
             {
                 name: 'header_skip',
-                // Пропускаем строки заголовков
+
                 regex: /^(Proto\s+total|routes\s+routes)/i,
                 handler: () => {
-                    // Ничего не делаем, просто пропускаем
+
                 }
             }
         ];
@@ -66,7 +63,7 @@ class DisplayIpRoutingTableStatisticsParser extends BaseParser {
         };
     }
 
-    // Используем BaseParser.parseLine, так как мы определили this.rules
+
 }
 
 module.exports = DisplayIpRoutingTableStatisticsParser;
