@@ -4,7 +4,6 @@ import {TYPES} from "../../../types";
 import {ParserBlock} from "./types";
 import {IngestionContext} from "./IngestionContext";
 import {IPhysicalLinkRepository} from "../../../repositories/PhysicalLinkRepository";
-import {PhysicalLink} from "../../../models/PhysicalLink";
 
 @injectable()
 export class LldpNeighborIngestor implements IIngestor {

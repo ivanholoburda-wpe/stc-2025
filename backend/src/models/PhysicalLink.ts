@@ -1,6 +1,5 @@
 import {Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Unique, Column} from "typeorm";
 import { Snapshot } from "./Snapshot";
-import { Interface } from "./Interface";
 
 @Entity({ name: "physical_links" })
 @Unique(["snapshot", "source_device_name", "target_device_name"])

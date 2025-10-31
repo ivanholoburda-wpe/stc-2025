@@ -20,25 +20,6 @@ export class InterfaceReportProvider implements IReportProvider {
             this.linkRepo.findForTopology(snapshotId)
         ]);
 
-        const neighborMap = new Map<number, { neighborDevice: string; neighborInterface: string }>();
-
-        const reportData = interfaces.map((iface) => {
-            const transceiver = iface.transceivers?.[0];
-            const neighbor = neighborMap.get(iface.id);
-            return {
-                'Sysname': iface.device?.hostname,
-                'Port': iface.name,
-                'Status': iface.phy_status,
-                'TxWarningRange': `${transceiver?.tx_warning_min ?? ''}, ${transceiver?.tx_warning_max ?? ''}`,
-                'RxWarningRange': `${transceiver?.rx_warning_min ?? ''}, ${transceiver?.rx_warning_max ?? ''}`,
-                'TxLvl': transceiver?.tx_power,
-                'RxLvl': transceiver?.rx_power,
-                'Tx': transceiver?.tx_power ? 'OK' : 'NOT OK',
-                'Rx': transceiver?.rx_power ? 'OK' : 'NOT OK',
-                'NeighborDevice': neighbor?.neighborDevice,
-            };
-        });
-
         const rows = physicalLinks.map((link, idx) => ({
             SnapshotId: snapshotId,
             SourceDevice: link.source_device_name,
