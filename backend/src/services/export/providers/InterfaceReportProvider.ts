@@ -20,7 +20,7 @@ export class InterfaceReportProvider implements IReportProvider {
             this.linkRepo.findForTopology(snapshotId)
         ]);
 
-        const rows = physicalLinks.map((link, idx) => ({
+        const rows = physicalLinks.map((link) => ({
             SnapshotId: snapshotId,
             SourceDevice: link.source_device_name,
             SourceInterface: link.source_interface_name,
