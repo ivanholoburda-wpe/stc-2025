@@ -23,7 +23,7 @@ export class PhysicalLinkRepository implements IPhysicalLinkRepository {
 
         await this.repository.upsert(
             links,
-            ['snapshot', 'source_interface', 'target_interface']
+            ['snapshot', 'source_device_name', 'target_device_name']
         );
     }
 
@@ -31,14 +31,6 @@ export class PhysicalLinkRepository implements IPhysicalLinkRepository {
         return this.repository.find({
             where: {
                 snapshot: { id: snapshotId },
-            },
-            relations: {
-                source_interface: {
-                    device: true,
-                },
-                target_interface: {
-                    device: true,
-                },
             },
         });
     }

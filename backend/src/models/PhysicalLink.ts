@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Unique } from "typeorm";
+import {Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, Unique, Column} from "typeorm";
 import { Snapshot } from "./Snapshot";
 import { Interface } from "./Interface";
 
 @Entity({ name: "physical_links" })
-@Unique(["snapshot", "source_interface", "target_interface"])
+@Unique(["snapshot", "source_device_name", "target_device_name"])
 export class PhysicalLink {
     @PrimaryGeneratedColumn()
     id!: number;
@@ -12,11 +12,15 @@ export class PhysicalLink {
     @JoinColumn({ name: "snapshot_id" })
     snapshot!: Snapshot;
 
-    @ManyToOne(() => Interface, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: "source_interface_id" })
-    source_interface!: Interface;
+    @Column({ name: "source_device_name" })
+    source_device_name!: string;
 
-    @ManyToOne(() => Interface, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: "target_interface_id" })
-    target_interface!: Interface;
+    @Column({ name: "source_interface_name" })
+    source_interface_name!: string;
+
+    @Column({ name: "target_device_name" })
+    target_device_name!: string;
+
+    @Column({ name: "target_interface_name" })
+    target_interface_name!: string;
 }

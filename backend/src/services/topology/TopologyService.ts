@@ -1,8 +1,7 @@
 import { injectable, inject } from "inversify";
 import { TYPES } from "../../types";
 import { IPhysicalLinkRepository } from "../../repositories/PhysicalLinkRepository";
-import { Device } from "../../models/Device";
-import {ISnapshotRepository} from "../../repositories/SnapshotRepository";
+import { ISnapshotRepository } from "../../repositories/SnapshotRepository";
 
 interface Node {
     id: number;
@@ -37,31 +36,48 @@ export class TopologyService implements ITopologyService {
         const links = await this.linkRepo.findForTopology(latestSnapshot.id);
 
         const edges: Edge[] = [];
-        const deviceMap = new Map<number, Device>();
 
-        for (const link of links) {
-            if (!link.source_interface?.device || !link.target_interface?.device) {
-                continue;
-            }
+        const deviceNameToId = new Map<string, number>();
+        const nodes: Node[] = [];
+        let nextId = 1;
 
-            const sourceDevice = link.source_interface.device;
-            const targetDevice = link.target_interface.device;
-
-            deviceMap.set(sourceDevice.id, sourceDevice);
-            deviceMap.set(targetDevice.id, targetDevice);
-
-            edges.push({
-                from: sourceDevice.id,
-                to: targetDevice.id,
-                label: `${link.source_interface.name} ↔ ${link.target_interface.name}`,
-            });
+        const snapshotDevicesByHostname = new Map<string, { model?: string }>();
+        const snapshotDevices: any[] = (latestSnapshot as any).devices ?? [];
+        for (const d of snapshotDevices) {
+            snapshotDevicesByHostname.set(d.hostname, { model: d.model });
         }
 
-        const nodes: Node[] = Array.from(deviceMap.values()).map(device => ({
-            id: device.id,
-            label: device.hostname,
-            model: device.model,
-        }));
+        const getOrCreateNodeId = (deviceName: string): number => {
+            let existing = deviceNameToId.get(deviceName);
+            if (existing) return existing;
+
+            const id = nextId++;
+            deviceNameToId.set(deviceName, id);
+
+            const extra = snapshotDevicesByHostname.get(deviceName);
+            nodes.push({
+                id,
+                label: deviceName,
+                model: extra?.model,
+            });
+
+            return id;
+        };
+
+        for (const link of links) {
+            const sourceName = link.source_device_name;
+            const targetName = link.target_device_name;
+            if (!sourceName || !targetName) continue;
+
+            const fromId = getOrCreateNodeId(sourceName);
+            const toId = getOrCreateNodeId(targetName);
+
+            edges.push({
+                from: fromId,
+                to: toId,
+                label: `${link.source_interface_name} ↔ ${link.target_interface_name}`,
+            });
+        }
 
         return { nodes, edges };
     }
