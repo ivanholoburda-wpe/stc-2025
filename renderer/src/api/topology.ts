@@ -1,14 +1,14 @@
 import {APIResult} from "./types";
 
 export interface Node {
-    id: string;
+    id: number;
     label: string;
     model?: string;
 }
 
 export interface Edge {
-    from: string;
-    to: string;
+    from: number;
+    to: number;
     label: string;
 }
 
