@@ -1,18 +1,17 @@
 import { injectable, inject } from "inversify";
 import { TYPES } from "../../types";
 import { IPhysicalLinkRepository } from "../../repositories/PhysicalLinkRepository";
-import { Device } from "../../models/Device";
 import {ISnapshotRepository} from "../../repositories/SnapshotRepository";
 
 interface Node {
-    id: number;
+    id: string;
     label: string;
     model?: string;
 }
 
 interface Edge {
-    from: number;
-    to: number;
+    from: string;
+    to: string;
     label: string;
 }
 
@@ -37,32 +36,46 @@ export class TopologyService implements ITopologyService {
         const links = await this.linkRepo.findForTopology(latestSnapshot.id);
 
         const edges: Edge[] = [];
-        const deviceMap = new Map<number, Device>();
+        const nodes = new Map<string, Node>();
 
         for (const link of links) {
-            if (!link.source_interface?.device || !link.target_interface?.device) {
+            const sourceDevice = link.source_interface?.device;
+            const targetDevice = link.target_interface?.device;
+
+            if (!sourceDevice || !targetDevice) {
                 continue;
             }
 
-            const sourceDevice = link.source_interface.device;
-            const targetDevice = link.target_interface.device;
+            const sourceDeviceName = sourceDevice.hostname ?? sourceDevice.folder_name;
+            const targetDeviceName = targetDevice.hostname ?? targetDevice.folder_name;
 
-            deviceMap.set(sourceDevice.id, sourceDevice);
-            deviceMap.set(targetDevice.id, targetDevice);
+            if (!sourceDeviceName || !targetDeviceName) {
+                continue;
+            }
+
+            if (!nodes.has(sourceDeviceName)) {
+                nodes.set(sourceDeviceName, {
+                    id: sourceDeviceName,
+                    label: sourceDeviceName,
+                    model: sourceDevice.model,
+                });
+            }
+
+            if (!nodes.has(targetDeviceName)) {
+                nodes.set(targetDeviceName, {
+                    id: targetDeviceName,
+                    label: targetDeviceName,
+                    model: targetDevice.model,
+                });
+            }
 
             edges.push({
-                from: sourceDevice.id,
-                to: targetDevice.id,
+                from: sourceDeviceName,
+                to: targetDeviceName,
                 label: `${link.source_interface.name} ↔ ${link.target_interface.name}`,
             });
         }
 
-        const nodes: Node[] = Array.from(deviceMap.values()).map(device => ({
-            id: device.id,
-            label: device.hostname,
-            model: device.model,
-        }));
-
-        return { nodes, edges };
+        return { nodes: Array.from(nodes.values()), edges };
     }
 }

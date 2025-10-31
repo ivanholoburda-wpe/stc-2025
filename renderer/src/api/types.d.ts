@@ -71,7 +71,10 @@ interface ElectronAPI {
     getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
     exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
     getAllOptionsWithTypes: () => Promise<APIResult<OptionWithType[]>>;
-    updateOptions: (options: AppOptions) => Promise<APIResult<void>>
+    updateOptions: (options: AppOptions) => Promise<APIResult<void>>;
+    clearData: () => Promise<APIResult<{ message?: string }>>;
+    backupData: () => Promise<APIResult<{ path: string }>>;
+    restoreData: () => Promise<APIResult<{ message?: string }>>;
 }
 
 interface ConfigAPI {

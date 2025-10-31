@@ -94,6 +94,8 @@ import {IpRoutePerDeviceReportProvider} from "./services/export/providers/IpRout
 import {InterfaceReportProvider} from "./services/export/providers/InterfaceReportProvider";
 import {IReportRepository, ReportRepository} from "./repositories/ReportRepository";
 import {ConfigurationHandler} from "./handlers/ConfigurationHandler";
+import {IDatabaseMaintenanceService, DatabaseMaintenanceService} from "./services/maintenance/DatabaseMaintenanceService";
+import {MaintenanceHandler} from "./handlers/MaintenanceHandler";
 
 const container = new Container();
 
@@ -138,6 +140,7 @@ container.bind<IPhysicalLinkRepository>(TYPES.PhysicalLinkRepository).to(Physica
 container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
 container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
 container.bind<IExportService>(TYPES.ExportService).to(ExportService);
+container.bind<IDatabaseMaintenanceService>(TYPES.DatabaseMaintenanceService).to(DatabaseMaintenanceService);
 
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
@@ -147,6 +150,7 @@ container.bind<ExportHandler>(ExportHandler).toSelf();
 container.bind<AnalyticsHandler>(AnalyticsHandler).toSelf();
 container.bind<AlarmsHandler>(AlarmsHandler).toSelf();
 container.bind<ConfigurationHandler>(ConfigurationHandler).toSelf();
+container.bind<MaintenanceHandler>(MaintenanceHandler).toSelf();
 
 // Ingestors
 container.bind<IIngestor>(TYPES.IIngestor).to(InterfaceBriefIngestor);
