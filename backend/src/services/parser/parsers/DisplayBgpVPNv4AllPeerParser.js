@@ -1,20 +1,14 @@
 const BaseParser = require('../core/BaseParser');
 
-class DisplayBgpGlobalPeerParser extends BaseParser {
+class DisplayBgpVpnv4PeerParser extends BaseParser {
     constructor() {
         super();
-        this.name = 'display_bgp_global_peer_block';
+        this.name = 'display_bgp_vpnv4_peer_block';
+        this.currentVpnInstance = null; // Посилання на поточний VPN
     }
 
-    /**
-     * 🔥 ТОЧКА ВХОДУ: Реагує ТІЛЬКИ на 'display bgp peer'
-     * і переконується, що це не evpn/vpnv4/vpnv6
-     */
     isEntryPoint(line) {
-        return line.includes('display bgp peer') &&
-            !line.includes('evpn') &&
-            !line.includes('vpnv4') &&
-            !line.includes('vpnv6');
+        return line.includes('display bgp vpnv4 all peer');
     }
 
     startBlock(line, match) {
@@ -22,39 +16,44 @@ class DisplayBgpGlobalPeerParser extends BaseParser {
         this.data = {
             type: this.name,
             global_info: {},
-            peers: [],
+            vpn_instances: [],
         };
-        // Не обробляємо перший рядок (команду)
+        this.currentVpnInstance = null;
     }
 
     parseLine(line) {
         const trimmedLine = line.trim();
 
-        // --- 1. Ігноруємо порожні рядки та заголовки таблиці ---
-        if (!trimmedLine || trimmedLine.startsWith('Peer      ')) {
+        if (!trimmedLine || trimmedLine.startsWith('Peer      ') || line.includes('Peer of IPv4-family for vpn instance')) {
             return true;
         }
 
-        // --- 2. Парсимо глобальну інформацію ---
         let kvMatch = trimmedLine.match(/^(?<key>BGP local router ID|Local AS number|Total number of peers|Peers in established state)\s*:\s*(?<value>.*)/i);
         if (kvMatch) {
             this._parseGlobalInfo(kvMatch.groups);
             return true;
         }
 
-        // --- 3. Парсимо рядок піра ---
-        // \S+ для peer та as, щоб обробляти IP, '*****' та цифри
-        const peerMatch = trimmedLine.match(/^(?<peer>\S+)\s+(?<v>\d+)\s+(?<as>\S+)\s+(?<msg_rcvd>\d+)\s+(?<msg_sent>\d+)\s+(?<out_q>\d+)\s+(?<up_down>\S+)\s+(?<state>\S+)\s+(?<pref_rcv>\d+)$/);
-        if (peerMatch) {
-            this._addPeer(this.data.peers, peerMatch.groups);
+        // 🔥 ВИПРАВЛЕННЯ ТУТ: Замінено [\d\.]+ на \S+ для router_id
+        const vpnHeaderMatch = trimmedLine.match(/^VPN-Instance\s+(?<name>[^,]+),\s+Router ID\s+(?<router_id>\S+):/);
+        if (vpnHeaderMatch) {
+            const newVpn = { name: vpnHeaderMatch.groups.name.trim(), router_id: vpnHeaderMatch.groups.router_id, peers: [] };
+            this.data.vpn_instances.push(newVpn);
+            this.currentVpnInstance = newVpn;
             return true;
         }
 
-        return true; // Ігноруємо рядки, що не збіглися
+        // Регулярка для пірів вже була правильною (\S+), тому її не чіпаємо
+        const peerMatch = trimmedLine.match(/^(?<peer>\S+)\s+(?<v>\d+)\s+(?<as>\S+)\s+(?<msg_rcvd>\d+)\s+(?<msg_sent>\d+)\s+(?<out_q>\d+)\s+(?<up_down>\S+)\s+(?<state>\S+)\s+(?<pref_rcv>\d+)$/);
+        if (this.currentVpnInstance && peerMatch) {
+            this._addPeer(this.currentVpnInstance.peers, peerMatch.groups);
+            return true;
+        }
+
+        return true;
     }
 
-    // --- Допоміжні методи ---
-
+    // --- Допоміжні методи (залишаються без змін) ---
     _addPeer(targetArray, groups) {
         targetArray.push({
             peer: groups.peer,
@@ -68,26 +67,21 @@ class DisplayBgpGlobalPeerParser extends BaseParser {
             prefixes_received: parseInt(groups.pref_rcv, 10),
         });
     }
-
     _parseGlobalInfo(groups) {
         const key = this._normalizeKey(groups.key);
         const value = groups.value;
-
         if (key === 'total_number_of_peers') {
             const stats = value.match(/(\d+)\s+Peers in established state\s*:\s*(\d+)/);
             if (stats) {
                 this.data.global_info['total_peers'] = parseInt(stats[1], 10);
                 this.data.global_info['established_peers'] = parseInt(stats[2], 10);
-            } else {
-                this.data.global_info['total_peers'] = this._parseValue(value);
-            }
+            } else { this.data.global_info['total_peers'] = this._parseValue(value); }
         } else if (key === 'peers_in_established_state') {
             this.data.global_info['established_peers'] = this._parseValue(value);
         } else {
             this.data.global_info[key] = this._parseValue(value);
         }
     }
-
     _normalizeKey(key) { return key.trim().toLowerCase().replace(/\s+/g, '_'); }
     _parseValue(value) {
         const trimmed = value.trim();
@@ -111,4 +105,4 @@ class DisplayBgpGlobalPeerParser extends BaseParser {
     }
 }
 
-module.exports = DisplayBgpGlobalPeerParser;
+module.exports = DisplayBgpVpnv4PeerParser;
