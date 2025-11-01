@@ -24,8 +24,7 @@ export class VpnInstanceIngestor implements IIngestor {
             device: context.device,
             name: instance.name,
             address_family: instance.family,
-
-            rd: instance.rd,
+            rd: instance.rd && instance.rd.trim() !== '' ? instance.rd.trim() : null,
         }));
 
         await this.vpnRepo.upsert(instancesToUpsert);

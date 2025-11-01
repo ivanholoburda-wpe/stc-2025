@@ -8,9 +8,12 @@ import {
     getProtocolsForDevice,
     getHardwareForDevice,
     getVpnForDevice,
+    getVlansForDevice,
+    getEthTrunksForDevice,
+    getPortVlansForDevice,
     Device, Interface, IpRoute, ARPRecord, BgpPeer,
     OspfDetail, IsisPeer, BfdSession, HardwareComponent,
-    MplsL2vc, VpnInstance
+    MplsL2vc, VpnInstance, Vlan, EthTrunk, PortVlan, VxlanTunnel
 } from '../../api/devices';
 import {getSnapshots, Snapshot} from '../../api/snapshot';
 import {
@@ -21,7 +24,7 @@ import {
 const StatusIndicator = ({status}: { status?: string }) => {
     if (!status) return <span className="text-gray-500">-</span>;
     const lowerStatus = status.toLowerCase();
-    const isGood = lowerStatus.startsWith('up') || lowerStatus.startsWith('estab') || lowerStatus === 'normal';
+    const isGood = lowerStatus.startsWith('up') || lowerStatus.startsWith('estab') || lowerStatus === 'normal' || lowerStatus === 'enable';
     if (isGood) return <span
         className={`px-2 py-0.5 text-xs font-semibold rounded-full bg-green-500/20 text-green-300`}>{status}</span>;
     return <span
@@ -66,7 +69,10 @@ export function DevicesView() {
         bfdSessions: BfdSession[]
     } | null>(null);
     const [hardware, setHardware] = useState<HardwareComponent[] | null>(null);
-    const [vpn, setVpn] = useState<{ mplsL2vcs: MplsL2vc[], vpnInstances: VpnInstance[] } | null>(null);
+    const [vpn, setVpn] = useState<{ mplsL2vcs: MplsL2vc[], vpnInstances: VpnInstance[], vxlanTunnels: VxlanTunnel[] } | null>(null);
+    const [vlans, setVlans] = useState<Vlan[] | null>(null);
+    const [ethTrunks, setEthTrunks] = useState<EthTrunk[] | null>(null);
+    const [portVlans, setPortVlans] = useState<PortVlan[] | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('Summary');
@@ -103,6 +109,9 @@ export function DevicesView() {
         setProtocols(null);
         setHardware(null);
         setVpn(null);
+        setVlans(null);
+        setEthTrunks(null);
+        setPortVlans(null);
         setSummaryDetails(null);
         setActiveTab('Summary');
 
@@ -169,8 +178,27 @@ export function DevicesView() {
                             result = await getVpnForDevice(selectedDeviceId, selectedSnapshotId);
                             if (result.success) setVpn(result.data || {
                                 mplsL2vcs: [],
-                                vpnInstances: []
+                                vpnInstances: [],
+                                vxlanTunnels: []
                             }); else setError(result.error);
+                        }
+                        break;
+                    case 'VLANs':
+                        if (vlans === null) {
+                            result = await getVlansForDevice(selectedDeviceId, selectedSnapshotId);
+                            if (result.success) setVlans(result.data || []); else setError(result.error);
+                        }
+                        break;
+                    case 'Eth-Trunks':
+                        if (ethTrunks === null) {
+                            result = await getEthTrunksForDevice(selectedDeviceId, selectedSnapshotId);
+                            if (result.success) setEthTrunks(result.data || []); else setError(result.error);
+                        }
+                        break;
+                    case 'Port-VLANs':
+                        if (portVlans === null) {
+                            result = await getPortVlansForDevice(selectedDeviceId, selectedSnapshotId);
+                            if (result.success) setPortVlans(result.data || []); else setError(result.error);
                         }
                         break;
                 }
@@ -212,29 +240,60 @@ export function DevicesView() {
         </div>
     );
 
-    const HardwareTab = ({components}: { components: HardwareComponent[] | null }) => (
-        <InfoCard title="Hardware Components">
-            <Table headers={["Slot", "Type", "Model", "Status", "Role"]}>
-                {components?.map(comp => (<tr key={comp.id} className="hover:bg-gray-700/50">
-                    <td className="py-3 px-4">{comp.slot}</td>
-                    <td className="py-3 px-4 font-mono">{comp.type}</td>
-                    <td className="py-3 px-4 font-mono">{comp.model}</td>
-                    <td className="py-3 px-4"><StatusIndicator status={comp.status}/></td>
-                    <td className="py-3 px-4">{comp.role}</td>
-                </tr>))}
-            </Table>
-        </InfoCard>
-    );
+    const HardwareTab = ({components}: { components: HardwareComponent[] | null }) => {
+        const hasHealthData = components?.some(c => c.details && (c.details.cpu_usage_percent !== undefined || c.details.memory_usage_percent !== undefined));
+        
+        return (
+            <div className="space-y-8">
+                <InfoCard title="Hardware Components">
+                    <Table headers={hasHealthData ? ["Slot", "Type", "Model", "Status", "Role", "CPU %", "Memory %", "Memory Used/Total"] : ["Slot", "Type", "Model", "Status", "Role"]}>
+                        {components?.map(comp => {
+                            const healthData = comp.details as any;
+                            const hasHealth = healthData && (healthData.cpu_usage_percent !== undefined || healthData.memory_usage_percent !== undefined);
+                            const memUsed = healthData?.memory_used_mb;
+                            const memTotal = healthData?.memory_total_mb;
+                            const memDisplay = memUsed && memTotal ? `${memUsed}MB/${memTotal}MB` : '-';
+                            
+                            return (
+                                <tr key={comp.id} className="hover:bg-gray-700/50">
+                                    <td className="py-3 px-4 font-mono">{comp.slot}</td>
+                                    <td className="py-3 px-4">{comp.type}</td>
+                                    <td className="py-3 px-4 font-mono">{comp.model || '-'}</td>
+                                    <td className="py-3 px-4"><StatusIndicator status={comp.status}/></td>
+                                    <td className="py-3 px-4">{comp.role || '-'}</td>
+                                    {hasHealthData && (
+                                        <>
+                                            <td className="py-3 px-4 text-gray-300">
+                                                {healthData?.cpu_usage_percent !== undefined ? `${healthData.cpu_usage_percent}%` : '-'}
+                                            </td>
+                                            <td className="py-3 px-4 text-gray-300">
+                                                {healthData?.memory_usage_percent !== undefined ? `${healthData.memory_usage_percent}%` : '-'}
+                                            </td>
+                                            <td className="py-3 px-4 text-gray-300 font-mono text-xs">{memDisplay}</td>
+                                        </>
+                                    )}
+                                </tr>
+                            );
+                        })}
+                    </Table>
+                </InfoCard>
+            </div>
+        );
+    };
 
     const PortsTab = ({interfaces}: { interfaces: Interface[] | null }) => (
         <InfoCard title="Interfaces & Transceivers">
             <Table
-                headers={["Port", "PHY", "Proto", "IP Address", "Description", "Rx (dBm)", "Tx (dBm)", "TRX Type", "TRX S/N"]}>
+                headers={["Port", "PHY", "Proto", "IP Address", "In Util", "Out Util", "In Errors", "Out Errors", "Description", "Rx (dBm)", "Tx (dBm)", "TRX Type", "TRX S/N"]}>
                 {interfaces?.map(iface => (<tr key={iface.id} className="hover:bg-gray-700/50">
                     <td className="py-3 px-4 font-mono">{iface.name}</td>
                     <td className="py-3 px-4"><StatusIndicator status={iface.phy_status}/></td>
                     <td className="py-3 px-4"><StatusIndicator status={iface.protocol_status}/></td>
                     <td className="py-3 px-4 font-mono">{iface.ip_address || '-'}</td>
+                    <td className="py-3 px-4 text-gray-300">{iface.in_utilization || '-'}</td>
+                    <td className="py-3 px-4 text-gray-300">{iface.out_utilization || '-'}</td>
+                    <td className="py-3 px-4 text-gray-300">{iface.in_errors ?? 0}</td>
+                    <td className="py-3 px-4 text-gray-300">{iface.out_errors ?? 0}</td>
                     <td className="py-3 px-4 text-gray-400">{iface.description || '-'}</td>
                     <td className="py-3 px-4 text-gray-400">{iface.transceivers?.[0]?.rx_power?.toFixed(2) ?? '-'}</td>
                     <td className="py-3 px-4 text-gray-400">{iface.transceivers?.[0]?.tx_power?.toFixed(2) ?? '-'}</td>
@@ -248,12 +307,17 @@ export function DevicesView() {
     const RoutingTab = ({data}: { data: { ipRoutes: IpRoute[], arpRecords: ARPRecord[] } | null }) => (
         <div className="space-y-8">
             <InfoCard title="IP Routing Table"><Table
-                headers={["Destination/Mask", "Protocol", "NextHop", "Interface", "Pref", "Cost"]}>{data?.ipRoutes.map(r =>
+                headers={["Destination/Mask", "Protocol", "NextHop", "Interface", "Status", "Network", "Loc Prf", "MED", "VPN Instance", "Pref", "Cost"]}>{data?.ipRoutes.map(r =>
                 <tr key={r.id} className="hover:bg-gray-700/50">
                     <td className="py-2 px-3 font-mono">{r.destination_mask}</td>
                     <td className="py-2 px-3">{r.protocol}</td>
                     <td className="py-2 px-3 font-mono">{r.next_hop}</td>
                     <td className="py-2 px-3 font-mono">{r.interface?.name || '-'}</td>
+                    <td className="py-2 px-3 font-mono text-xs">{r.status || '-'}</td>
+                    <td className="py-2 px-3 font-mono text-xs">{r.network || '-'}</td>
+                    <td className="py-2 px-3">{r.loc_prf ?? '-'}</td>
+                    <td className="py-2 px-3">{r.med || '-'}</td>
+                    <td className="py-2 px-3 font-mono text-xs">{r.vpn_instance || '-'}</td>
                     <td className="py-2 px-3">{r.preference}</td>
                     <td className="py-2 px-3">{r.cost}</td>
                 </tr>)}</Table></InfoCard>
@@ -279,12 +343,16 @@ export function DevicesView() {
     }) => (
         <div className="space-y-8">
             <InfoCard title="BGP Peers"><Table
-                headers={["Peer IP", "Remote AS", "State", "Address Family", "Msg Rcvd", "Msg Sent"]}>{data?.bgpPeers.map(p =>
+                headers={["Peer IP", "Remote AS", "State", "Address Family", "Version", "Out Queue", "Prefixes", "VPN Instance", "Msg Rcvd", "Msg Sent"]}>{data?.bgpPeers.map(p =>
                 <tr key={p.id} className="hover:bg-gray-700/50">
                     <td className="py-2 px-3 font-mono">{p.peer_ip}</td>
                     <td>{p.remote_as}</td>
                     <td><StatusIndicator status={p.state}/></td>
                     <td className="font-mono">{p.address_family}</td>
+                    <td>{p.version ?? '-'}</td>
+                    <td>{p.out_queue ?? '-'}</td>
+                    <td>{p.prefixes_received ?? '-'}</td>
+                    <td className="font-mono text-xs">{p.vpn_instance || '-'}</td>
                     <td>{p.msg_rcvd}</td>
                     <td>{p.msg_sent}</td>
                 </tr>)}</Table></InfoCard>
@@ -317,7 +385,7 @@ export function DevicesView() {
         </div>
     );
 
-    const VpnTab = ({data}: { data: { mplsL2vcs: MplsL2vc[], vpnInstances: VpnInstance[] } | null }) => (
+    const VpnTab = ({data}: { data: { mplsL2vcs: MplsL2vc[], vpnInstances: VpnInstance[], vxlanTunnels: VxlanTunnel[] } | null }) => (
         <div className="space-y-8">
             <InfoCard title="MPLS L2VCs (Virtual Circuits)"><Table
                 headers={["Interface", "Destination", "VC ID", "State", "Local Label", "Remote Label"]}>{data?.mplsL2vcs.map(vc =>
@@ -333,9 +401,74 @@ export function DevicesView() {
                 headers={["Name", "Route Distinguisher (RD)", "Address Family"]}>{data?.vpnInstances.map(v => <tr
                 key={v.id} className="hover:bg-gray-700/50">
                 <td className="py-2 px-3 font-mono">{v.name}</td>
-                <td className="font-mono">{v.rd}</td>
+                <td className="font-mono">{v.rd || '-'}</td>
                 <td className="font-mono">{v.address_family}</td>
             </tr>)}</Table></InfoCard>
+            <InfoCard title="VXLAN Tunnels"><Table
+                headers={["VPN Instance", "Tunnel ID", "Source", "Destination", "State", "Type", "Uptime"]}>{data?.vxlanTunnels.map(t => <tr
+                key={t.id} className="hover:bg-gray-700/50">
+                <td className="py-2 px-3 font-mono">{t.vpn_instance}</td>
+                <td>{t.tunnel_id}</td>
+                <td className="font-mono">{t.source}</td>
+                <td className="font-mono">{t.destination}</td>
+                <td><StatusIndicator status={t.state}/></td>
+                <td>{t.type || '-'}</td>
+                <td>{t.uptime || '-'}</td>
+            </tr>)}</Table></InfoCard>
+        </div>
+    );
+
+    const VlansTab = ({vlans}: { vlans: Vlan[] | null }) => (
+        <div className="space-y-8">
+            <InfoCard title="VLANs">
+                <Table headers={["VID", "Status", "Property", "MAC Learn", "Statistics", "Description"]}>
+                    {vlans?.map(v => (
+                        <tr key={v.id} className="hover:bg-gray-700/50">
+                            <td className="py-2 px-3 font-mono">{v.vid}</td>
+                            <td><StatusIndicator status={v.status}/></td>
+                            <td>{v.property || '-'}</td>
+                            <td>{v.mac_learn || '-'}</td>
+                            <td>{v.statistics || '-'}</td>
+                            <td className="text-gray-400">{v.description || '-'}</td>
+                        </tr>
+                    ))}
+                </Table>
+            </InfoCard>
+        </div>
+    );
+
+    const EthTrunksTab = ({trunks}: { trunks: EthTrunk[] | null }) => (
+        <div className="space-y-8">
+            <InfoCard title="Ethernet Trunks">
+                <Table headers={["Trunk ID", "Mode Type", "Working Mode", "Status", "Up Ports"]}>
+                    {trunks?.map(t => (
+                        <tr key={t.id} className="hover:bg-gray-700/50">
+                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                            <td>{t.mode_type || '-'}</td>
+                            <td>{t.working_mode || '-'}</td>
+                            <td><StatusIndicator status={t.operating_status}/></td>
+                            <td>{t.number_of_up_ports ?? '-'}</td>
+                        </tr>
+                    ))}
+                </Table>
+            </InfoCard>
+        </div>
+    );
+
+    const PortVlansTab = ({portVlans}: { portVlans: PortVlan[] | null }) => (
+        <div className="space-y-8">
+            <InfoCard title="Port-VLAN Mappings">
+                <Table headers={["Port Name", "Link Type", "PVID", "VLAN List"]}>
+                    {portVlans?.map(pv => (
+                        <tr key={pv.id} className="hover:bg-gray-700/50">
+                            <td className="py-2 px-3 font-mono">{pv.port_name}</td>
+                            <td>{pv.link_type || '-'}</td>
+                            <td>{pv.pvid ?? '-'}</td>
+                            <td className="font-mono text-xs">{pv.vlan_list || '-'}</td>
+                        </tr>
+                    ))}
+                </Table>
+            </InfoCard>
         </div>
     );
 
@@ -359,6 +492,12 @@ export function DevicesView() {
                 return protocols ? <ProtocolsTab data={protocols}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'VPN / Tunnels':
                 return vpn ? <VpnTab data={vpn}/> : <NoDataDisplay message={noDataMsg}/>;
+            case 'VLANs':
+                return vlans ? <VlansTab vlans={vlans}/> : <NoDataDisplay message={noDataMsg}/>;
+            case 'Eth-Trunks':
+                return ethTrunks ? <EthTrunksTab trunks={ethTrunks}/> : <NoDataDisplay message={noDataMsg}/>;
+            case 'Port-VLANs':
+                return portVlans ? <PortVlansTab portVlans={portVlans}/> : <NoDataDisplay message={noDataMsg}/>;
             default:
                 return <div>Not implemented yet.</div>;
         }
@@ -390,7 +529,7 @@ export function DevicesView() {
             </div>
             <div className="flex-1 bg-gray-800 rounded-xl flex flex-col">
                 <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 overflow-x-auto">
                         <TabButton label="Summary" active={activeTab === 'Summary'}
                                    onClick={() => setActiveTab('Summary')}/>
                         <TabButton label="Hardware" active={activeTab === 'Hardware'}
@@ -402,6 +541,12 @@ export function DevicesView() {
                                    onClick={() => setActiveTab('Protocols')}/>
                         <TabButton label="VPN / Tunnels" active={activeTab === 'VPN / Tunnels'}
                                    onClick={() => setActiveTab('VPN / Tunnels')}/>
+                        <TabButton label="VLANs" active={activeTab === 'VLANs'}
+                                   onClick={() => setActiveTab('VLANs')}/>
+                        <TabButton label="Eth-Trunks" active={activeTab === 'Eth-Trunks'}
+                                   onClick={() => setActiveTab('Eth-Trunks')}/>
+                        <TabButton label="Port-VLANs" active={activeTab === 'Port-VLANs'}
+                                   onClick={() => setActiveTab('Port-VLANs')}/>
                     </div>
                     <div>
                         <select

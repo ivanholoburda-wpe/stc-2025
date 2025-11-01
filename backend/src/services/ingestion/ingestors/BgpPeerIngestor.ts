@@ -25,11 +25,15 @@ export class BgpPeerIngestor implements IIngestor {
             peer_ip: peer.peer,
             address_family: 'ipv4_unicast',
 
-            remote_as: peer.as,
+            remote_as: peer.as_number || peer.as,
             state: peer.state,
             up_down_time: peer.up_down_time,
-            msg_rcvd: peer.msg_rcvd,
-            msg_sent: peer.msg_sent,
+            msg_rcvd: peer.msg_received || peer.msg_rcvd || 0,
+            msg_sent: peer.msg_sent || 0,
+            version: peer.version || null,
+            out_queue: peer.out_queue || null,
+            prefixes_received: peer.prefixes_received || null,
+            vpn_instance: peer.vpn_instance || null,
         }));
 
         await this.bgpRepo.upsert(peersToUpsert);

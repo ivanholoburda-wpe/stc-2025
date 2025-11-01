@@ -36,4 +36,16 @@ export class BgpPeer {
 
     @Column({ type: "integer" })
     msg_sent!: number;
+
+    @Column({ type: "integer", nullable: true })
+    version?: number;
+
+    @Column({ type: "integer", nullable: true })
+    out_queue?: number;
+
+    @Column({ type: "integer", nullable: true })
+    prefixes_received?: number;
+
+    @Column({ type: "varchar", nullable: true })
+    vpn_instance?: string;
 }

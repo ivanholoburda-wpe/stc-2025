@@ -94,6 +94,21 @@ import {IpRoutePerDeviceReportProvider} from "./services/export/providers/IpRout
 import {InterfaceReportProvider} from "./services/export/providers/InterfaceReportProvider";
 import {IReportRepository, ReportRepository} from "./repositories/ReportRepository";
 import {ConfigurationHandler} from "./handlers/ConfigurationHandler";
+import {IEthTrunkRepository, EthTrunkRepository} from "./repositories/EthTrunkRepository";
+import {IVlanRepository, VlanRepository} from "./repositories/VlanRepository";
+import {IPortVlanRepository, PortVlanRepository} from "./repositories/PortVlanRepository";
+import {IVxlanTunnelRepository, VxlanTunnelRepository} from "./repositories/VxlanTunnelRepository";
+import {HealthIngestor} from "./services/ingestion/ingestors/HealthIngestor";
+import {EthTrunkIngestor} from "./services/ingestion/ingestors/EthTrunkIngestor";
+import {VlanIngestor} from "./services/ingestion/ingestors/VlanIngestor";
+import {PortVlanIngestor} from "./services/ingestion/ingestors/PortVlanIngestor";
+import {VxlanTunnelIngestor} from "./services/ingestion/ingestors/VxlanTunnelIngestor";
+import {BgpGlobalPeerIngestor} from "./services/ingestion/ingestors/BgpGlobalPeerIngestor";
+import {BgpVpnv4PeerIngestor} from "./services/ingestion/ingestors/BgpVpnv4PeerIngestor";
+import {BgpVpnv6PeerIngestor} from "./services/ingestion/ingestors/BgpVpnv6PeerIngestor";
+import {BgpVpnv4RoutingTableIngestor} from "./services/ingestion/ingestors/BgpVpnv4RoutingTableIngestor";
+import {BgpVpnv6RoutingTableIngestor} from "./services/ingestion/ingestors/BgpVpnv6RoutingTableIngestor";
+import {BgpEvpnRoutingTableIngestor} from "./services/ingestion/ingestors/BgpEvpnRoutingTableIngestor";
 
 const container = new Container();
 
@@ -135,6 +150,10 @@ container.bind<IMplsL2vcRepository>(TYPES.MplsL2vcRepository).to(MplsL2vcReposit
 container.bind<IOspfInterfaceRepository>(TYPES.OspfInterfaceRepository).to(OspfInterfaceRepository);
 container.bind<IVpnInstanceRepository>(TYPES.VpnInstanceRepository).to(VpnInstanceRepository);
 container.bind<IPhysicalLinkRepository>(TYPES.PhysicalLinkRepository).to(PhysicalLinkRepository);
+container.bind<IEthTrunkRepository>(TYPES.EthTrunkRepository).to(EthTrunkRepository);
+container.bind<IVlanRepository>(TYPES.VlanRepository).to(VlanRepository);
+container.bind<IPortVlanRepository>(TYPES.PortVlanRepository).to(PortVlanRepository);
+container.bind<IVxlanTunnelRepository>(TYPES.VxlanTunnelRepository).to(VxlanTunnelRepository);
 container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
 container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
 container.bind<IExportService>(TYPES.ExportService).to(ExportService);
@@ -174,6 +193,17 @@ container.bind<IIngestor>(TYPES.IIngestor).to(MplsL2vcIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(OspfInterfaceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(VpnInstanceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(LldpNeighborIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(HealthIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(EthTrunkIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(VlanIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(PortVlanIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(VxlanTunnelIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpGlobalPeerIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv4PeerIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv6PeerIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv4RoutingTableIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv6RoutingTableIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(BgpEvpnRoutingTableIngestor);
 
 // Analytics providers
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(CpuSystemUsageProvider);

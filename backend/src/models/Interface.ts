@@ -34,6 +34,18 @@ export class Interface {
     @Column({ type: "int", nullable: true })
     mtu?: number;
 
+    @Column({ type: "varchar", nullable: true })
+    in_utilization?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    out_utilization?: string;
+
+    @Column({ type: "integer", nullable: true })
+    in_errors?: number;
+
+    @Column({ type: "integer", nullable: true })
+    out_errors?: number;
+
     @OneToMany(() => Transceiver, (transceiver: Transceiver) => transceiver.interface)
     transceivers?: Transceiver[];
 }

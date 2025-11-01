@@ -7,8 +7,8 @@ import {TYPES} from "../../../types";
 import {IBgpPeerRepository} from "../../../repositories/BgpPeerRepository";
 
 @injectable()
-export class BgpEvpnPeerIngestor implements IIngestor {
-    readonly blockType = "display_bgp_evpn_peer_block";
+export class BgpGlobalPeerIngestor implements IIngestor {
+    readonly blockType = "display_bgp_global_peer_block";
     readonly priority = 100;
 
     constructor(
@@ -23,8 +23,7 @@ export class BgpEvpnPeerIngestor implements IIngestor {
             device: context.device,
             snapshot: context.snapshot,
             peer_ip: peer.peer,
-            address_family: 'evpn',
-
+            address_family: 'ipv4_unicast',
             remote_as: peer.as_number || peer.as,
             state: peer.state,
             up_down_time: peer.up_down_time,
@@ -33,10 +32,10 @@ export class BgpEvpnPeerIngestor implements IIngestor {
             version: peer.version || null,
             out_queue: peer.out_queue || null,
             prefixes_received: peer.prefixes_received || null,
-            vpn_instance: peer.vpn_instance || null,
         }));
 
         await this.bgpRepo.upsert(peersToUpsert);
-        console.log(`[BgpEvpnPeerIngestor] Upserted ${peersToUpsert.length} EVPN BGP peers.`);
+        console.log(`[BgpGlobalPeerIngestor] Upserted ${peersToUpsert.length} global BGP peers.`);
     }
 }
+

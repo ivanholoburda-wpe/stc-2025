@@ -23,6 +23,10 @@ import {MplsL2vc} from "../models/MplsL2vc";
 import {OspfInterfaceDetail} from "../models/OspfInterfaceDetail";
 import {VpnInstance} from "../models/VpnInstance";
 import {PhysicalLink} from "../models/PhysicalLink";
+import {EthTrunk} from "../models/EthTrunk";
+import {Vlan} from "../models/Vlan";
+import {PortVlan} from "../models/PortVlan";
+import {VxlanTunnel} from "../models/VxlanTunnel";
 
 
 const dbPath = path.join(app.getPath("userData"), "local.db");
@@ -55,6 +59,10 @@ export const AppDataSource = new DataSource({
       OspfInterfaceDetail,
       VpnInstance,
       PhysicalLink,
+      EthTrunk,
+      Vlan,
+      PortVlan,
+      VxlanTunnel,
   ],
   migrations: [migrationsPath],
 });
