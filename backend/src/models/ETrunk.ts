@@ -70,6 +70,45 @@ export class ETrunk {
     @Column({ type: "integer", nullable: true })
     snddrop?: number;
 
+    @Column({ type: "varchar", nullable: true })
+    local_ip?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    interface_name?: string;
+
+    @Column({ type: "integer", nullable: true })
+    max_active_link_number?: number;
+
+    @Column({ type: "integer", nullable: true })
+    min_active_link_number?: number;
+
+    @Column({ type: "varchar", nullable: true })
+    work_mode?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    local_phy_state?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    local_state?: string;
+
+    @Column({ type: "integer", nullable: true })
+    member_count?: number;
+
+    @Column({ type: "varchar", nullable: true })
+    member_type?: string;
+
+    @Column({ type: "integer", nullable: true })
+    member_id?: number;
+
+    @Column({ type: "varchar", nullable: true })
+    member_remote_id?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    member_state?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    member_causation?: string;
+
     @Column({ type: "json", nullable: true })
     etrunk_info?: any;
 

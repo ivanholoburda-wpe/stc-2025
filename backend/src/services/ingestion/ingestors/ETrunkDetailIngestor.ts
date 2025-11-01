@@ -22,6 +22,9 @@ export class ETrunkDetailIngestor implements IIngestor {
         }
 
         const members = Array.isArray(block?.members) ? block.members : [];
+        
+        // Extract first member info if exists (most common use case)
+        const firstMember = members && members.length > 0 ? members[0] : null;
 
         const etrunkToUpsert = {
             device: context.device,
@@ -44,6 +47,24 @@ export class ETrunkDetailIngestor implements IIngestor {
             send: typeof etrunkInfo.send === 'number' ? etrunkInfo.send : null,
             recdrop: typeof etrunkInfo.recdrop === 'number' ? etrunkInfo.recdrop : null,
             snddrop: typeof etrunkInfo.snddrop === 'number' ? etrunkInfo.snddrop : null,
+            // Additional fields from etrunk_info
+            local_ip: etrunkInfo['local-ip'] || etrunkInfo['local_ip'] || null,
+            interface_name: etrunkInfo['interface-name'] || etrunkInfo['interface_name'] || etrunkInfo.interface || null,
+            max_active_link_number: typeof etrunkInfo['max-active-link-number'] === 'number' ? etrunkInfo['max-active-link-number'] : 
+                                   typeof etrunkInfo['max_active_link_number'] === 'number' ? etrunkInfo['max_active_link_number'] : null,
+            min_active_link_number: typeof etrunkInfo['min-active-link-number'] === 'number' ? etrunkInfo['min-active-link-number'] : 
+                                   typeof etrunkInfo['min_active_link_number'] === 'number' ? etrunkInfo['min_active_link_number'] : 
+                                   typeof etrunkInfo['least-active-linknumber'] === 'number' ? etrunkInfo['least-active-linknumber'] : null,
+            work_mode: etrunkInfo['work-mode'] || etrunkInfo['work_mode'] || null,
+            local_phy_state: etrunkInfo['local-phy-state'] || etrunkInfo['local_phy_state'] || null,
+            local_state: etrunkInfo['local-state'] || etrunkInfo['local_state'] || null,
+            member_count: members ? members.length : null,
+            // Extract first member info if exists
+            member_type: firstMember?.type || null,
+            member_id: typeof firstMember?.id === 'number' ? firstMember.id : null,
+            member_remote_id: firstMember?.remote_id || null,
+            member_state: firstMember?.state || null,
+            member_causation: firstMember?.causation || null,
             etrunk_info: etrunkInfo,
             members: members,
         };

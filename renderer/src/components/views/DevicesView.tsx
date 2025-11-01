@@ -191,17 +191,15 @@ export function DevicesView() {
                             result = await getVlansForDevice(selectedDeviceId, selectedSnapshotId);
                             if (result.success) setVlans(result.data || []); else setError(result.error);
                         }
+                        if (portVlans === null) {
+                            result = await getPortVlansForDevice(selectedDeviceId, selectedSnapshotId);
+                            if (result.success) setPortVlans(result.data || []); else setError(result.error);
+                        }
                         break;
                     case 'Eth-Trunks':
                         if (ethTrunks === null) {
                             result = await getEthTrunksForDevice(selectedDeviceId, selectedSnapshotId);
                             if (result.success) setEthTrunks(result.data || []); else setError(result.error);
-                        }
-                        break;
-                    case 'Port-VLANs':
-                        if (portVlans === null) {
-                            result = await getPortVlansForDevice(selectedDeviceId, selectedSnapshotId);
-                            if (result.success) setPortVlans(result.data || []); else setError(result.error);
                         }
                         break;
                     case 'E-Trunks':
@@ -316,12 +314,11 @@ export function DevicesView() {
     const RoutingTab = ({data}: { data: { ipRoutes: IpRoute[], arpRecords: ARPRecord[] } | null }) => (
         <div className="space-y-8">
             <InfoCard title="IP Routing Table"><Table
-                headers={["Destination/Mask", "Protocol", "NextHop", "Interface", "Status", "Network", "Loc Prf", "MED", "VPN Instance", "Pref", "Cost"]}>{data?.ipRoutes.map(r =>
+                headers={["Destination/Mask", "Protocol", "NextHop", "Status", "Network", "Loc Prf", "MED", "VPN Instance", "Pref", "Cost"]}>{data?.ipRoutes.map(r =>
                 <tr key={r.id} className="hover:bg-gray-700/50">
                     <td className="py-2 px-3 font-mono">{r.destination_mask}</td>
                     <td className="py-2 px-3">{r.protocol}</td>
                     <td className="py-2 px-3 font-mono">{r.next_hop}</td>
-                    <td className="py-2 px-3 font-mono">{r.interface?.name || '-'}</td>
                     <td className="py-2 px-3 font-mono text-xs">{r.status || '-'}</td>
                     <td className="py-2 px-3 font-mono text-xs">{r.network || '-'}</td>
                     <td className="py-2 px-3">{r.loc_prf ?? '-'}</td>
@@ -427,7 +424,7 @@ export function DevicesView() {
         </div>
     );
 
-    const VlansTab = ({vlans}: { vlans: Vlan[] | null }) => (
+    const VlansTab = ({vlans, portVlans}: { vlans: Vlan[] | null, portVlans: PortVlan[] | null }) => (
         <div className="space-y-8">
             <InfoCard title="VLANs">
                 <Table headers={["VID", "Status", "Property", "MAC Learn", "Statistics", "Description"]}>
@@ -443,29 +440,7 @@ export function DevicesView() {
                     ))}
                 </Table>
             </InfoCard>
-        </div>
-    );
 
-    const EthTrunksTab = ({trunks}: { trunks: EthTrunk[] | null }) => (
-        <div className="space-y-8">
-            <InfoCard title="Ethernet Trunks">
-                <Table headers={["Trunk ID", "Mode Type", "Working Mode", "Status", "Up Ports"]}>
-                    {trunks?.map(t => (
-                        <tr key={t.id} className="hover:bg-gray-700/50">
-                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
-                            <td>{t.mode_type || '-'}</td>
-                            <td>{t.working_mode || '-'}</td>
-                            <td><StatusIndicator status={t.operating_status}/></td>
-                            <td>{t.number_of_up_ports ?? '-'}</td>
-                        </tr>
-                    ))}
-                </Table>
-            </InfoCard>
-        </div>
-    );
-
-    const PortVlansTab = ({portVlans}: { portVlans: PortVlan[] | null }) => (
-        <div className="space-y-8">
             <InfoCard title="Port-VLAN Mappings">
                 <Table headers={["Port Name", "Link Type", "PVID", "VLAN List"]}>
                     {portVlans?.map(pv => (
@@ -481,23 +456,293 @@ export function DevicesView() {
         </div>
     );
 
+    const EthTrunksTab = ({trunks}: { trunks: EthTrunk[] | null }) => (
+        <div className="space-y-8">
+            {!trunks || trunks.length === 0 ? (
+                <NoDataDisplay message="No Ethernet Trunk data to display."/>
+            ) : (
+                <>
+                    {/* Basic Information */}
+                    <InfoCard title="Basic Information">
+                        <Table headers={["Trunk ID", "Mode Type", "Working Mode", "Status", "Up Ports"]}>
+                            {trunks.map(t => (
+                                <tr key={t.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                                    <td>{t.mode_type || '-'}</td>
+                                    <td>{t.working_mode || '-'}</td>
+                                    <td><StatusIndicator status={t.operating_status}/></td>
+                                    <td>{t.number_of_up_ports ?? '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* Local Info */}
+                    {trunks.some(t => t.local_info && Object.keys(t.local_info).length > 0) && (
+                        <InfoCard title="Local Information">
+                            <Table headers={["Trunk ID", "LAG ID", "System Priority", "System ID", "Hash Arithmetic", "Timeout Period", "Preempt Delay Time"]}>
+                                {trunks.map(t => {
+                                    const localInfo = t.local_info || {};
+                                    return (
+                                        <tr key={t.id} className="hover:bg-gray-700/50">
+                                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                                            <td>{localInfo.lag_id ?? '-'}</td>
+                                            <td>{localInfo.system_priority ?? '-'}</td>
+                                            <td className="font-mono text-xs">{localInfo.system_id || '-'}</td>
+                                            <td>{localInfo.hash_arithmetic || '-'}</td>
+                                            <td>{localInfo.timeout_period || '-'}</td>
+                                            <td>{localInfo.preempt_delay_time ?? '-'}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </Table>
+                        </InfoCard>
+                    )}
+
+                    {/* Link Configuration */}
+                    {trunks.some(t => t.local_info && (t.local_info['least-active-linknumber'] || t.local_info['max-active-linknumber'] || t.local_info['max_bandwidth-affected-linknumber'])) && (
+                        <InfoCard title="Link Configuration">
+                            <Table headers={["Trunk ID", "Least Active Links", "Max Active Links", "Max Bandwidth Affected Links"]}>
+                                {trunks.map(t => {
+                                    const localInfo = t.local_info || {};
+                                    return (
+                                        <tr key={t.id} className="hover:bg-gray-700/50">
+                                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                                            <td>{localInfo['least-active-linknumber'] ?? localInfo['least_active_linknumber'] ?? '-'}</td>
+                                            <td>{localInfo['max-active-linknumber'] ?? localInfo['max_active_linknumber'] ?? '-'}</td>
+                                            <td>{localInfo['max_bandwidth-affected-linknumber'] ?? '-'}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </Table>
+                        </InfoCard>
+                    )}
+
+                    {/* Actor Ports (LACP) */}
+                    {trunks.some(t => t.ports_info?.actor_ports && Array.isArray(t.ports_info.actor_ports) && t.ports_info.actor_ports.length > 0) && (
+                        <InfoCard title="Actor Ports (LACP)">
+                            <Table headers={["Trunk ID", "Port Name", "Status", "Port Type", "Priority", "Port No", "Port Key", "Port State", "Weight"]}>
+                                {trunks.flatMap(t => {
+                                    const actorPorts = t.ports_info?.actor_ports || [];
+                                    if (actorPorts.length === 0) return [];
+                                    return actorPorts.map((port: any, idx: number) => (
+                                        <tr key={`${t.id}-actor-${idx}`} className="hover:bg-gray-700/50">
+                                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                                            <td className="font-mono text-xs">{port.port_name || '-'}</td>
+                                            <td>{port.status || '-'}</td>
+                                            <td>{port.port_type || '-'}</td>
+                                            <td>{port.priority ?? '-'}</td>
+                                            <td>{port.port_no ?? '-'}</td>
+                                            <td>{port.port_key ?? '-'}</td>
+                                            <td className="font-mono text-xs">{port.port_state || '-'}</td>
+                                            <td>{port.weight ?? '-'}</td>
+                                        </tr>
+                                    ));
+                                })}
+                            </Table>
+                        </InfoCard>
+                    )}
+
+                    {/* Partner Ports (LACP) */}
+                    {trunks.some(t => t.ports_info?.partner_ports && Array.isArray(t.ports_info.partner_ports) && t.ports_info.partner_ports.length > 0) && (
+                        <InfoCard title="Partner Ports (LACP)">
+                            <Table headers={["Trunk ID", "Port Name", "Status", "Port Type", "Priority", "Port No", "Port Key", "Port State", "Weight"]}>
+                                {trunks.flatMap(t => {
+                                    const partnerPorts = t.ports_info?.partner_ports || [];
+                                    if (partnerPorts.length === 0) return [];
+                                    return partnerPorts.map((port: any, idx: number) => (
+                                        <tr key={`${t.id}-partner-${idx}`} className="hover:bg-gray-700/50">
+                                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                                            <td className="font-mono text-xs">{port.port_name || '-'}</td>
+                                            <td>{port.status || '-'}</td>
+                                            <td>{port.port_type || '-'}</td>
+                                            <td>{port.priority ?? '-'}</td>
+                                            <td>{port.port_no ?? '-'}</td>
+                                            <td>{port.port_key ?? '-'}</td>
+                                            <td className="font-mono text-xs">{port.port_state || '-'}</td>
+                                            <td>{port.weight ?? '-'}</td>
+                                        </tr>
+                                    ));
+                                })}
+                            </Table>
+                        </InfoCard>
+                    )}
+
+                    {/* Normal Ports */}
+                    {trunks.some(t => t.ports_info?.normal_ports && Array.isArray(t.ports_info.normal_ports) && t.ports_info.normal_ports.length > 0) && (
+                        <InfoCard title="Normal Ports">
+                            <Table headers={["Trunk ID", "Port Name", "Status", "Weight"]}>
+                                {trunks.flatMap(t => {
+                                    const normalPorts = t.ports_info?.normal_ports || [];
+                                    if (normalPorts.length === 0) return [];
+                                    return normalPorts.map((port: any, idx: number) => (
+                                        <tr key={`${t.id}-normal-${idx}`} className="hover:bg-gray-700/50">
+                                            <td className="py-2 px-3 font-mono">{t.trunk_id}</td>
+                                            <td className="font-mono text-xs">{port.port_name || '-'}</td>
+                                            <td><StatusIndicator status={port.status}/></td>
+                                            <td>{port.weight ?? '-'}</td>
+                                        </tr>
+                                    ));
+                                })}
+                            </Table>
+                        </InfoCard>
+                    )}
+                </>
+            )}
+        </div>
+    );
+
     const ETrunksTab = ({etrunks}: { etrunks: ETrunk[] | null }) => (
         <div className="space-y-8">
-            <InfoCard title="E-Trunks">
-                <Table headers={["E-Trunk ID", "State", "VPN Instance", "Peer IP", "Source IP", "Priority", "System ID"]}>
-                    {etrunks?.map(e => (
-                        <tr key={e.id} className="hover:bg-gray-700/50">
-                            <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
-                            <td><StatusIndicator status={e.state}/></td>
-                            <td className="font-mono text-xs">{e.vpn_instance || '-'}</td>
-                            <td className="font-mono">{e.peer_ip || '-'}</td>
-                            <td className="font-mono">{e.source_ip || '-'}</td>
-                            <td>{e.priority ?? '-'}</td>
-                            <td className="font-mono text-xs">{e.system_id || '-'}</td>
-                        </tr>
-                    ))}
-                </Table>
-            </InfoCard>
+            {!etrunks || etrunks.length === 0 ? (
+                <NoDataDisplay message="No E-Trunk data to display."/>
+            ) : (
+                <>
+                    {/* Basic Information */}
+                    <InfoCard title="Basic Information">
+                        <Table headers={["E-Trunk ID", "State", "VPN Instance", "Interface Name", "Work Mode"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td><StatusIndicator status={e.state}/></td>
+                                    <td className="font-mono text-xs">{e.vpn_instance || '-'}</td>
+                                    <td className="font-mono text-xs">{e.interface_name || '-'}</td>
+                                    <td>{e.work_mode || '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* IP Addresses */}
+                    <InfoCard title="IP Addresses and Network Parameters">
+                        <Table headers={["E-Trunk ID", "Peer IP", "Source IP", "Local IP"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td className="font-mono">{e.peer_ip || '-'}</td>
+                                    <td className="font-mono">{e.source_ip || '-'}</td>
+                                    <td className="font-mono text-xs">{e.local_ip || '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* Priorities and System ID */}
+                    <InfoCard title="Priorities and System ID">
+                        <Table headers={["E-Trunk ID", "Priority", "System ID", "Peer Priority", "Peer System ID"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td>{e.priority ?? '-'}</td>
+                                    <td className="font-mono text-xs">{e.system_id || '-'}</td>
+                                    <td>{e.peer_priority ?? '-'}</td>
+                                    <td className="font-mono text-xs">{e.peer_system_id || '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* States and Operating Modes */}
+                    <InfoCard title="States and Operating Modes">
+                        <Table headers={["E-Trunk ID", "State", "Local State", "Local Phy State", "Causation"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td><StatusIndicator status={e.state}/></td>
+                                    <td>{e.local_state || '-'}</td>
+                                    <td>{e.local_phy_state || '-'}</td>
+                                    <td>{e.causation || '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* Links and Members */}
+                    <InfoCard title="Links and Members">
+                        <Table headers={["E-Trunk ID", "Max Active Links", "Min Active Links", "Member Count"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td>{e.max_active_link_number ?? '-'}</td>
+                                    <td>{e.min_active_link_number ?? '-'}</td>
+                                    <td>{e.member_count ?? '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* Timings and Configuration */}
+                    <InfoCard title="Timings and Configuration">
+                        <Table headers={["E-Trunk ID", "Revert Delay (s)", "Send Period (100ms)", "Fail Time (100ms)", "Peer Fail Time (100ms)"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td>{e.revert_delay_time_s ?? '-'}</td>
+                                    <td>{e.send_period_100ms ?? '-'}</td>
+                                    <td>{e.fail_time_100ms ?? '-'}</td>
+                                    <td>{e.peer_fail_time_100ms ?? '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* Statistics */}
+                    <InfoCard title="Statistics">
+                        <Table headers={["E-Trunk ID", "Receive", "Send", "Rec Drop", "Snd Drop"]}>
+                            {etrunks.map(e => (
+                                <tr key={e.id} className="hover:bg-gray-700/50">
+                                    <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                    <td>{e.receive ?? '-'}</td>
+                                    <td>{e.send ?? '-'}</td>
+                                    <td>{e.recdrop ?? '-'}</td>
+                                    <td>{e.snddrop ?? '-'}</td>
+                                </tr>
+                            ))}
+                        </Table>
+                    </InfoCard>
+
+                    {/* Member Information */}
+                    {etrunks.some(e => (e.members && Array.isArray(e.members) && e.members.length > 0) || e.member_type || e.member_id || e.member_state) && (
+                        <InfoCard title="Member Information">
+                            <Table headers={["E-Trunk ID", "Member Type", "Member ID", "Local Phy State", "Work Mode", "State", "Causation", "Remote ID"]}>
+                                {etrunks.flatMap(e => {
+                                    // If members array exists, show all members
+                                    if (e.members && Array.isArray(e.members) && e.members.length > 0) {
+                                        return e.members.map((member: any, idx: number) => (
+                                            <tr key={`${e.id}-member-${idx}`} className="hover:bg-gray-700/50">
+                                                <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                                <td>{member.type || '-'}</td>
+                                                <td>{member.id ?? '-'}</td>
+                                                <td>{member.local_phy_state || '-'}</td>
+                                                <td>{member.work_mode || '-'}</td>
+                                                <td><StatusIndicator status={member.state}/></td>
+                                                <td>{member.causation || '-'}</td>
+                                                <td className="font-mono text-xs">{member.remote_id || '-'}</td>
+                                            </tr>
+                                        ));
+                                    }
+                                    // Otherwise show data from separate fields (for compatibility)
+                                    else if (e.member_type || e.member_id || e.member_state) {
+                                        return [(
+                                            <tr key={e.id} className="hover:bg-gray-700/50">
+                                                <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                                                <td>{e.member_type || '-'}</td>
+                                                <td>{e.member_id ?? '-'}</td>
+                                                <td>{e.local_phy_state || '-'}</td>
+                                                <td>{e.work_mode || '-'}</td>
+                                                <td><StatusIndicator status={e.member_state}/></td>
+                                                <td>{e.member_causation || '-'}</td>
+                                                <td className="font-mono text-xs">{e.member_remote_id || '-'}</td>
+                                            </tr>
+                                        )];
+                                    }
+                                    return [];
+                                })}
+                            </Table>
+                        </InfoCard>
+                    )}
+                </>
+            )}
         </div>
     );
 
@@ -522,11 +767,9 @@ export function DevicesView() {
             case 'VPN / Tunnels':
                 return vpn ? <VpnTab data={vpn}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'VLANs':
-                return vlans ? <VlansTab vlans={vlans}/> : <NoDataDisplay message={noDataMsg}/>;
+                return (vlans || portVlans) ? <VlansTab vlans={vlans} portVlans={portVlans}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'Eth-Trunks':
                 return ethTrunks ? <EthTrunksTab trunks={ethTrunks}/> : <NoDataDisplay message={noDataMsg}/>;
-            case 'Port-VLANs':
-                return portVlans ? <PortVlansTab portVlans={portVlans}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'E-Trunks':
                 return etrunks ? <ETrunksTab etrunks={etrunks}/> : <NoDataDisplay message={noDataMsg}/>;
             default:
@@ -576,8 +819,6 @@ export function DevicesView() {
                                    onClick={() => setActiveTab('VLANs')}/>
                         <TabButton label="Eth-Trunks" active={activeTab === 'Eth-Trunks'}
                                    onClick={() => setActiveTab('Eth-Trunks')}/>
-                        <TabButton label="Port-VLANs" active={activeTab === 'Port-VLANs'}
-                                   onClick={() => setActiveTab('Port-VLANs')}/>
                         <TabButton label="E-Trunks" active={activeTab === 'E-Trunks'}
                                    onClick={() => setActiveTab('E-Trunks')}/>
                     </div>
