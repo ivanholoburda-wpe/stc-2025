@@ -26,13 +26,7 @@ export class Interface {
     protocol_status?: string;
 
     @Column({ type: "varchar", nullable: true })
-    description?: string;
-
-    @Column({ type: "varchar", nullable: true })
     ip_address?: string;
-
-    @Column({ type: "int", nullable: true })
-    mtu?: number;
 
     @Column({ type: "varchar", nullable: true })
     in_utilization?: string;

@@ -149,7 +149,6 @@ export class DeviceRepository implements IDeviceRepository {
     async findWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null> {
         return this.repository.createQueryBuilder("device")
             .leftJoinAndSelect("device.portVlans", "portVlan", "portVlan.snapshot_id = :snapshotId")
-            .leftJoinAndSelect("portVlan.interface", "portVlanInterface")
             .where("device.id = :deviceId")
             .setParameters({deviceId, snapshotId})
             .getOne();

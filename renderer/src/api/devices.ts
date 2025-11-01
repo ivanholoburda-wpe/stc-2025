@@ -6,8 +6,6 @@ export type Interface = {
     phy_status?: string;
     protocol_status?: string;
     ip_address?: string;
-    description?: string;
-    mtu?: number;
     in_utilization?: string;
     out_utilization?: string;
     in_errors?: number;
@@ -141,7 +139,6 @@ export type PortVlan = {
     link_type?: string;
     pvid?: number;
     vlan_list?: string;
-    interface?: Interface | null;
 };
 export type VxlanTunnel = {
     id: number;
