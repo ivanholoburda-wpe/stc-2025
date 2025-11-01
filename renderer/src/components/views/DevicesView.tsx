@@ -191,15 +191,17 @@ export function DevicesView() {
                             result = await getVlansForDevice(selectedDeviceId, selectedSnapshotId);
                             if (result.success) setVlans(result.data || []); else setError(result.error);
                         }
-                        if (portVlans === null) {
-                            result = await getPortVlansForDevice(selectedDeviceId, selectedSnapshotId);
-                            if (result.success) setPortVlans(result.data || []); else setError(result.error);
-                        }
                         break;
                     case 'Eth-Trunks':
                         if (ethTrunks === null) {
                             result = await getEthTrunksForDevice(selectedDeviceId, selectedSnapshotId);
                             if (result.success) setEthTrunks(result.data || []); else setError(result.error);
+                        }
+                        break;
+                    case 'Port-VLANs':
+                        if (portVlans === null) {
+                            result = await getPortVlansForDevice(selectedDeviceId, selectedSnapshotId);
+                            if (result.success) setPortVlans(result.data || []); else setError(result.error);
                         }
                         break;
                     case 'E-Trunks':
@@ -291,7 +293,7 @@ export function DevicesView() {
     const PortsTab = ({interfaces}: { interfaces: Interface[] | null }) => (
         <InfoCard title="Interfaces & Transceivers">
             <Table
-                headers={["Port", "PHY", "Proto", "IP Address", "In Util", "Out Util", "In Errors", "Out Errors", "Rx (dBm)", "Tx (dBm)", "TRX Type", "TRX S/N"]}>
+                headers={["Port", "PHY", "Proto", "IP Address", "In Util", "Out Util", "In Errors", "Out Errors", "Description", "Rx (dBm)", "Tx (dBm)", "TRX Type", "TRX S/N"]}>
                 {interfaces?.map(iface => (<tr key={iface.id} className="hover:bg-gray-700/50">
                     <td className="py-3 px-4 font-mono">{iface.name}</td>
                     <td className="py-3 px-4"><StatusIndicator status={iface.phy_status}/></td>
@@ -301,6 +303,7 @@ export function DevicesView() {
                     <td className="py-3 px-4 text-gray-300">{iface.out_utilization}</td>
                     <td className="py-3 px-4 text-gray-300">{iface.in_errors ?? 0}</td>
                     <td className="py-3 px-4 text-gray-300">{iface.out_errors ?? 0}</td>
+                    <td className="py-3 px-4 text-gray-400">{iface.description || '-'}</td>
                     <td className="py-3 px-4 text-gray-400">{iface.transceivers?.[0]?.rx_power?.toFixed(2) ?? '-'}</td>
                     <td className="py-3 px-4 text-gray-400">{iface.transceivers?.[0]?.tx_power?.toFixed(2) ?? '-'}</td>
                     <td className="py-3 px-4 text-gray-400 font-mono text-xs">{iface.transceivers?.[0]?.type || '-'}</td>
@@ -424,7 +427,7 @@ export function DevicesView() {
         </div>
     );
 
-    const VlansTab = ({vlans, portVlans}: { vlans: Vlan[] | null, portVlans: PortVlan[] | null }) => (
+    const VlansTab = ({vlans}: { vlans: Vlan[] | null }) => (
         <div className="space-y-8">
             <InfoCard title="VLANs">
                 <Table headers={["VID", "Status", "Property", "MAC Learn", "Statistics", "Description"]}>
@@ -436,19 +439,6 @@ export function DevicesView() {
                             <td>{v.mac_learn || '-'}</td>
                             <td>{v.statistics || '-'}</td>
                             <td className="text-gray-400">{v.description || '-'}</td>
-                        </tr>
-                    ))}
-                </Table>
-            </InfoCard>
-
-            <InfoCard title="Port-VLAN Mappings">
-                <Table headers={["Port Name", "Link Type", "PVID", "VLAN List"]}>
-                    {portVlans?.map(pv => (
-                        <tr key={pv.id} className="hover:bg-gray-700/50">
-                            <td className="py-2 px-3 font-mono">{pv.port_name}</td>
-                            <td>{pv.link_type || '-'}</td>
-                            <td>{pv.pvid ?? '-'}</td>
-                            <td className="font-mono text-xs">{pv.vlan_list || '-'}</td>
                         </tr>
                     ))}
                 </Table>
@@ -474,11 +464,27 @@ export function DevicesView() {
         </div>
     );
 
+    const PortVlansTab = ({portVlans}: { portVlans: PortVlan[] | null }) => (
+        <div className="space-y-8">
+            <InfoCard title="Port-VLAN Mappings">
+                <Table headers={["Port Name", "Link Type", "PVID", "VLAN List"]}>
+                    {portVlans?.map(pv => (
+                        <tr key={pv.id} className="hover:bg-gray-700/50">
+                            <td className="py-2 px-3 font-mono">{pv.port_name}</td>
+                            <td>{pv.link_type || '-'}</td>
+                            <td>{pv.pvid ?? '-'}</td>
+                            <td className="font-mono text-xs">{pv.vlan_list || '-'}</td>
+                        </tr>
+                    ))}
+                </Table>
+            </InfoCard>
+        </div>
+    );
 
     const ETrunksTab = ({etrunks}: { etrunks: ETrunk[] | null }) => (
         <div className="space-y-8">
-            <InfoCard title="E-Trunks Overview">
-                <Table headers={["E-Trunk ID", "State", "VPN Instance", "Peer IP", "Source IP", "Priority", "Causation"]}>
+            <InfoCard title="E-Trunks">
+                <Table headers={["E-Trunk ID", "State", "VPN Instance", "Peer IP", "Source IP", "Priority", "System ID"]}>
                     {etrunks?.map(e => (
                         <tr key={e.id} className="hover:bg-gray-700/50">
                             <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
@@ -487,87 +493,11 @@ export function DevicesView() {
                             <td className="font-mono">{e.peer_ip || '-'}</td>
                             <td className="font-mono">{e.source_ip || '-'}</td>
                             <td>{e.priority ?? '-'}</td>
-                            <td>{e.causation || '-'}</td>
-                        </tr>
-                    ))}
-                </Table>
-            </InfoCard>
-
-            <InfoCard title="System IDs and Priorities">
-                <Table headers={["E-Trunk ID", "System ID", "Priority", "Peer System ID", "Peer Priority"]}>
-                    {etrunks?.map(e => (
-                        <tr key={e.id} className="hover:bg-gray-700/50">
-                            <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
                             <td className="font-mono text-xs">{e.system_id || '-'}</td>
-                            <td>{e.priority ?? '-'}</td>
-                            <td className="font-mono text-xs">{e.peer_system_id || '-'}</td>
-                            <td>{e.peer_priority ?? '-'}</td>
                         </tr>
                     ))}
                 </Table>
             </InfoCard>
-
-            <InfoCard title="Timing Configuration">
-                <Table headers={["E-Trunk ID", "Revert Delay (s)", "Send Period (100ms)", "Fail Time (100ms)", "Peer Fail Time (100ms)"]}>
-                    {etrunks?.map(e => (
-                        <tr key={e.id} className="hover:bg-gray-700/50">
-                            <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
-                            <td>{e.revert_delay_time_s ?? '-'}</td>
-                            <td>{e.send_period_100ms ?? '-'}</td>
-                            <td>{e.fail_time_100ms ?? '-'}</td>
-                            <td>{e.peer_fail_time_100ms ?? '-'}</td>
-                        </tr>
-                    ))}
-                </Table>
-            </InfoCard>
-
-            <InfoCard title="Statistics">
-                <Table headers={["E-Trunk ID", "Receive", "Send", "Rec Drop", "Send Drop"]}>
-                    {etrunks?.map(e => (
-                        <tr key={e.id} className="hover:bg-gray-700/50">
-                            <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
-                            <td>{e.receive?.toLocaleString() ?? '-'}</td>
-                            <td>{e.send?.toLocaleString() ?? '-'}</td>
-                            <td className={e.recdrop && e.recdrop > 0 ? "text-red-400" : ""}>
-                                {e.recdrop?.toLocaleString() ?? '-'}
-                            </td>
-                            <td className={e.snddrop && e.snddrop > 0 ? "text-red-400" : ""}>
-                                {e.snddrop?.toLocaleString() ?? '-'}
-                            </td>
-                        </tr>
-                    ))}
-                </Table>
-            </InfoCard>
-
-            {etrunks?.some(e => e.members && Array.isArray(e.members) && e.members.length > 0) && (
-                <InfoCard title="E-Trunk Members">
-                    <div className="space-y-6">
-                        {etrunks?.map(e => {
-                            if (!e.members || !Array.isArray(e.members) || e.members.length === 0) return null;
-                            return (
-                                <div key={e.id} className="border-b border-gray-700 pb-4 last:border-b-0 last:pb-0">
-                                    <h4 className="text-lg font-semibold mb-3 text-blue-400">
-                                        E-Trunk ID: {e.etrunk_id}
-                                    </h4>
-                                    <Table headers={["Type", "ID", "Local Phy State", "Work Mode", "State", "Causation", "Remote ID"]}>
-                                        {e.members.map((member: any, idx: number) => (
-                                            <tr key={idx} className="hover:bg-gray-700/50">
-                                                <td className="py-2 px-3">{member.type || '-'}</td>
-                                                <td className="font-mono">{member.id ?? '-'}</td>
-                                                <td><StatusIndicator status={member.local_phy_state}/></td>
-                                                <td>{member.work_mode || '-'}</td>
-                                                <td><StatusIndicator status={member.state}/></td>
-                                                <td>{member.causation || '-'}</td>
-                                                <td className="font-mono">{member.remote_id ?? '-'}</td>
-                                            </tr>
-                                        ))}
-                                    </Table>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </InfoCard>
-            )}
         </div>
     );
 
@@ -592,9 +522,11 @@ export function DevicesView() {
             case 'VPN / Tunnels':
                 return vpn ? <VpnTab data={vpn}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'VLANs':
-                return (vlans !== null || portVlans !== null) ? <VlansTab vlans={vlans} portVlans={portVlans}/> : <NoDataDisplay message={noDataMsg}/>;
+                return vlans ? <VlansTab vlans={vlans}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'Eth-Trunks':
                 return ethTrunks ? <EthTrunksTab trunks={ethTrunks}/> : <NoDataDisplay message={noDataMsg}/>;
+            case 'Port-VLANs':
+                return portVlans ? <PortVlansTab portVlans={portVlans}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'E-Trunks':
                 return etrunks ? <ETrunksTab etrunks={etrunks}/> : <NoDataDisplay message={noDataMsg}/>;
             default:
@@ -644,6 +576,8 @@ export function DevicesView() {
                                    onClick={() => setActiveTab('VLANs')}/>
                         <TabButton label="Eth-Trunks" active={activeTab === 'Eth-Trunks'}
                                    onClick={() => setActiveTab('Eth-Trunks')}/>
+                        <TabButton label="Port-VLANs" active={activeTab === 'Port-VLANs'}
+                                   onClick={() => setActiveTab('Port-VLANs')}/>
                         <TabButton label="E-Trunks" active={activeTab === 'E-Trunks'}
                                    onClick={() => setActiveTab('E-Trunks')}/>
                     </div>
