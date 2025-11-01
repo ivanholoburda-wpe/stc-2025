@@ -8,6 +8,10 @@ export type Interface = {
     ip_address?: string;
     description?: string;
     mtu?: number;
+    in_utilization?: string;
+    out_utilization?: string;
+    in_errors?: number;
+    out_errors?: number;
     transceivers: Transceiver[];
 };
 export type Transceiver = {
@@ -28,6 +32,10 @@ export type BgpPeer = {
     address_family: string;
     msg_rcvd: number;
     msg_sent: number;
+    version?: number;
+    out_queue?: number;
+    prefixes_received?: number;
+    vpn_instance?: string;
 };
 export type OspfDetail = { id: number; interface: Interface; cost: number; state: string; type: string; };
 export type HardwareComponent = {
@@ -79,6 +87,16 @@ export type IpRoute = {
     interface?: Interface | null;
     preference: number;
     cost: number;
+    status?: string;
+    network?: string;
+    prefix_len?: number;
+    loc_prf?: number;
+    med?: string;
+    pref_val?: number;
+    path_ogn?: string;
+    label?: number;
+    route_distinguisher?: string;
+    vpn_instance?: string;
 };
 export type IsisPeer = {
     id: number;
@@ -98,6 +116,79 @@ export type MplsL2vc = {
     remote_label: number;
 };
 export type VpnInstance = { id: number; name: string; rd?: string; address_family: string; };
+export type Vlan = {
+    id: number;
+    vid: number;
+    status?: string;
+    property?: string;
+    mac_learn?: string;
+    statistics?: string;
+    description?: string;
+};
+export type EthTrunk = {
+    id: number;
+    trunk_id: number;
+    mode_type?: string;
+    working_mode?: string;
+    operating_status?: string;
+    number_of_up_ports?: number;
+    local_info?: any;
+    ports_info?: any;
+};
+export type PortVlan = {
+    id: number;
+    port_name: string;
+    link_type?: string;
+    pvid?: number;
+    vlan_list?: string;
+    interface?: Interface | null;
+};
+export type VxlanTunnel = {
+    id: number;
+    vpn_instance: string;
+    tunnel_id: number;
+    source: string;
+    destination: string;
+    state?: string;
+    type?: string;
+    uptime?: string;
+};
+export type ETrunk = {
+    id: number;
+    etrunk_id: number;
+    state?: string;
+    vpn_instance?: string;
+    peer_ip?: string;
+    source_ip?: string;
+    priority?: number;
+    system_id?: string;
+    peer_system_id?: string;
+    peer_priority?: number;
+    causation?: string;
+    revert_delay_time_s?: number;
+    send_period_100ms?: number;
+    fail_time_100ms?: number;
+    peer_fail_time_100ms?: number;
+    receive?: number;
+    send?: number;
+    recdrop?: number;
+    snddrop?: number;
+    local_ip?: string;
+    interface_name?: string;
+    max_active_link_number?: number;
+    min_active_link_number?: number;
+    work_mode?: string;
+    local_phy_state?: string;
+    local_state?: string;
+    member_count?: number;
+    member_type?: string;
+    member_id?: number;
+    member_remote_id?: string;
+    member_state?: string;
+    member_causation?: string;
+    etrunk_info?: any;
+    members?: any[];
+};
 
 export type Device = {
     id: number;
@@ -119,6 +210,11 @@ export type Device = {
     isisPeers?: IsisPeer[];
     mplsL2vcs?: MplsL2vc[];
     vpnInstances?: VpnInstance[];
+    vlans?: Vlan[];
+    ethTrunks?: EthTrunk[];
+    portVlans?: PortVlan[];
+    vxlanTunnels?: VxlanTunnel[];
+    etrunks?: ETrunk[];
 };
 
 export async function getDevices(): Promise<APIResult<Device[]>> {
@@ -159,7 +255,36 @@ export async function getHardwareForDevice(deviceId: number, snapshotId: number)
 
 export async function getVpnForDevice(deviceId: number, snapshotId: number): Promise<APIResult<{
     mplsL2vcs: MplsL2vc[],
-    vpnInstances: VpnInstance[]
+    vpnInstances: VpnInstance[],
+    vxlanTunnels?: VxlanTunnel[]
 }>> {
-    return window.electronAPI.getVpnForDevice(deviceId, snapshotId);
+    const result = await window.electronAPI.getVpnForDevice(deviceId, snapshotId);
+    if (result.success && result.data) {
+        const data = result.data as any;
+        return {
+            ...result,
+            data: {
+                mplsL2vcs: data.mplsL2vcs || [],
+                vpnInstances: data.vpnInstances || [],
+                vxlanTunnels: data.vxlanTunnels || []
+            }
+        };
+    }
+    return result;
+}
+
+export async function getVlansForDevice(deviceId: number, snapshotId: number): Promise<APIResult<Vlan[]>> {
+    return (window.electronAPI as any).getVlansForDevice(deviceId, snapshotId);
+}
+
+export async function getEthTrunksForDevice(deviceId: number, snapshotId: number): Promise<APIResult<EthTrunk[]>> {
+    return (window.electronAPI as any).getEthTrunksForDevice(deviceId, snapshotId);
+}
+
+export async function getPortVlansForDevice(deviceId: number, snapshotId: number): Promise<APIResult<PortVlan[]>> {
+    return (window.electronAPI as any).getPortVlansForDevice(deviceId, snapshotId);
+}
+
+export async function getETrunksForDevice(deviceId: number, snapshotId: number): Promise<APIResult<ETrunk[]>> {
+    return (window.electronAPI as any).getETrunksForDevice(deviceId, snapshotId);
 }

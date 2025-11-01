@@ -26,6 +26,16 @@ export interface IDeviceService {
     getDetailsWithHardware(deviceId: number, snapshotId: number): Promise<Device | null>;
 
     getDetailsWithVpn(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithVlans(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithEthTrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
 }
 
 @injectable()
@@ -64,6 +74,26 @@ export class DeviceService implements IDeviceService {
 
     async getDetailsWithVpn(deviceId: number, snapshotId: number): Promise<Device | null> {
         return await this.deviceRepository.findWithVpn(deviceId, snapshotId);
+    }
+
+    async getDetailsWithVlans(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithVlans(deviceId, snapshotId);
+    }
+
+    async getDetailsWithEthTrunks(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithEthTrunks(deviceId, snapshotId);
+    }
+
+    async getDetailsWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithPortVlans(deviceId, snapshotId);
+    }
+
+    async getDetailsWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithVxlanTunnels(deviceId, snapshotId);
+    }
+
+    async getDetailsWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithETrunks(deviceId, snapshotId);
     }
 
     async getDeviceById(id: number): Promise<Device | null> {

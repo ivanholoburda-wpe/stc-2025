@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateIpRoutesTable1761890123456 implements MigrationInterface {
-    name = 'CreateIpRoutesTable1761890123456';
+export class CreateIpRoutesTable1760115304567 implements MigrationInterface {
+    name = 'CreateIpRoutesTable1760115304567';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

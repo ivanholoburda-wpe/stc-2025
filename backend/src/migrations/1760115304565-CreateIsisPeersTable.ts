@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateIsisPeersTable1761678901234 implements MigrationInterface {
-    name = 'CreateIsisPeersTable1761678901234';
+export class CreateIsisPeersTable1760115304565 implements MigrationInterface {
+    name = 'CreateIsisPeersTable1760115304565';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

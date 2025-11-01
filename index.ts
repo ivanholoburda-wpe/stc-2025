@@ -76,6 +76,18 @@ app.whenReady().then(async () => {
         ipcMain.handle('get-vpn-for-device', (event, deviceId, snapshotId) => {
             return deviceHandler.getVpnForDevice(deviceId, snapshotId);
         });
+        ipcMain.handle('get-vlans-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getVlansForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-eth-trunks-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getEthTrunksForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-port-vlans-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getPortVlansForDevice(deviceId, snapshotId);
+        });
+        ipcMain.handle('get-etrunks-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getETrunksForDevice(deviceId, snapshotId);
+        });
 
         ipcMain.handle('get-snapshots', async () => {
             return await snapshotHandler.getAllSnapshots();

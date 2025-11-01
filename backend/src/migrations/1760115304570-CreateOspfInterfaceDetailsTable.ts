@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateOspfInterfaceDetailsTable1762123456789 implements MigrationInterface {
-    name = 'CreateOspfInterfaceDetailsTable1762123456789';
+export class CreateOspfInterfaceDetailsTable1760115304570 implements MigrationInterface {
+    name = 'CreateOspfInterfaceDetailsTable1760115304570';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

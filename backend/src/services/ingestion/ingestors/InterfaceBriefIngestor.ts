@@ -28,6 +28,10 @@ export class InterfaceBriefIngestor implements IIngestor {
             device: context.device,
             phy_status: String(row.phy_status),
             protocol_status: String(row.protocol_status),
+            in_utilization: row.in_utilization || null,
+            out_utilization: row.out_utilization || null,
+            in_errors: row.in_errors || null,
+            out_errors: row.out_errors || null,
         }));
 
         await this.ifaceRepo.upsert(interfacesToUpsert);

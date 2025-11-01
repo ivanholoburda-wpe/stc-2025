@@ -31,6 +31,16 @@ export interface IDeviceRepository {
     findWithHardware(deviceId: number, snapshotId: number): Promise<Device | null>;
 
     findWithVpn(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithVlans(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithEthTrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
 }
 
 @injectable()
@@ -114,6 +124,48 @@ export class DeviceRepository implements IDeviceRepository {
             .leftJoinAndSelect("device.mplsL2vcs", "mplsL2vc", "mplsL2vc.snapshot_id = :snapshotId")
             .leftJoinAndSelect("mplsL2vc.interface", "mplsInterface")
             .leftJoinAndSelect("device.vpnInstances", "vpnInstance", "vpnInstance.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("device.vxlanTunnels", "vxlanTunnel", "vxlanTunnel.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithVlans(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.vlans", "vlan", "vlan.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithEthTrunks(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.ethTrunks", "ethTrunk", "ethTrunk.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.portVlans", "portVlan", "portVlan.snapshot_id = :snapshotId")
+            .leftJoinAndSelect("portVlan.interface", "portVlanInterface")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.vxlanTunnels", "vxlanTunnel", "vxlanTunnel.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.etrunks", "etrunk", "etrunk.snapshot_id = :snapshotId")
             .where("device.id = :deviceId")
             .setParameters({deviceId, snapshotId})
             .getOne();

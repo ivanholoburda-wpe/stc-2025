@@ -128,9 +128,46 @@ export class DeviceHandler {
                 success: true,
                 data: {
                     mplsL2vcs: device?.mplsL2vcs || [],
-                    vpnInstances: device?.vpnInstances || []
+                    vpnInstances: device?.vpnInstances || [],
+                    vxlanTunnels: device?.vxlanTunnels || []
                 }
             };
+        } catch (error) {
+            return {success: false, error: (error as Error).message};
+        }
+    }
+
+    async getVlansForDevice(deviceId: number, snapshotId: number) {
+        try {
+            const device = await this.deviceService.getDetailsWithVlans(deviceId, snapshotId);
+            return {success: true, data: device?.vlans || []};
+        } catch (error) {
+            return {success: false, error: (error as Error).message};
+        }
+    }
+
+    async getEthTrunksForDevice(deviceId: number, snapshotId: number) {
+        try {
+            const device = await this.deviceService.getDetailsWithEthTrunks(deviceId, snapshotId);
+            return {success: true, data: device?.ethTrunks || []};
+        } catch (error) {
+            return {success: false, error: (error as Error).message};
+        }
+    }
+
+    async getPortVlansForDevice(deviceId: number, snapshotId: number) {
+        try {
+            const device = await this.deviceService.getDetailsWithPortVlans(deviceId, snapshotId);
+            return {success: true, data: device?.portVlans || []};
+        } catch (error) {
+            return {success: false, error: (error as Error).message};
+        }
+    }
+
+    async getETrunksForDevice(deviceId: number, snapshotId: number) {
+        try {
+            const device = await this.deviceService.getDetailsWithETrunks(deviceId, snapshotId);
+            return {success: true, data: device?.etrunks || []};
         } catch (error) {
             return {success: false, error: (error as Error).message};
         }

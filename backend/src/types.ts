@@ -39,5 +39,10 @@ export const TYPES = {
     AnalyticsService: Symbol.for("AnalyticsService"),
     ReportRepository: Symbol.for("ReportRepository"),
     IReportProvider: Symbol.for("IReportProvider"),
+    EthTrunkRepository: Symbol.for("EthTrunkRepository"),
+    VlanRepository: Symbol.for("VlanRepository"),
+    PortVlanRepository: Symbol.for("PortVlanRepository"),
+    VxlanTunnelRepository: Symbol.for("VxlanTunnelRepository"),
+    ETrunkRepository: Symbol.for("ETrunkRepository"),
     DatabaseMaintenanceService: Symbol.for("DatabaseMaintenanceService"),
 };

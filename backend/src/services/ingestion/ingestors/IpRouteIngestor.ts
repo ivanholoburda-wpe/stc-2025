@@ -28,12 +28,22 @@ export class IpRouteIngestor implements IIngestor {
                 snapshot: context.snapshot,
                 interface: parentInterface || null,
 
-                destination_mask: route.destination_mask,
-                protocol: route.protocol,
-                preference: route.preference,
-                cost: route.cost,
-                flags: route.flags,
+                destination_mask: route.destination_mask || route.network || '',
+                protocol: route.protocol || 'BGP',
+                preference: route.preference || 0,
+                cost: route.cost || 0,
+                flags: route.flags || route.status || '',
                 next_hop: route.next_hop,
+                status: route.status || null,
+                network: route.network || null,
+                prefix_len: route.prefix_len || null,
+                loc_prf: route.loc_prf || null,
+                med: route.med ? String(route.med) : null,
+                pref_val: route.pref_val || null,
+                path_ogn: route.path_ogn || null,
+                label: route.label || null,
+                route_distinguisher: route.route_distinguisher || route.rd || null,
+                vpn_instance: route.vpn_instance || null,
             };
         });
 

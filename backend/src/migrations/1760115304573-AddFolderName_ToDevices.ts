@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddFolderName_ToDevices1762456789012 implements MigrationInterface {
-    name = 'AddFolderName_ToDevices1762456789012';
+export class AddFolderName_ToDevices1760115304573 implements MigrationInterface {
+    name = 'AddFolderName_ToDevices1760115304573';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

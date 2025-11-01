@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateStorageSummariesTable1761456789012 implements MigrationInterface {
-    name = 'CreateStorageSummariesTable1761456789012';
+export class CreateStorageSummariesTable1760115304563 implements MigrationInterface {
+    name = 'CreateStorageSummariesTable1760115304563';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

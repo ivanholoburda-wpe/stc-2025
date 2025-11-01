@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateStpConfigurationsTable1761123456789 implements MigrationInterface {
-    name = 'CreateStpConfigurationsTable1761123456789';
+export class CreateStpConfigurationsTable1760115304560 implements MigrationInterface {
+    name = 'CreateStpConfigurationsTable1760115304560';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

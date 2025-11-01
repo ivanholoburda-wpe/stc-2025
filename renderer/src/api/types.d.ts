@@ -15,6 +15,11 @@ import {
     MplsL2vc,
     OspfDetail,
     VpnInstance,
+    Vlan,
+    EthTrunk,
+    PortVlan,
+    VxlanTunnel,
+    ETrunk,
 } from "./devices";
 
 export type OptionType = 'toggle' | 'text' | 'textarea' | 'secret' | 'number' | 'select';
@@ -66,8 +71,13 @@ interface ElectronAPI {
     getHardwareForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<HardwareComponent[]>>;
     getVpnForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<{
         mplsL2vcs: MplsL2vc[],
-        vpnInstances: VpnInstance[]
+        vpnInstances: VpnInstance[],
+        vxlanTunnels?: VxlanTunnel[]
     }>>;
+    getVlansForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<Vlan[]>>;
+    getEthTrunksForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<EthTrunk[]>>;
+    getPortVlansForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<PortVlan[]>>;
+    getETrunksForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<ETrunk[]>>;
     getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
     exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
     getAllOptionsWithTypes: () => Promise<APIResult<OptionWithType[]>>;

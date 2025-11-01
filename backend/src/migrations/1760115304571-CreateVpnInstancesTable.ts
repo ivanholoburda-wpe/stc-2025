@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateVpnInstancesTable1762234567890 implements MigrationInterface {
-    name = 'CreateVpnInstancesTable1762234567890';
+export class CreateVpnInstancesTable1760115304571 implements MigrationInterface {
+    name = 'CreateVpnInstancesTable1760115304571';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

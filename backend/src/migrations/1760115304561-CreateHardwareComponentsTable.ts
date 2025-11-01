@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateHardwareComponentsTable1761234567890 implements MigrationInterface {
-    name = 'CreateHardwareComponentsTable1761234567890';
+export class CreateHardwareComponentsTable1760115304561 implements MigrationInterface {
+    name = 'CreateHardwareComponentsTable1760115304561';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

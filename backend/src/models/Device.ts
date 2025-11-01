@@ -17,6 +17,11 @@ import { PatchInfo } from "./PatchInfo";
 import { StorageSummary } from "./StorageSummary";
 import { StpConfiguration } from "./StpConfiguration";
 import { VpnInstance } from "./VpnInstance";
+import { EthTrunk } from "./EthTrunk";
+import { Vlan } from "./Vlan";
+import { PortVlan } from "./PortVlan";
+import { VxlanTunnel } from "./VxlanTunnel";
+import { ETrunk } from "./ETrunk";
 
 @Entity({ name: "devices" })
 export class Device {
@@ -86,4 +91,19 @@ export class Device {
 
     @OneToMany(() => VpnInstance, (instance) => instance.device)
     vpnInstances?: VpnInstance[];
+
+    @OneToMany(() => EthTrunk, (trunk) => trunk.device)
+    ethTrunks?: EthTrunk[];
+
+    @OneToMany(() => Vlan, (vlan) => vlan.device)
+    vlans?: Vlan[];
+
+    @OneToMany(() => PortVlan, (portVlan) => portVlan.device)
+    portVlans?: PortVlan[];
+
+    @OneToMany(() => VxlanTunnel, (tunnel) => tunnel.device)
+    vxlanTunnels?: VxlanTunnel[];
+
+    @OneToMany(() => ETrunk, (etrunk) => etrunk.device)
+    etrunks?: ETrunk[];
 }
