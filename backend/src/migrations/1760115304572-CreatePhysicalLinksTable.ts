@@ -4,6 +4,7 @@ export class CreatePhysicalLinksTable1760115304572 implements MigrationInterface
     name = 'CreatePhysicalLinksTable1760115304572';
 
 public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DROP TABLE IF EXISTS "physical_links"`);
         await queryRunner.query(`
             CREATE TABLE "physical_links"
             (
