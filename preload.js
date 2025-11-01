@@ -25,6 +25,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     exportReport: (reportId, snapshotId) => ipcRenderer.invoke('export-report', reportId, snapshotId),
     getAllOptionsWithTypes: () => ipcRenderer.invoke('get-all-options-with-types'),
     updateOptions: (options) => ipcRenderer.invoke('update-options', options),
+    clearData: () => ipcRenderer.invoke('maintenance:clear-data'),
+    backupData: () => ipcRenderer.invoke('maintenance:backup-data'),
+    restoreData: () => ipcRenderer.invoke('maintenance:restore-data'),
 });
 
 contextBridge.exposeInMainWorld('configAPI', {

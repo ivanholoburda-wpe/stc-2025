@@ -12,6 +12,7 @@ import {ExportHandler} from "./backend/src/handlers/ExportHandler";
 import {AnalyticsHandler} from "./backend/src/handlers/AnalyticsHandler";
 import {AlarmsHandler} from "./backend/src/handlers/AlarmsHandler";
 import {ConfigurationHandler} from "./backend/src/handlers/ConfigurationHandler";
+import {MaintenanceHandler} from "./backend/src/handlers/MaintenanceHandler";
 
 function createWindow(): void {
     const mainWindow = new BrowserWindow({
@@ -47,6 +48,7 @@ app.whenReady().then(async () => {
         const analyticsHandler = container.get(AnalyticsHandler);
         const alaramsHandler = container.get(AlarmsHandler);
         const configurationHandler = container.get(ConfigurationHandler);
+        const maintenanceHandler = container.get(MaintenanceHandler);
 
         ipcMain.handle('run-parsing', async () => {
             return await parsingHandler.startParsing();
@@ -125,6 +127,17 @@ app.whenReady().then(async () => {
 
         ipcMain.handle('config:is-offline-mode', () => {
             return configurationHandler.isOfflineMode();
+        });
+
+        ipcMain.handle('maintenance:clear-data', () => {
+            return maintenanceHandler.clearData();
+        });
+
+        ipcMain.handle('maintenance:backup-data', () => {
+            return maintenanceHandler.backupData();
+        });
+        ipcMain.handle('maintenance:restore-data', () => {
+            return maintenanceHandler.restoreData();
         });
     } catch (error) {
         console.error('Database initialization failed:', error);
