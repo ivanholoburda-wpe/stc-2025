@@ -163,4 +163,13 @@ export class DeviceHandler {
             return {success: false, error: (error as Error).message};
         }
     }
+
+    async getETrunksForDevice(deviceId: number, snapshotId: number) {
+        try {
+            const device = await this.deviceService.getDetailsWithETrunks(deviceId, snapshotId);
+            return {success: true, data: device?.etrunks || []};
+        } catch (error) {
+            return {success: false, error: (error as Error).message};
+        }
+    }
 }

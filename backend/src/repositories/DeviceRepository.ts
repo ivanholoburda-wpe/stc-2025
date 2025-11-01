@@ -39,6 +39,8 @@ export interface IDeviceRepository {
     findWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null>;
 
     findWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
 }
 
 @injectable()
@@ -156,6 +158,14 @@ export class DeviceRepository implements IDeviceRepository {
     async findWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null> {
         return this.repository.createQueryBuilder("device")
             .leftJoinAndSelect("device.vxlanTunnels", "vxlanTunnel", "vxlanTunnel.snapshot_id = :snapshotId")
+            .where("device.id = :deviceId")
+            .setParameters({deviceId, snapshotId})
+            .getOne();
+    }
+
+    async findWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return this.repository.createQueryBuilder("device")
+            .leftJoinAndSelect("device.etrunks", "etrunk", "etrunk.snapshot_id = :snapshotId")
             .where("device.id = :deviceId")
             .setParameters({deviceId, snapshotId})
             .getOne();

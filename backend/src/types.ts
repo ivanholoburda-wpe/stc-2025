@@ -43,5 +43,6 @@ export const TYPES = {
     VlanRepository: Symbol.for("VlanRepository"),
     PortVlanRepository: Symbol.for("PortVlanRepository"),
     VxlanTunnelRepository: Symbol.for("VxlanTunnelRepository"),
+    ETrunkRepository: Symbol.for("ETrunkRepository"),
     DatabaseMaintenanceService: Symbol.for("DatabaseMaintenanceService"),
 };

@@ -11,9 +11,10 @@ import {
     getVlansForDevice,
     getEthTrunksForDevice,
     getPortVlansForDevice,
+    getETrunksForDevice,
     Device, Interface, IpRoute, ARPRecord, BgpPeer,
     OspfDetail, IsisPeer, BfdSession, HardwareComponent,
-    MplsL2vc, VpnInstance, Vlan, EthTrunk, PortVlan, VxlanTunnel
+    MplsL2vc, VpnInstance, Vlan, EthTrunk, PortVlan, VxlanTunnel, ETrunk
 } from '../../api/devices';
 import {getSnapshots, Snapshot} from '../../api/snapshot';
 import {
@@ -73,6 +74,7 @@ export function DevicesView() {
     const [vlans, setVlans] = useState<Vlan[] | null>(null);
     const [ethTrunks, setEthTrunks] = useState<EthTrunk[] | null>(null);
     const [portVlans, setPortVlans] = useState<PortVlan[] | null>(null);
+    const [etrunks, setEtrunks] = useState<ETrunk[] | null>(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('Summary');
@@ -112,6 +114,7 @@ export function DevicesView() {
         setVlans(null);
         setEthTrunks(null);
         setPortVlans(null);
+        setEtrunks(null);
         setSummaryDetails(null);
         setActiveTab('Summary');
 
@@ -199,6 +202,12 @@ export function DevicesView() {
                         if (portVlans === null) {
                             result = await getPortVlansForDevice(selectedDeviceId, selectedSnapshotId);
                             if (result.success) setPortVlans(result.data || []); else setError(result.error);
+                        }
+                        break;
+                    case 'E-Trunks':
+                        if (etrunks === null) {
+                            result = await getETrunksForDevice(selectedDeviceId, selectedSnapshotId);
+                            if (result.success) setEtrunks(result.data || []); else setError(result.error);
                         }
                         break;
                 }
@@ -290,8 +299,8 @@ export function DevicesView() {
                     <td className="py-3 px-4"><StatusIndicator status={iface.phy_status}/></td>
                     <td className="py-3 px-4"><StatusIndicator status={iface.protocol_status}/></td>
                     <td className="py-3 px-4 font-mono">{iface.ip_address || '-'}</td>
-                    <td className="py-3 px-4 text-gray-300">{iface.in_utilization || '-'}</td>
-                    <td className="py-3 px-4 text-gray-300">{iface.out_utilization || '-'}</td>
+                    <td className="py-3 px-4 text-gray-300">{iface.in_utilization}</td>
+                    <td className="py-3 px-4 text-gray-300">{iface.out_utilization}</td>
                     <td className="py-3 px-4 text-gray-300">{iface.in_errors ?? 0}</td>
                     <td className="py-3 px-4 text-gray-300">{iface.out_errors ?? 0}</td>
                     <td className="py-3 px-4 text-gray-400">{iface.description || '-'}</td>
@@ -472,6 +481,26 @@ export function DevicesView() {
         </div>
     );
 
+    const ETrunksTab = ({etrunks}: { etrunks: ETrunk[] | null }) => (
+        <div className="space-y-8">
+            <InfoCard title="E-Trunks">
+                <Table headers={["E-Trunk ID", "State", "VPN Instance", "Peer IP", "Source IP", "Priority", "System ID"]}>
+                    {etrunks?.map(e => (
+                        <tr key={e.id} className="hover:bg-gray-700/50">
+                            <td className="py-2 px-3 font-mono">{e.etrunk_id}</td>
+                            <td><StatusIndicator status={e.state}/></td>
+                            <td className="font-mono text-xs">{e.vpn_instance || '-'}</td>
+                            <td className="font-mono">{e.peer_ip || '-'}</td>
+                            <td className="font-mono">{e.source_ip || '-'}</td>
+                            <td>{e.priority ?? '-'}</td>
+                            <td className="font-mono text-xs">{e.system_id || '-'}</td>
+                        </tr>
+                    ))}
+                </Table>
+            </InfoCard>
+        </div>
+    );
+
     const renderActiveTab = () => {
         if (loading.initial) return <LoadingSpinner/>;
         if (error) return <ErrorDisplay error={error}/>;
@@ -498,6 +527,8 @@ export function DevicesView() {
                 return ethTrunks ? <EthTrunksTab trunks={ethTrunks}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'Port-VLANs':
                 return portVlans ? <PortVlansTab portVlans={portVlans}/> : <NoDataDisplay message={noDataMsg}/>;
+            case 'E-Trunks':
+                return etrunks ? <ETrunksTab etrunks={etrunks}/> : <NoDataDisplay message={noDataMsg}/>;
             default:
                 return <div>Not implemented yet.</div>;
         }
@@ -547,6 +578,8 @@ export function DevicesView() {
                                    onClick={() => setActiveTab('Eth-Trunks')}/>
                         <TabButton label="Port-VLANs" active={activeTab === 'Port-VLANs'}
                                    onClick={() => setActiveTab('Port-VLANs')}/>
+                        <TabButton label="E-Trunks" active={activeTab === 'E-Trunks'}
+                                   onClick={() => setActiveTab('E-Trunks')}/>
                     </div>
                     <div>
                         <select

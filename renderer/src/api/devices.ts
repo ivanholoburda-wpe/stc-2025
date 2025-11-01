@@ -153,6 +153,29 @@ export type VxlanTunnel = {
     type?: string;
     uptime?: string;
 };
+export type ETrunk = {
+    id: number;
+    etrunk_id: number;
+    state?: string;
+    vpn_instance?: string;
+    peer_ip?: string;
+    source_ip?: string;
+    priority?: number;
+    system_id?: string;
+    peer_system_id?: string;
+    peer_priority?: number;
+    causation?: string;
+    revert_delay_time_s?: number;
+    send_period_100ms?: number;
+    fail_time_100ms?: number;
+    peer_fail_time_100ms?: number;
+    receive?: number;
+    send?: number;
+    recdrop?: number;
+    snddrop?: number;
+    etrunk_info?: any;
+    members?: any[];
+};
 
 export type Device = {
     id: number;
@@ -178,6 +201,7 @@ export type Device = {
     ethTrunks?: EthTrunk[];
     portVlans?: PortVlan[];
     vxlanTunnels?: VxlanTunnel[];
+    etrunks?: ETrunk[];
 };
 
 export async function getDevices(): Promise<APIResult<Device[]>> {
@@ -246,4 +270,8 @@ export async function getEthTrunksForDevice(deviceId: number, snapshotId: number
 
 export async function getPortVlansForDevice(deviceId: number, snapshotId: number): Promise<APIResult<PortVlan[]>> {
     return (window.electronAPI as any).getPortVlansForDevice(deviceId, snapshotId);
+}
+
+export async function getETrunksForDevice(deviceId: number, snapshotId: number): Promise<APIResult<ETrunk[]>> {
+    return (window.electronAPI as any).getETrunksForDevice(deviceId, snapshotId);
 }

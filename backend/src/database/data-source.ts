@@ -27,6 +27,7 @@ import {EthTrunk} from "../models/EthTrunk";
 import {Vlan} from "../models/Vlan";
 import {PortVlan} from "../models/PortVlan";
 import {VxlanTunnel} from "../models/VxlanTunnel";
+import {ETrunk} from "../models/ETrunk";
 
 
 const dbPath = path.join(app.getPath("userData"), "local.db");
@@ -63,6 +64,7 @@ export const AppDataSource = new DataSource({
       Vlan,
       PortVlan,
       VxlanTunnel,
+      ETrunk,
   ],
   migrations: [migrationsPath],
 });

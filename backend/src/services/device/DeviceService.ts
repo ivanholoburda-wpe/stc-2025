@@ -34,6 +34,8 @@ export interface IDeviceService {
     getDetailsWithPortVlans(deviceId: number, snapshotId: number): Promise<Device | null>;
 
     getDetailsWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    getDetailsWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
 }
 
 @injectable()
@@ -88,6 +90,10 @@ export class DeviceService implements IDeviceService {
 
     async getDetailsWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null> {
         return await this.deviceRepository.findWithVxlanTunnels(deviceId, snapshotId);
+    }
+
+    async getDetailsWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null> {
+        return await this.deviceRepository.findWithETrunks(deviceId, snapshotId);
     }
 
     async getDeviceById(id: number): Promise<Device | null> {

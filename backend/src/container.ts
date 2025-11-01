@@ -98,8 +98,11 @@ import {IEthTrunkRepository, EthTrunkRepository} from "./repositories/EthTrunkRe
 import {IVlanRepository, VlanRepository} from "./repositories/VlanRepository";
 import {IPortVlanRepository, PortVlanRepository} from "./repositories/PortVlanRepository";
 import {IVxlanTunnelRepository, VxlanTunnelRepository} from "./repositories/VxlanTunnelRepository";
+import {IETrunkRepository, ETrunkRepository} from "./repositories/ETrunkRepository";
 import {HealthIngestor} from "./services/ingestion/ingestors/HealthIngestor";
 import {EthTrunkIngestor} from "./services/ingestion/ingestors/EthTrunkIngestor";
+import {ETrunkBriefIngestor} from "./services/ingestion/ingestors/ETrunkBriefIngestor";
+import {ETrunkDetailIngestor} from "./services/ingestion/ingestors/ETrunkDetailIngestor";
 import {VlanIngestor} from "./services/ingestion/ingestors/VlanIngestor";
 import {PortVlanIngestor} from "./services/ingestion/ingestors/PortVlanIngestor";
 import {VxlanTunnelIngestor} from "./services/ingestion/ingestors/VxlanTunnelIngestor";
@@ -156,6 +159,7 @@ container.bind<IEthTrunkRepository>(TYPES.EthTrunkRepository).to(EthTrunkReposit
 container.bind<IVlanRepository>(TYPES.VlanRepository).to(VlanRepository);
 container.bind<IPortVlanRepository>(TYPES.PortVlanRepository).to(PortVlanRepository);
 container.bind<IVxlanTunnelRepository>(TYPES.VxlanTunnelRepository).to(VxlanTunnelRepository);
+container.bind<IETrunkRepository>(TYPES.ETrunkRepository).to(ETrunkRepository);
 container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
 container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
 container.bind<IExportService>(TYPES.ExportService).to(ExportService);
@@ -199,6 +203,8 @@ container.bind<IIngestor>(TYPES.IIngestor).to(VpnInstanceIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(LldpNeighborIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(HealthIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(EthTrunkIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(ETrunkBriefIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(ETrunkDetailIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(VlanIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(PortVlanIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(VxlanTunnelIngestor);

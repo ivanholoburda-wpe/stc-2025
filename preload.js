@@ -21,6 +21,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getVlansForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-vlans-for-device', deviceId, snapshotId),
     getEthTrunksForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-eth-trunks-for-device', deviceId, snapshotId),
     getPortVlansForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-port-vlans-for-device', deviceId, snapshotId),
+    getETrunksForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-etrunks-for-device', deviceId, snapshotId),
     getAvailableReports: () => ipcRenderer.invoke('get-available-reports'),
     exportReport: (reportId, snapshotId) => ipcRenderer.invoke('export-report', reportId, snapshotId),
     getAllOptionsWithTypes: () => ipcRenderer.invoke('get-all-options-with-types'),

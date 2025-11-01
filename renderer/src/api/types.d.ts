@@ -19,6 +19,7 @@ import {
     EthTrunk,
     PortVlan,
     VxlanTunnel,
+    ETrunk,
 } from "./devices";
 
 export type OptionType = 'toggle' | 'text' | 'textarea' | 'secret' | 'number' | 'select';
@@ -76,6 +77,7 @@ interface ElectronAPI {
     getVlansForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<Vlan[]>>;
     getEthTrunksForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<EthTrunk[]>>;
     getPortVlansForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<PortVlan[]>>;
+    getETrunksForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<ETrunk[]>>;
     getAvailableReports: () => Promise<APIResult<ReportDefinition[]>>;
     exportReport: (reportId: string, snapshotId: number) => Promise<ExportResult>;
     getAllOptionsWithTypes: () => Promise<APIResult<OptionWithType[]>>;

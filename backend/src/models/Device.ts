@@ -21,6 +21,7 @@ import { EthTrunk } from "./EthTrunk";
 import { Vlan } from "./Vlan";
 import { PortVlan } from "./PortVlan";
 import { VxlanTunnel } from "./VxlanTunnel";
+import { ETrunk } from "./ETrunk";
 
 @Entity({ name: "devices" })
 export class Device {
@@ -102,4 +103,7 @@ export class Device {
 
     @OneToMany(() => VxlanTunnel, (tunnel) => tunnel.device)
     vxlanTunnels?: VxlanTunnel[];
+
+    @OneToMany(() => ETrunk, (etrunk) => etrunk.device)
+    etrunks?: ETrunk[];
 }

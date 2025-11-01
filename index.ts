@@ -85,6 +85,9 @@ app.whenReady().then(async () => {
         ipcMain.handle('get-port-vlans-for-device', (event, deviceId, snapshotId) => {
             return deviceHandler.getPortVlansForDevice(deviceId, snapshotId);
         });
+        ipcMain.handle('get-etrunks-for-device', (event, deviceId, snapshotId) => {
+            return deviceHandler.getETrunksForDevice(deviceId, snapshotId);
+        });
 
         ipcMain.handle('get-snapshots', async () => {
             return await snapshotHandler.getAllSnapshots();
