@@ -25,7 +25,7 @@ export class LldpNeighborIngestor implements IIngestor {
             target_interface_name: neighbor.neighbor_interface,
             snapshot: context.snapshot
         }))
-        console.log(linksToUpsert);
+
         if (linksToUpsert.length > 0) {
             await this.linkRepo.upsert(linksToUpsert);
             console.log(`[LldpNeighborIngestor] Upserted ${linksToUpsert.length} physical links.`);
