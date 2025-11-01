@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreatePatchInfoTable1761789012345 implements MigrationInterface {
-    name = 'CreatePatchInfoTable1761789012345';
+export class CreatePatchInfoTable1760115304566 implements MigrationInterface {
+    name = 'CreatePatchInfoTable1760115304566';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

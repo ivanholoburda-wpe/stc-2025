@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateBgpPeersTable1761345678901 implements MigrationInterface {
-    name = 'CreateBgpPeersTable1761345678901';
+export class CreateBgpPeersTable1760115304562 implements MigrationInterface {
+    name = 'CreateBgpPeersTable1760115304562';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

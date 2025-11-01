@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateVlansTable1761234567892 implements MigrationInterface {
-    name = 'CreateVlansTable1761234567892';
+export class CreateVlansTable1760115304576 implements MigrationInterface {
+    name = 'CreateVlansTable1760115304576';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

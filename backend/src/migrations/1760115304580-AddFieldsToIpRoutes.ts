@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddFieldsToIpRoutes1761234567896 implements MigrationInterface {
-    name = 'AddFieldsToIpRoutes1761234567896';
+export class AddFieldsToIpRoutes1760115304580 implements MigrationInterface {
+    name = 'AddFieldsToIpRoutes1760115304580';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "ip_routes" ADD COLUMN "status" varchar`);

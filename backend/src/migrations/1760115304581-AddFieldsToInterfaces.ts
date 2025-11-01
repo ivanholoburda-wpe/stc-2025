@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class AddFieldsToInterfaces1761234567897 implements MigrationInterface {
-    name = 'AddFieldsToInterfaces1761234567897';
+export class AddFieldsToInterfaces1760115304581 implements MigrationInterface {
+    name = 'AddFieldsToInterfaces1760115304581';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`ALTER TABLE "interfaces" ADD COLUMN "in_utilization" varchar`);

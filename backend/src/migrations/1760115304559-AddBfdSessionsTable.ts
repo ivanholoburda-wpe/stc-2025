@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateBfdSessionsTable1760987654321 implements MigrationInterface {
-    name = 'CreateBfdSessionsTable1760987654321';
+export class AddBfdSessionsTable1760115304559 implements MigrationInterface {
+    name = 'AddBfdSessionsTable1760115304559';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

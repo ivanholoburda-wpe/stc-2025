@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateCpuUsageSummaryTable1761567890123 implements MigrationInterface {
-    name = 'CreateCpuUsageSummaryTable1761567890123';
+export class CreateCpuUsageSummaryTable1760115304564 implements MigrationInterface {
+    name = 'CreateCpuUsageSummaryTable1760115304564';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`

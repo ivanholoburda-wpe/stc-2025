@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from "typeorm";
 
-export class CreateMplsL2vcTable1762012345678 implements MigrationInterface {
-    name = 'CreateMplsL2vcTable1762012345678';
+export class CreateMplsL2vcTable1760115304569 implements MigrationInterface {
+    name = 'CreateMplsL2vcTable1760115304569';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
