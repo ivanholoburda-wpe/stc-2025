@@ -13,8 +13,11 @@
     "copy:preload": "node scripts/copy-preload.js",
     "build:main": "tsc && npm run copy:preload",
     "build": "run-s build:main build:renderer build:electron",
-    "prebuild:portable": "run-s build:main build:renderer",
-    "build:portable": "electron-builder build --win portable",
+    "clean:dist": "rimraf dist",
+    "prebuild:portable": "run-s clean:dist build:main build:renderer",
+    "build:portable": "run-s build:portable:real prune:prod",
+    "build:portable:real": "electron-builder --win portable",
+    "prune:prod": "npm prune --production",
     "build:renderer": "vite build --config renderer/vite.config.js",
     "build:electron": "electron-builder -w --dir",
     "pack:win": "electron-builder -w",
@@ -77,7 +80,7 @@
     "asarUnpack": [
       "node_modules/better-sqlite3/build/Release/*.node"
     ],
-    "compression": "maximum",
+    "compression": "normal",
     "files": [
       "dist/**",
       "preload.js",
