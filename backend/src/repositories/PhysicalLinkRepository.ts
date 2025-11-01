@@ -23,7 +23,7 @@ export class PhysicalLinkRepository implements IPhysicalLinkRepository {
 
         await this.repository.upsert(
             links,
-            ['snapshot', 'source_device_name', 'target_device_name']
+            ["snapshot", "source_device_name", "source_interface_name", "target_device_name", "target_interface_name"]
         );
     }
 
