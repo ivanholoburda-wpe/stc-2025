@@ -27,15 +27,15 @@ STC-Toolkit is a powerful desktop application designed to analyze network device
 
 ## ✨ Features
 
-- **📊 Device Inventory Management**: Comprehensive view of all network devices with detailed hardware, software, and interface information
-- **🗺️ Interactive Network Topology**: Visual representation of network connections based on LLDP data
-- **📈 Time-Series Analytics**: Track device metrics over time with multiple snapshots
-- **🤖 AI-Powered Analysis**: Built-in AI agent (Ruslan4ick 1.0) for intelligent network analysis
-- **⚠️ Alarm Aggregation**: Centralized view of all device alarms and alerts
-- **📑 Excel Reporting**: Generate detailed reports in Excel format
-- **💾 Snapshot Management**: Create and compare network state snapshots
-- **🔌 Offline Mode**: Full functionality without internet connection
-- **🔄 Data Backup & Restore**: Protect your analysis data
+- **Device Inventory Management**: Comprehensive view of all network devices with detailed hardware, software, and interface information
+- **Interactive Network Topology**: Visual representation of network connections based on LLDP data
+- **Time-Series Analytics**: Track device metrics over time with multiple snapshots
+- **AI-Powered Analysis**: Built-in AI agent (Ruslan4ick 1.0) for intelligent network analysis
+- **Alarm Aggregation**: Centralized view of all device alarms and alerts
+- **Excel Reporting**: Generate detailed reports in Excel format
+- **Snapshot Management**: Create and compare network state snapshots
+- **Offline Mode**: Full functionality without internet connection
+- **Data Backup & Restore**: Protect your analysis data
 
 ---
 
