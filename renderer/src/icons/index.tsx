@@ -111,3 +111,11 @@ export const NetworkIcon: React.FC<IconProps> = (props) => (
         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
     </Icon>
 );
+
+export const BigQueryIcon: React.FC<IconProps> = (props) => (
+    <Icon {...props}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 3" />
+        <path d="M9 12h6" />
+    </Icon>
+);

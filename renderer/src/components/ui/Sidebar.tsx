@@ -8,11 +8,13 @@ import {
     FileTextIcon,
     SettingsIcon,
     LogOutIcon,
-    DownloadIcon, SparklesIcon,
+    DownloadIcon,
+    SparklesIcon,
     NetworkIcon,
+    BigQueryIcon,
 } from '../../icons';
 
-export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'topology' | 'settings';
+export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'bigquery' | 'topology' | 'settings';
 
 interface NavItem {
     id: ViewId;
@@ -33,6 +35,7 @@ const navItems: NavItem[] = [
     {id: 'ai', label: 'AI Assistant', icon: SparklesIcon},
     {id: 'alerts', label: 'Alerts', icon: BellIcon},
     {id: 'reports', label: 'Reports', icon: FileTextIcon},
+    {id: 'bigquery', label: 'BigQuery', icon: BigQueryIcon},
 ];
 
 const NavLink: React.FC<{ item: NavItem; activeView: ViewId; setActiveView: (view: ViewId) => void }> = ({

@@ -12,8 +12,9 @@ import {AnalyticsView} from "./components/views/AnalyticsView";
 import {AlertsView} from "./components/views/AlertsView";
 import { ReportsView } from './components/views/ReportView';
 import {SettingsView} from "./components/views/SettingsView";
+import {BigQueryView} from "./components/views/BigQueryView";
 
-const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports', 'settings'] as const;
+const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports', 'bigquery', 'settings'] as const;
 export type ExtendedViewId = typeof extendedViewIds[number];
 
 
@@ -25,6 +26,7 @@ const viewTitles: Record<ExtendedViewId, string> = {
     analytics: 'Analytics',
     alerts: 'Alerts',
     reports: 'Reports',
+    bigquery: 'BigQuery Export',
     settings: 'Settings',
 };
 
@@ -74,6 +76,8 @@ export function App() {
                 return <AlertsView />;
             case 'reports':
                 return <ReportsView />;
+            case 'bigquery':
+                return <BigQueryView />;
             case 'settings':
                 return <SettingsView />;
             default:
