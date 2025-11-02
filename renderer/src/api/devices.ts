@@ -88,6 +88,7 @@ export type IpRoute = {
     preference: number;
     cost: number;
     status?: string;
+    flags?: string;
     network?: string;
     prefix_len?: number;
     loc_prf?: number;

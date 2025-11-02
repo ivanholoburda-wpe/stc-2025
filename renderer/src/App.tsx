@@ -88,7 +88,7 @@ export function App() {
                 <Sidebar activeView={activeView} setActiveView={setActiveView} />
                 <main className="flex-1 flex flex-col overflow-hidden">
                     <Header viewTitle={viewTitles[activeView] || 'Home'} />
-                    <div className="flex-1 overflow-y-auto">{renderActiveView()}</div>
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">{renderActiveView()}</div>
                 </main>
             </div>
         </>

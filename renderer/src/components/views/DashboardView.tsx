@@ -22,7 +22,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onReadFile, parsin
       {parsingResult && (
         <div className="mt-8 w-full text-left">
           <h3 className="text-lg font-semibold text-white mb-2">File content:</h3>
-          <pre className="bg-gray-900 p-4 rounded-lg text-gray-300 text-sm max-h-60 overflow-auto">
+          <pre className="bg-gray-900 p-4 rounded-lg text-gray-300 text-sm max-h-60 overflow-auto custom-scrollbar">
             Snapshot was taken, snapshotId = {parsingResult.data.snapshotId}
           </pre>
         </div>
