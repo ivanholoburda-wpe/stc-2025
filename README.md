@@ -6,7 +6,7 @@ STC-Toolkit is a powerful desktop application designed to analyze network device
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
 ![License](https://img.shields.io/badge/license-ISC-green.svg)
-![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
 
 ---
 
@@ -53,10 +53,7 @@ STC-Toolkit is a powerful desktop application designed to analyze network device
 
 ### Option 1: Pre-built Executable (Recommended)
 
-1. Download the latest release:
-   - **Windows**: `STC-Toolkit-1.0.0-win-x64.exe`
-   - **macOS**: `STC-Toolkit-1.0.0-mac.dmg`
-   - **Linux**: `STC-Toolkit-1.0.0-linux-x64.AppImage`
+1. Download the latest release for Windows: `STC-Toolkit-1.0.4-win-x64.exe`
 
 2. Run the installer and follow the on-screen instructions
 
