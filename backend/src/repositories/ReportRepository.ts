@@ -65,9 +65,6 @@ export class ReportRepository implements IReportRepository {
         return this.dataSource.getRepository(entity as any);
     }
 
-    /**
-     * Отримує "легкий" список пристроїв, що належать до знімка.
-     */
     async getDevicesForSnapshot(snapshotId: number): Promise<Device[]> {
         return this.getRepo(Device).createQueryBuilder("device")
             .where("EXISTS (SELECT 1 FROM interfaces i WHERE i.device_id = device.id AND i.snapshot_id = :snapshotId)", {snapshotId})
@@ -75,9 +72,6 @@ export class ReportRepository implements IReportRepository {
             .getMany();
     }
 
-    /**
-     * Завантажує дані ТІЛЬКИ для вкладки "Summary".
-     */
     async findForSummary(deviceId: number, snapshotId: number): Promise<Device | null> {
         return this.getRepo(Device).findOne({
             where: {
@@ -144,9 +138,6 @@ export class ReportRepository implements IReportRepository {
         });
     }
 
-    /**
-     * Завантажує дані ТІЛЬКИ для вкладки "Hardware".
-     */
     async findWithHardware(deviceId: number, snapshotId: number): Promise<Device | null> {
         return this.getRepo(Device).findOne({
             where: {
