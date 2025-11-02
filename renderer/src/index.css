@@ -13,15 +13,15 @@
 /* Apply to body and any element with .custom-scrollbar */
 body,
 .custom-scrollbar {
-  scrollbar-width: thin; /* Firefox */
+  scrollbar-width: auto; /* Firefox (larger) */
   scrollbar-color: var(--sb-thumb) var(--sb-track); /* thumb track */
 }
 
 /* WebKit-based browsers */
 body::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
 }
 
 body::-webkit-scrollbar-track,
