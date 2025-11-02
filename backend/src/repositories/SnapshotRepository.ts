@@ -28,7 +28,11 @@ export class SnapshotRepository implements ISnapshotRepository {
     }
 
     async findAll(): Promise<Snapshot[]> {
-        return await this.repository.find();
+        return await this.repository.find({
+            order: {
+                created_at: 'DESC'
+            }
+        });
     }
 
     async findById(id: number): Promise<Snapshot | null> {
