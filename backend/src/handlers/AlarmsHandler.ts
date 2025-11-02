@@ -7,7 +7,6 @@ import {TYPES} from "../types";
 export class AlarmsHandler {
     constructor(
         @inject(TYPES.AlarmRepository) private alarmRepository: AlarmRepository) {
-
     }
 
     public async getAllBySnapshot(snapshotId: number) {

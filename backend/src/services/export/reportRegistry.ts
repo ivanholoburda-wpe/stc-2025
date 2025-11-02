@@ -2,6 +2,11 @@ import { ReportDefinition } from "./providers/IReportProvider";
 
 export const REPORT_REGISTRY: ReportDefinition[] = [
     {
+        id: 'per_device_details',
+        label: "General report",
+        description: "General report",
+    },
+    {
         id: 'hardware_inventory_report',
         label: 'Hardware Inventory',
         description: 'Generates a complete list of all hardware components (boards, power supplies, etc.) in the network.'

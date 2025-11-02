@@ -115,6 +115,7 @@ import {BgpEvpnRoutingTableIngestor} from "./services/ingestion/ingestors/BgpEvp
 import {IDatabaseMaintenanceService, DatabaseMaintenanceService} from "./services/maintenance/DatabaseMaintenanceService";
 import {MaintenanceHandler} from "./handlers/MaintenanceHandler";
 import { BigQueryExportService, IBigQueryExportService } from './services/export/BigQueryExportService';
+import {GeneralReportProvider} from "./services/export/providers/GeneralReportProvider";
 
 const container = new Container();
 
@@ -238,6 +239,7 @@ container.bind<IReportProvider>(TYPES.IReportProvider).to(PerDeviceInterfaceRepo
 container.bind<IReportProvider>(TYPES.IReportProvider).to(IgpReportProvider);
 container.bind<IReportProvider>(TYPES.IReportProvider).to(IpRoutePerDeviceReportProvider);
 container.bind<IReportProvider>(TYPES.IReportProvider).to(InterfaceReportProvider);
+container.bind<IReportProvider>(TYPES.IReportProvider).to(GeneralReportProvider);
 
 
 export { container };
