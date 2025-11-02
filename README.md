@@ -2,11 +2,10 @@
 
 **Network Topology Analysis Tool for Enterprise Networks**
 
-STC-Toolkit is a powerful desktop application designed to analyze network device configuration files and visualize network topology in a structured, easy-to-understand format. It processes command outputs from network devices (primarily Huawei/H3C equipment) and provides comprehensive insights into your network infrastructure.
+STC-Toolkit is a powerful desktop application designed to analyze network device configuration files and visualize network topology in a structured, easy-to-understand format. It processes command outputs from network devices (primarily Huawei equipment) and provides comprehensive insights into your network infrastructure.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![License](https://img.shields.io/badge/license-ISC-green.svg)
-![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+![Version](https://img.shields.io/badge/version-1.0.5-blue.svg)
+![Platform](https://img.shields.io/badge/platform-Windows-yellow.svg)
 
 ---
 
