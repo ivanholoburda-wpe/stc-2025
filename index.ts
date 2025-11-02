@@ -168,6 +168,10 @@ app.whenReady().then(async () => {
             return exportHandler.exportReport(reportId, snapshotId);
         });
 
+        ipcMain.handle('export-bigquery', (event, options) => {
+            return exportHandler.exportDatabaseToBigQuery(options);
+        });
+
         ipcMain.handle('get-all-options-with-types', () => {
             return configurationHandler.getAllOptionsWithTypes();
         });

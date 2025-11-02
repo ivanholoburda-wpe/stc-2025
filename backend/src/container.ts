@@ -114,6 +114,7 @@ import {BgpVpnv6RoutingTableIngestor} from "./services/ingestion/ingestors/BgpVp
 import {BgpEvpnRoutingTableIngestor} from "./services/ingestion/ingestors/BgpEvpnRoutingTableIngestor";
 import {IDatabaseMaintenanceService, DatabaseMaintenanceService} from "./services/maintenance/DatabaseMaintenanceService";
 import {MaintenanceHandler} from "./handlers/MaintenanceHandler";
+import { BigQueryExportService, IBigQueryExportService } from './services/export/BigQueryExportService';
 
 const container = new Container();
 
@@ -164,6 +165,7 @@ container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
 container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
 container.bind<IExportService>(TYPES.ExportService).to(ExportService);
 container.bind<IDatabaseMaintenanceService>(TYPES.DatabaseMaintenanceService).to(DatabaseMaintenanceService);
+container.bind<IBigQueryExportService>(TYPES.BigQueryExportService).to(BigQueryExportService);
 
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();

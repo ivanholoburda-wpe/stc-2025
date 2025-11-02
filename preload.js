@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getETrunksForDevice: (deviceId, snapshotId) => ipcRenderer.invoke('get-etrunks-for-device', deviceId, snapshotId),
     getAvailableReports: () => ipcRenderer.invoke('get-available-reports'),
     exportReport: (reportId, snapshotId) => ipcRenderer.invoke('export-report', reportId, snapshotId),
+    exportDatabaseToBigQuery: (options) => ipcRenderer.invoke('export-bigquery', options),
     getAllOptionsWithTypes: () => ipcRenderer.invoke('get-all-options-with-types'),
     updateOptions: (options) => ipcRenderer.invoke('update-options', options),
     clearData: () => ipcRenderer.invoke('maintenance:clear-data'),
