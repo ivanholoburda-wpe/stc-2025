@@ -17,6 +17,7 @@ STC-Toolkit is a powerful desktop application designed to analyze network device
 - [Installation](#installation)
 - [Quick Start Guide](#quick-start-guide)
 - [User Manual](#user-manual)
+- [Testing](#testing)
 - [Project Structure](#project-structure)
 - [Development](#development)
 - [Troubleshooting](#troubleshooting)
@@ -270,6 +271,95 @@ Global application configuration for network mode, AI settings, and data managem
 - **Backup Data**: Create a complete backup of your database
 - **Load Backup**: Restore from a previous backup (⚠️ overwrites current data)
 - **Clear Data**: Delete all data from the application (⚠️ irreversible)
+
+---
+
+## 🧪 Testing
+
+### Unit Tests
+
+The project uses **Jest** as the testing framework for unit tests. Tests are located in the `tests/` directory and cover critical business logic components.
+
+**Test Coverage:**
+- Export Service Report Providers
+- Data formatting and transformation logic
+- Repository interactions
+
+**Running Tests:**
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm test -- --watch
+
+# Run tests with coverage report
+npm test -- --coverage
+
+# Run specific test file
+npm test HardwareInventoryReportProvider.test.ts
+```
+
+**Test Structure:**
+
+```
+tests/
+├── setupJest.ts                              # Jest configuration
+└── services/
+    └── export/
+        └── providers/
+            ├── ArpReportProvider.test.ts
+            ├── DownPortsReportProvider.test.ts
+            ├── GeneralReportProvider.test.ts
+            ├── HardwareInventoryReportProvider.test.ts
+            ├── IgpReportProvider.test.ts
+            ├── IpRoutePerDeviceReportProvider.test.ts
+            ├── NetworkHealthReportProvider.test.ts
+            ├── PerDeviceInterfaceReportProvider.test.ts
+            ├── SoftwareLicenseReportProvider.test.ts
+            └── TransceiverInventoryReportProvider.test.ts
+```
+
+**Writing New Tests:**
+
+When adding new features, follow these guidelines:
+
+1. Create test files with `.test.ts` extension
+2. Use descriptive test names: `describe()` for test suites, `it()` for individual tests
+3. Mock external dependencies using Jest mocks
+4. Test both success and error scenarios
+
+**Example Test:**
+
+```typescript
+import { MyService } from '../services/MyService';
+
+describe('MyService', () => {
+    let service: MyService;
+    
+    beforeEach(() => {
+        service = new MyService();
+    });
+    
+    it('should return correct data', async () => {
+        const result = await service.getData(1);
+        expect(result).toBeDefined();
+        expect(result.id).toBe(1);
+    });
+    
+    it('should handle errors gracefully', async () => {
+        await expect(service.getData(-1)).rejects.toThrow();
+    });
+});
+```
+
+**Best Practices:**
+- Keep tests isolated and independent
+- Use `beforeEach()` for test setup to ensure clean state
+- Mock database and external API calls
+- Aim for high test coverage on business logic
+- Run tests before committing changes
 
 ---
 
