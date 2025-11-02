@@ -4,13 +4,9 @@ import { BigQuery, BigQueryOptions, Dataset, Table } from '@google-cloud/bigquer
 import { TYPES } from '../../types';
 
 export interface BigQueryCredentialOptions {
-    /** Path to a service account key file */
     keyFilename?: string;
-    /** Raw JSON string or object with service account credentials */
     keyJson?: string | Record<string, any>;
-    /** Explicit project identifier */
     projectId?: string;
-    /** Direct credentials object */
     credentials?: {
         client_email: string;
         private_key: string;
