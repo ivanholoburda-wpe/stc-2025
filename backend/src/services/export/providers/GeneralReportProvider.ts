@@ -217,6 +217,9 @@ export class GeneralReportProvider implements IReportProvider {
                     'Hash Arithmetic': localInfo.hash_arithmetic,
                     'Least Active Links': localInfo['least-active-linknumber'] ?? localInfo['least_active_linknumber'],
                     'Max Active Links': localInfo['max-active-linknumber'] ?? localInfo['max_active_linknumber'],
+                    'Timeout Period': localInfo.timeout_period,
+                    'Preempt Delay Time': localInfo.preempt_delay_time,
+                    'Max Brandwidth': localInfo.max_bandwidth ?? localInfo.max_brandwidth,
                 };
             });
 
