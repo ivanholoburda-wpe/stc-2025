@@ -60,7 +60,6 @@ function createWindow(): void {
         ['CommandOrControl+numadd', () => setZoomRelative(step)],
         // Zoom Out variants (keep existing behavior consistent)
         ['CommandOrControl+-', () => setZoomRelative(-step)],
-        ['CommandOrControl+Subtract', () => setZoomRelative(-step)],
         ['CommandOrControl+numsub', () => setZoomRelative(-step)],
         // Reset Zoom
         ['CommandOrControl+0', () => mainWindow.webContents.setZoomFactor(1)],

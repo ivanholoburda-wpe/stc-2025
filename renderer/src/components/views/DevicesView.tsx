@@ -311,33 +311,64 @@ export function DevicesView() {
         </InfoCard>
     );
 
-    const RoutingTab = ({data}: { data: { ipRoutes: IpRoute[], arpRecords: ARPRecord[] } | null }) => (
-        <div className="space-y-8">
-            <InfoCard title="IP Routing Table"><Table
-                headers={["Destination/Mask", "Protocol", "NextHop", "Status", "Network", "Loc Prf", "MED", "VPN Instance", "Pref", "Cost"]}>{data?.ipRoutes.map(r =>
-                <tr key={r.id} className="hover:bg-gray-700/50">
-                    <td className="py-2 px-3 font-mono">{r.destination_mask}</td>
-                    <td className="py-2 px-3">{r.protocol}</td>
-                    <td className="py-2 px-3 font-mono">{r.next_hop}</td>
-                    <td className="py-2 px-3 font-mono text-xs">{r.status || '-'}</td>
-                    <td className="py-2 px-3 font-mono text-xs">{r.network || '-'}</td>
-                    <td className="py-2 px-3">{r.loc_prf ?? '-'}</td>
-                    <td className="py-2 px-3">{r.med || '-'}</td>
-                    <td className="py-2 px-3 font-mono text-xs">{r.vpn_instance || '-'}</td>
-                    <td className="py-2 px-3">{r.preference}</td>
-                    <td className="py-2 px-3">{r.cost}</td>
-                </tr>)}</Table></InfoCard>
-            <InfoCard title="ARP Table"><Table
-                headers={["IP Address", "MAC Address", "Type", "Interface", "VLAN"]}>{data?.arpRecords.map(r => <tr
-                key={r.id} className="hover:bg-gray-700/50">
-                <td className="py-2 px-3 font-mono">{r.ip_address}</td>
-                <td className="py-2 px-3 font-mono">{r.mac_address}</td>
-                <td className="py-2 px-3">{r.type}</td>
-                <td className="py-2 px-3 font-mono">{r.interface}</td>
-                <td className="py-2 px-3">{r.vlan}</td>
-            </tr>)}</Table></InfoCard>
-        </div>
-    );
+    const RoutingTab = ({data}: { data: { ipRoutes: IpRoute[], arpRecords: ARPRecord[] } | null }) => {
+        const allRoutes = data?.ipRoutes ?? [];
+        // Show in BGP table routes with RD (from BGP VPNv4) or EVPN routes (protocol contains 'BGP EVPN')
+        const bgpRoutes = allRoutes.filter(r => !!r.route_distinguisher || ((r.protocol || '').toUpperCase().includes('BGP EVPN')));
+        // All other routes (including BGP from IP routing-table and their secondary paths) go to IP routes
+        const ipRoutes = allRoutes.filter(r => !(!!r.route_distinguisher || ((r.protocol || '').toUpperCase().includes('BGP EVPN'))));
+        return (
+            <div className="space-y-8">
+                <InfoCard title="IP Routing Table">
+                    <Table headers={["Destination/Mask", "Protocol", "NextHop", "Interface", "Flags", "Pref", "Cost"]}>
+                        {ipRoutes.map(r => (
+                            <tr key={r.id} className="hover:bg-gray-700/50">
+                                <td className="py-2 px-3 font-mono">{r.destination_mask}</td>
+                                <td className="py-2 px-3">{r.protocol}</td>
+                                <td className="py-2 px-3 font-mono">{r.next_hop}</td>
+                                <td className="py-2 px-3 font-mono text-xs">{(r.interface as any)?.name || '-'}</td>
+                                <td className="py-2 px-3 font-mono text-xs">{r.flags || '-'}</td>
+                                <td className="py-2 px-3">{r.preference}</td>
+                                <td className="py-2 px-3">{r.cost}</td>
+                            </tr>
+                        ))}
+                    </Table>
+                </InfoCard>
+
+                <InfoCard title="BGP Routing Table">
+                    <Table headers={["Type", "Network", "NextHop", "Status", "Loc Prf", "MED", "Pref Val", "Path", "RD"]}>
+                        {bgpRoutes.map(r => (
+                            <tr key={r.id} className="hover:bg-gray-700/50">
+                                <td className="py-2 px-3">{((r.protocol || '').toUpperCase().includes('BGP EVPN')) ? 'BGP EVPN' : 'BGP'}</td>
+                                <td className="py-2 px-3 font-mono">{r.network || r.destination_mask}</td>
+                                <td className="py-2 px-3 font-mono">{r.next_hop}</td>
+                                <td className="py-2 px-3 font-mono text-xs">{r.status || '-'}</td>
+                                <td className="py-2 px-3">{r.loc_prf ?? '-'}</td>
+                                <td className="py-2 px-3">{r.med || '-'}</td>
+                                <td className="py-2 px-3">{r.pref_val ?? '-'}</td>
+                                <td className="py-2 px-3 font-mono text-xs">{r.path_ogn || '-'}</td>
+                                <td className="py-2 px-3 font-mono text-xs">{r.route_distinguisher || '-'}</td>
+                            </tr>
+                        ))}
+                    </Table>
+                </InfoCard>
+
+                <InfoCard title="ARP Table">
+                    <Table headers={["IP Address", "MAC Address", "Type", "Interface", "VLAN"]}>
+                        {data?.arpRecords.map(r => (
+                            <tr key={r.id} className="hover:bg-gray-700/50">
+                                <td className="py-2 px-3 font-mono">{r.ip_address}</td>
+                                <td className="py-2 px-3 font-mono">{r.mac_address}</td>
+                                <td className="py-2 px-3">{r.type}</td>
+                                <td className="py-2 px-3 font-mono">{r.interface}</td>
+                                <td className="py-2 px-3">{r.vlan}</td>
+                            </tr>
+                        ))}
+                    </Table>
+                </InfoCard>
+            </div>
+        );
+    };
 
     const ProtocolsTab = ({data}: {
         data: {
