@@ -92,7 +92,7 @@ export function AlertsView() {
                 {loading.alarms && <div className="flex items-center justify-center h-full text-gray-500">Loading alerts...</div>}
                 {error && <div className="flex items-center justify-center h-full text-red-400">{error}</div>}
                 {!loading.alarms && !error && (
-                    <div className="overflow-y-auto h-full">
+                    <div className="overflow-y-auto h-full custom-scrollbar">
                         <table className="min-w-full divide-y divide-gray-700">
                             <thead className="bg-gray-800 sticky top-0">
                             <tr>

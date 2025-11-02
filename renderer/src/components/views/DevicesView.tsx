@@ -789,7 +789,7 @@ export function DevicesView() {
                                                                                                            className="w-full bg-gray-900 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                     </div>
                 </div>
-                <div className="flex-grow overflow-y-auto p-2">
+                <div className="flex-grow overflow-y-auto p-2 custom-scrollbar">
                     {loading.initial ? <div className="text-center text-gray-500 p-4">Loading devices...</div> :
                         filteredDevices.map(device => (
                             <button key={device.id} onClick={() => setSelectedDeviceId(device.id)}
@@ -836,7 +836,7 @@ export function DevicesView() {
                         </select>
                     </div>
                 </div>
-                <div className="flex-grow overflow-y-auto p-4">{renderActiveTab()}</div>
+                <div className="flex-grow overflow-y-auto p-4 custom-scrollbar">{renderActiveTab()}</div>
             </div>
         </div>
     );

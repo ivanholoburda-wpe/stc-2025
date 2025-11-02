@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, dialog} from 'electron';
+import {app, BrowserWindow, ipcMain, dialog, globalShortcut, screen} from 'electron';
 import path from 'path';
 import {AppDataSource} from './backend/src/database/data-source';
 import {container} from './backend/src/container';
@@ -15,9 +15,20 @@ import {ConfigurationHandler} from "./backend/src/handlers/ConfigurationHandler"
 import {MaintenanceHandler} from "./backend/src/handlers/MaintenanceHandler";
 
 function createWindow(): void {
+    // Adapt window size to available screen work area so small monitors are supported
+    const { workArea } = screen.getPrimaryDisplay();
+    const targetWidth = 1200;
+    const targetHeight = 700;
+    const minWidth = Math.min(targetWidth, workArea.width);
+    const minHeight = Math.min(targetHeight, workArea.height);
+    const initialWidth = Math.min(targetWidth, workArea.width);
+    const initialHeight = Math.min(targetHeight, workArea.height);
+
     const mainWindow = new BrowserWindow({
-        width: 1200,
-        height: 700,
+        width: initialWidth,
+        height: initialHeight,
+        minWidth: minWidth,
+        minHeight: minHeight,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         },
@@ -29,6 +40,44 @@ function createWindow(): void {
     } else {
         mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
     }
+
+    // Register zoom shortcuts (fixes non-working zoom-in hotkey)
+    const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
+    const step = 0.1;
+    const minZoom = 0.25;
+    const maxZoom = 3.0;
+
+    const setZoomRelative = (delta: number) => {
+        const current = mainWindow.webContents.getZoomFactor();
+        const next = clamp(current + delta, minZoom, maxZoom);
+        mainWindow.webContents.setZoomFactor(next);
+    };
+
+    const shortcuts: Array<[string, () => void]> = [
+        // Zoom In variants
+        ['CommandOrControl+=', () => setZoomRelative(step)],
+        ['CommandOrControl+Plus', () => setZoomRelative(step)],
+        ['CommandOrControl+numadd', () => setZoomRelative(step)],
+        // Zoom Out variants (keep existing behavior consistent)
+        ['CommandOrControl+-', () => setZoomRelative(-step)],
+        ['CommandOrControl+Subtract', () => setZoomRelative(-step)],
+        ['CommandOrControl+numsub', () => setZoomRelative(-step)],
+        // Reset Zoom
+        ['CommandOrControl+0', () => mainWindow.webContents.setZoomFactor(1)],
+    ];
+
+    shortcuts.forEach(([accel, handler]) => {
+        try {
+            globalShortcut.register(accel, handler);
+        } catch (e) {
+            console.warn('Failed to register shortcut', accel, e);
+        }
+    });
+
+    mainWindow.on('closed', () => {
+        // Unregister only our shortcuts when window closed
+        shortcuts.forEach(([accel]) => globalShortcut.unregister(accel));
+    });
 }
 
 app.whenReady().then(async () => {
@@ -150,4 +199,9 @@ app.whenReady().then(async () => {
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+    // Unregister all shortcuts as a safety net
+    globalShortcut.unregisterAll();
 });

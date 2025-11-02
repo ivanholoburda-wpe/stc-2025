@@ -78,7 +78,7 @@ export const ReportsView: React.FC = () => {
     const selectedReport = availableReports.find(r => r.id === selectedReportId);
 
     return (
-        <div className="p-6 bg-gray-900 text-white flex-1 overflow-auto">
+        <div className="p-6 bg-gray-900 text-white flex-1 overflow-auto custom-scrollbar">
             <h2 className="text-2xl font-semibold mb-6 text-gray-100">Report generation</h2>
 
             <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
