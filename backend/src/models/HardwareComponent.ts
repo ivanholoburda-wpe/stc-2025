@@ -42,4 +42,32 @@ export class HardwareComponent {
 
     @Column({ type: "json", nullable: true })
     details?: any;
+
+    // Inventory board information (for main boards)
+    @Column({ type: "varchar", nullable: true })
+    inventory_boardtype?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_barcode?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_item?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_description?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_manufactured?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_vendorname?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_issuenumber?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_cleicode?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    inventory_bom?: string;
 }

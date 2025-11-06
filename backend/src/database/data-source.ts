@@ -28,6 +28,8 @@ import {Vlan} from "../models/Vlan";
 import {PortVlan} from "../models/PortVlan";
 import {VxlanTunnel} from "../models/VxlanTunnel";
 import {ETrunk} from "../models/ETrunk";
+import {InventoryDaughterBoard} from "../models/InventoryDaughterBoard";
+import {InventoryPort} from "../models/InventoryPort";
 
 
 const dbPath = path.join(app.getPath("userData"), "local.db");
@@ -65,6 +67,8 @@ export const AppDataSource = new DataSource({
       PortVlan,
       VxlanTunnel,
       ETrunk,
+      InventoryDaughterBoard,
+      InventoryPort,
   ],
   migrations: [migrationsPath],
 });
