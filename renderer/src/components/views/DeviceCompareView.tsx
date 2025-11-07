@@ -46,6 +46,7 @@ import {
     EthTrunksTab,
     ETrunksTab,
 } from './deviceShared';
+import {DiffViewer} from '../DiffViewer';
 
 interface RoutingData {
     ipRoutes: IpRoute[];
@@ -422,6 +423,8 @@ export function DeviceCompareView() {
     const [listLoading, setListLoading] = useState(true);
     const [listError, setListError] = useState('');
     const [activeTab, setActiveTab] = useState<DeviceTab>('Summary');
+    const [showDiff, setShowDiff] = useState(false);
+    const [highlightDiff, setHighlightDiff] = useState(true);
 
     useEffect(() => {
         const loadLists = async () => {
@@ -470,6 +473,34 @@ export function DeviceCompareView() {
 
     const showNoDevices = useMemo(() => !listLoading && devices.length === 0, [listLoading, devices.length]);
 
+    const getDataForComparison = useCallback((data: DeviceDataState, tab: DeviceTab): any => {
+        switch (tab) {
+            case 'Summary':
+                return data.summary;
+            case 'Hardware':
+                return data.hardware;
+            case 'Ports':
+                return data.interfaces;
+            case 'Routing':
+                return data.routing;
+            case 'Protocols':
+                return data.protocols;
+            case 'VPN / Tunnels':
+                return data.vpn;
+            case 'VLANs':
+                return {vlans: data.vlans, portVlans: data.portVlans};
+            case 'Eth-Trunks':
+                return data.ethTrunks;
+            case 'E-Trunks':
+                return data.etrunks;
+            default:
+                return null;
+        }
+    }, []);
+
+    const leftCompareData = useMemo(() => getDataForComparison(leftData, activeTab), [leftData, activeTab, getDataForComparison]);
+    const rightCompareData = useMemo(() => getDataForComparison(rightData, activeTab), [rightData, activeTab, getDataForComparison]);
+
     if (listLoading) {
         return (
             <div className="p-6 text-gray-100">
@@ -504,6 +535,31 @@ export function DeviceCompareView() {
             </div>
 
             {listError && !showNoDevices ? <ErrorDisplay error={listError} /> : null}
+
+            {leftCompareData !== null && rightCompareData !== null && (
+                <div className="flex justify-end">
+                    <button
+                        onClick={() => setShowDiff(!showDiff)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            showDiff
+                                ? 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        }`}
+                    >
+                        {showDiff ? 'Hide Diff' : 'Show Diff'}
+                    </button>
+                </div>
+            )}
+
+            {showDiff && leftCompareData !== null && rightCompareData !== null && (
+                <DiffViewer
+                    left={leftCompareData}
+                    right={rightCompareData}
+                    showDiff={showDiff}
+                    highlightDiff={highlightDiff}
+                    onToggleHighlight={() => setHighlightDiff(!highlightDiff)}
+                />
+            )}
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                 <DevicePanel
