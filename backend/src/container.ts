@@ -99,6 +99,8 @@ import {IVlanRepository, VlanRepository} from "./repositories/VlanRepository";
 import {IPortVlanRepository, PortVlanRepository} from "./repositories/PortVlanRepository";
 import {IVxlanTunnelRepository, VxlanTunnelRepository} from "./repositories/VxlanTunnelRepository";
 import {IETrunkRepository, ETrunkRepository} from "./repositories/ETrunkRepository";
+import {IInventoryDaughterBoardRepository, InventoryDaughterBoardRepository} from "./repositories/InventoryDaughterBoardRepository";
+import {IInventoryPortRepository, InventoryPortRepository} from "./repositories/InventoryPortRepository";
 import {HealthIngestor} from "./services/ingestion/ingestors/HealthIngestor";
 import {EthTrunkIngestor} from "./services/ingestion/ingestors/EthTrunkIngestor";
 import {ETrunkBriefIngestor} from "./services/ingestion/ingestors/ETrunkBriefIngestor";
@@ -112,6 +114,7 @@ import {BgpVpnv6PeerIngestor} from "./services/ingestion/ingestors/BgpVpnv6PeerI
 import {BgpVpnv4RoutingTableIngestor} from "./services/ingestion/ingestors/BgpVpnv4RoutingTableIngestor";
 import {BgpVpnv6RoutingTableIngestor} from "./services/ingestion/ingestors/BgpVpnv6RoutingTableIngestor";
 import {BgpEvpnRoutingTableIngestor} from "./services/ingestion/ingestors/BgpEvpnRoutingTableIngestor";
+import {InventoryIngestor} from "./services/ingestion/ingestors/InventoryIngestor";
 import {IDatabaseMaintenanceService, DatabaseMaintenanceService} from "./services/maintenance/DatabaseMaintenanceService";
 import {MaintenanceHandler} from "./handlers/MaintenanceHandler";
 import { BigQueryExportService, IBigQueryExportService } from './services/export/BigQueryExportService';
@@ -162,6 +165,8 @@ container.bind<IVlanRepository>(TYPES.VlanRepository).to(VlanRepository);
 container.bind<IPortVlanRepository>(TYPES.PortVlanRepository).to(PortVlanRepository);
 container.bind<IVxlanTunnelRepository>(TYPES.VxlanTunnelRepository).to(VxlanTunnelRepository);
 container.bind<IETrunkRepository>(TYPES.ETrunkRepository).to(ETrunkRepository);
+container.bind<IInventoryDaughterBoardRepository>(TYPES.InventoryDaughterBoardRepository).to(InventoryDaughterBoardRepository);
+container.bind<IInventoryPortRepository>(TYPES.InventoryPortRepository).to(InventoryPortRepository);
 container.bind<ITopologyService>(TYPES.TopologyService).to(TopologyService);
 container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
 container.bind<IExportService>(TYPES.ExportService).to(ExportService);
@@ -217,6 +222,7 @@ container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv6PeerIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv4RoutingTableIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(BgpVpnv6RoutingTableIngestor);
 container.bind<IIngestor>(TYPES.IIngestor).to(BgpEvpnRoutingTableIngestor);
+container.bind<IIngestor>(TYPES.IIngestor).to(InventoryIngestor);
 
 // Analytics providers
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(CpuSystemUsageProvider);

@@ -44,6 +44,8 @@ export const TYPES = {
     PortVlanRepository: Symbol.for("PortVlanRepository"),
     VxlanTunnelRepository: Symbol.for("VxlanTunnelRepository"),
     ETrunkRepository: Symbol.for("ETrunkRepository"),
+    InventoryDaughterBoardRepository: Symbol.for("InventoryDaughterBoardRepository"),
+    InventoryPortRepository: Symbol.for("InventoryPortRepository"),
     DatabaseMaintenanceService: Symbol.for("DatabaseMaintenanceService"),
     BigQueryExportService: Symbol.for("BigQueryExportService"),
 };

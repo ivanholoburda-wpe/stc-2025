@@ -46,6 +46,16 @@ export type HardwareComponent = {
     status?: string;
     role?: string;
     details?: any;
+    // Inventory information for main boards
+    inventory_boardtype?: string;
+    inventory_barcode?: string;
+    inventory_item?: string;
+    inventory_description?: string;
+    inventory_manufactured?: string;
+    inventory_vendorname?: string;
+    inventory_issuenumber?: string;
+    inventory_cleicode?: string;
+    inventory_bom?: string;
 };
 export type CpuSummary = {
     id: number;
@@ -196,6 +206,16 @@ export type Device = {
     hostname: string;
     model: string;
     folder_name: string;
+    // Inventory backplane information
+    backplane_boardtype?: string;
+    backplane_barcode?: string;
+    backplane_item?: string;
+    backplane_description?: string;
+    backplane_manufactured?: string;
+    backplane_vendorname?: string;
+    backplane_issuenumber?: string;
+    backplane_cleicode?: string;
+    backplane_bom?: string;
     interfaces?: Interface[];
     bgpPeers?: BgpPeer[];
     ospfInterfaceDetails?: OspfDetail[];

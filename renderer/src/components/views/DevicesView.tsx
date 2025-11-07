@@ -173,7 +173,17 @@ export function DevicesView() {
                     case 'Hardware':
                         if (hardware === null) {
                             result = await getHardwareForDevice(selectedDeviceId, selectedSnapshotId);
-                            if (result.success) setHardware(result.data || []); else setError(result.error);
+                            if (result.success) {
+                                console.log('Hardware data loaded:', result.data);
+                                console.log('Hardware count:', result.data?.length);
+                                if (result.data && result.data.length > 0) {
+                                    console.log('First hardware component:', result.data[0]);
+                                }
+                                setHardware(result.data || []);
+                            } else {
+                                console.error('Failed to load hardware:', result.error);
+                                setError(result.error);
+                            }
                         }
                         break;
                     case 'VPN / Tunnels':
@@ -226,6 +236,19 @@ export function DevicesView() {
             <InfoCard title="Device Info"><InfoRow label="Hostname" value={device.hostname}/><InfoRow label="Model"
                                                                                                       value={device.model}/><InfoRow
                 label="Folder Name" value={device.folder_name}/></InfoCard>
+            {(device.backplane_boardtype || device.backplane_barcode) && (
+                <InfoCard title="Backplane Inventory">
+                    <InfoRow label="Board Type" value={device.backplane_boardtype}/>
+                    <InfoRow label="Barcode" value={device.backplane_barcode}/>
+                    <InfoRow label="Item" value={device.backplane_item}/>
+                    <InfoRow label="Description" value={device.backplane_description}/>
+                    <InfoRow label="Manufactured" value={device.backplane_manufactured}/>
+                    <InfoRow label="Vendor" value={device.backplane_vendorname}/>
+                    <InfoRow label="Issue Number" value={device.backplane_issuenumber}/>
+                    <InfoRow label="CLEI Code" value={device.backplane_cleicode}/>
+                    <InfoRow label="BOM" value={device.backplane_bom}/>
+                </InfoCard>
+            )}
             {device.cpuSummaries?.[0] && <InfoCard title="CPU Summary"><InfoRow label="Current Usage"
                                                                                 value={`${device.cpuSummaries[0].system_cpu_use_rate_percent}%`}/><InfoRow
                 label="Max Usage" value={`${device.cpuSummaries[0].max_cpu_usage_percent}%`}/></InfoCard>}
@@ -248,13 +271,26 @@ export function DevicesView() {
     );
 
     const HardwareTab = ({components}: { components: HardwareComponent[] | null }) => {
-        const hasHealthData = components?.some(c => c.details && (c.details.cpu_usage_percent !== undefined || c.details.memory_usage_percent !== undefined));
+        if (!components || components.length === 0) {
+            return <NoDataDisplay message="Немає даних про апаратне забезпечення."/>;
+        }
+
+        const hasHealthData = components.some(c => c.details && (c.details.cpu_usage_percent !== undefined || c.details.memory_usage_percent !== undefined));
+        const hasInventoryData = components.some(c => c.inventory_boardtype || c.inventory_barcode || c.inventory_item || c.inventory_vendorname);
+        
+        const headers = ["Slot", "Type", "Model", "Status", "Role"];
+        if (hasHealthData) {
+            headers.push("CPU %", "Memory %", "Memory Used/Total");
+        }
+        if (hasInventoryData) {
+            headers.push("Board Type", "Barcode", "Vendor", "Item");
+        }
         
         return (
             <div className="space-y-8">
-                <InfoCard title="Hardware Components">
-                    <Table headers={hasHealthData ? ["Slot", "Type", "Model", "Status", "Role", "CPU %", "Memory %", "Memory Used/Total"] : ["Slot", "Type", "Model", "Status", "Role"]}>
-                        {components?.map(comp => {
+                <InfoCard title={`Hardware Components (${components.length})`}>
+                    <Table headers={headers}>
+                        {components.map(comp => {
                             const healthData = comp.details as any;
                             const hasHealth = healthData && (healthData.cpu_usage_percent !== undefined || healthData.memory_usage_percent !== undefined);
                             const memUsed = healthData?.memory_used_mb;
@@ -277,6 +313,14 @@ export function DevicesView() {
                                                 {healthData?.memory_usage_percent !== undefined ? `${healthData.memory_usage_percent}%` : '-'}
                                             </td>
                                             <td className="py-3 px-4 text-gray-300 font-mono text-xs">{memDisplay}</td>
+                                        </>
+                                    )}
+                                    {hasInventoryData && (
+                                        <>
+                                            <td className="py-3 px-4 text-gray-300 font-mono text-xs">{comp.inventory_boardtype || '-'}</td>
+                                            <td className="py-3 px-4 text-gray-300 font-mono text-xs">{comp.inventory_barcode || '-'}</td>
+                                            <td className="py-3 px-4 text-gray-300">{comp.inventory_vendorname || '-'}</td>
+                                            <td className="py-3 px-4 text-gray-300 font-mono text-xs">{comp.inventory_item || '-'}</td>
                                         </>
                                     )}
                                 </tr>
@@ -788,7 +832,10 @@ export function DevicesView() {
             case 'Summary':
                 return summaryDetails ? <SummaryTab device={summaryDetails}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'Hardware':
-                return hardware ? <HardwareTab components={hardware}/> : <NoDataDisplay message={noDataMsg}/>;
+                if (hardware === null) {
+                    return <NoDataDisplay message="Завантаження даних..."/>;
+                }
+                return <HardwareTab components={hardware}/>;
             case 'Ports':
                 return interfaces ? <PortsTab interfaces={interfaces}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'Routing':

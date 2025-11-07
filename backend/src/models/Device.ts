@@ -37,6 +37,34 @@ export class Device {
     @Column({ type: "varchar", nullable: true })
     model?: string;
 
+    // Inventory backplane information
+    @Column({ type: "varchar", nullable: true })
+    backplane_boardtype?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_barcode?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_item?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_description?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_manufactured?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_vendorname?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_issuenumber?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_cleicode?: string;
+
+    @Column({ type: "varchar", nullable: true })
+    backplane_bom?: string;
+
     @ManyToOne(() => Snapshot, (snapshot: Snapshot) => snapshot.devices)
     @JoinColumn({ name: "first_seen_snapshot_id" })
     firstSeenSnapshot!: Snapshot;
