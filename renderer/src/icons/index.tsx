@@ -112,6 +112,14 @@ export const NetworkIcon: React.FC<IconProps> = (props) => (
     </Icon>
 );
 
+export const CompareIcon: React.FC<IconProps> = (props) => (
+    <Icon {...props}>
+        <rect x="3" y="4" width="7" height="16" rx="1" />
+        <rect x="14" y="4" width="7" height="16" rx="1" />
+        <line x1="12" y1="6" x2="12" y2="18" />
+    </Icon>
+);
+
 export const BigQueryIcon: React.FC<IconProps> = (props) => (
     <Icon {...props}>
         <circle cx="12" cy="12" r="9" />

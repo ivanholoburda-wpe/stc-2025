@@ -73,7 +73,7 @@ interface ElectronAPI {
     getVpnForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<{
         mplsL2vcs: MplsL2vc[],
         vpnInstances: VpnInstance[],
-        vxlanTunnels?: VxlanTunnel[]
+        vxlanTunnels: VxlanTunnel[]
     }>>;
     getVlansForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<Vlan[]>>;
     getEthTrunksForDevice: (deviceId: number, snapshotId: number) => Promise<APIResult<EthTrunk[]>>;

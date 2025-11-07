@@ -12,9 +12,10 @@ import {
     SparklesIcon,
     NetworkIcon,
     BigQueryIcon,
+    CompareIcon,
 } from '../../icons';
 
-export type ViewId = 'dashboard' | 'devices' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'bigquery' | 'topology' | 'settings';
+export type ViewId = 'dashboard' | 'devices' | 'device-compare' | 'ai' | 'analytics' | 'alerts' | 'reports' | 'bigquery' | 'topology' | 'settings';
 
 interface NavItem {
     id: ViewId;
@@ -30,6 +31,7 @@ interface SidebarProps {
 const navItems: NavItem[] = [
     {id: 'dashboard', label: 'Dashboard', icon: LayoutDashboardIcon},
     {id: 'devices', label: 'Devices', icon: LaptopIcon},
+    {id: 'device-compare', label: 'Compare', icon: CompareIcon},
     {id: 'analytics', label: 'Analytics', icon: BarChart3Icon},
     {id: 'topology', label: 'Topology', icon: NetworkIcon},
     {id: 'ai', label: 'AI Assistant', icon: SparklesIcon},

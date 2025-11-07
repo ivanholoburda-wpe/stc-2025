@@ -15,7 +15,7 @@
     "build": "run-s build:main build:renderer build:electron",
     "clean:dist": "rimraf dist",
     "prebuild:portable": "run-s clean:dist build:main build:renderer",
-    "build:portable": "run-s build:portable:real prune:prod",
+    "build:portable": "run-s build:portable:real",
     "build:portable:real": "electron-builder --win portable",
     "prune:prod": "npm prune --production",
     "build:renderer": "vite build --config renderer/vite.config.js",

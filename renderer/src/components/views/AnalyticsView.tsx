@@ -5,6 +5,7 @@ import { getAvailableMetrics, getTimeSeries, Metric } from '../../api/analytics'
 
 export function AnalyticsView() {
     const [devices, setDevices] = useState<Device[]>([]);
+    const [deviceSearch, setDeviceSearch] = useState('');
     const [selectedDeviceId, setSelectedDeviceId] = useState('');
     const [selectedInterfaceName, setSelectedInterfaceName] = useState('');
     const [availableMetrics, setAvailableMetrics] = useState<Metric[]>([]);
@@ -90,6 +91,30 @@ export function AnalyticsView() {
         setSelectedInterfaceName('');
     }, [selectedDeviceId]);
 
+    const filteredDevices = useMemo(() => {
+        const term = deviceSearch.trim().toLowerCase();
+        if (!term) return devices;
+        return devices.filter(device => {
+            const hostnameMatch = device.hostname.toLowerCase().includes(term);
+            const modelMatch = device.model?.toLowerCase().includes(term);
+            const folderMatch = device.folder_name?.toLowerCase().includes(term);
+            return hostnameMatch || modelMatch || folderMatch;
+        });
+    }, [deviceSearch, devices]);
+
+    useEffect(() => {
+        if (loading.initial) return;
+
+        if (filteredDevices.length === 0) {
+            setSelectedDeviceId('');
+            return;
+        }
+
+        if (!filteredDevices.some(device => device.id.toString() === selectedDeviceId)) {
+            setSelectedDeviceId(filteredDevices[0].id.toString());
+        }
+    }, [filteredDevices, loading.initial, selectedDeviceId]);
+
     const selectedDevice = useMemo(() => devices.find(d => d.id.toString() === selectedDeviceId), [selectedDeviceId, devices]);
     const interfacesForSelectedDevice = useMemo(() => selectedDevice?.interfaces || [], [selectedDevice]);
     const selectedMetric = useMemo(() => availableMetrics.find(m => m.id === selectedMetricId), [selectedMetricId, availableMetrics]);
@@ -104,6 +129,19 @@ export function AnalyticsView() {
     return (
         <div className="flex flex-col h-full p-6 text-white bg-gray-900">
             <div className="flex-shrink-0 mb-6 flex items-center gap-6">
+                <div className="flex flex-col gap-2">
+                    <label htmlFor="device-search" className="block text-sm font-medium text-gray-300">Devices search:</label>
+                    <input
+                        id="device-search"
+                        type="text"
+                        value={deviceSearch}
+                        onChange={(e) => setDeviceSearch(e.target.value)}
+                        placeholder="Enter a name, model, or folder"
+                        className="w-64 bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={loading.initial}
+                    />
+                </div>
+
                 <div>
                     <label htmlFor="device-select" className="block text-sm font-medium text-gray-300 mb-2">Device:</label>
                     <select
@@ -113,9 +151,15 @@ export function AnalyticsView() {
                         className="w-64 bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         disabled={loading.initial}
                     >
-                        {loading.initial ? <option>Loading...</option> : devices.map(device => (
-                            <option key={device.id} value={device.id}>{device.hostname}</option>
-                        ))}
+                        {loading.initial ? (
+                            <option>Loading...</option>
+                        ) : filteredDevices.length === 0 ? (
+                            <option value="">Devices not found.</option>
+                        ) : (
+                            filteredDevices.map(device => (
+                                <option key={device.id} value={device.id}>{device.hostname}</option>
+                            ))
+                        )}
                     </select>
                 </div>
 
