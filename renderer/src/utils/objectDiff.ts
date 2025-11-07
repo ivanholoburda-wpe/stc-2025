@@ -13,11 +13,9 @@ function removeIds(obj: any): any {
     if (obj === null || obj === undefined) {
         return obj;
     }
-
     if (Array.isArray(obj)) {
         return obj.map(item => removeIds(item));
     }
-
     if (typeof obj === 'object') {
         const result: any = {};
         Object.keys(obj).forEach(key => {
@@ -27,16 +25,15 @@ function removeIds(obj: any): any {
         });
         return result;
     }
-
     return obj;
 }
 
 export function compareObjects(left: any, right: any): DiffPath[] {
     if (!left && !right) return [];
-    
+
     const leftWithoutIds = left ? removeIds(JSON.parse(JSON.stringify(left))) : left;
     const rightWithoutIds = right ? removeIds(JSON.parse(JSON.stringify(right))) : right;
-    
+
     if (!leftWithoutIds) {
         return extractAllPaths(rightWithoutIds, [], 'added').filter(d => d.path[d.path.length - 1] !== 'id');
     }
@@ -54,7 +51,6 @@ export function compareObjects(left: any, right: any): DiffPath[] {
         if (path.length > 0 && path[path.length - 1] === 'id') {
             return;
         }
-
         switch (diff.kind) {
             case 'N':
                 result.push({
@@ -86,7 +82,6 @@ export function compareObjects(left: any, right: any): DiffPath[] {
                         if (itemPath.length > 0 && itemPath[itemPath.length - 1] === 'id') {
                             return;
                         }
-                        
                         switch (diff.item.kind) {
                             case 'N':
                                 result.push({
@@ -187,4 +182,3 @@ export function hasDifferenceAtPath(differences: DiffPath[], path: string[]): Di
     const pathStr = path.join('.');
     return differences.find(diff => diff.path.join('.') === pathStr) || null;
 }
-

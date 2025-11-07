@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { compareObjects, hasDifferenceAtPath } from '../utils/objectDiff';
+import { compareObjects, hasDifferenceAtPath, getValueByPath } from '../utils/objectDiff';
 
 interface DiffViewerProps {
     left: any;
@@ -7,15 +7,17 @@ interface DiffViewerProps {
     showDiff: boolean;
     highlightDiff: boolean;
     onToggleHighlight: () => void;
+    removedRightLabel?: string;
 }
 
 export const DiffViewer: React.FC<DiffViewerProps> = ({
-    left,
-    right,
-    showDiff,
-    highlightDiff,
-    onToggleHighlight,
-}) => {
+                                                          left,
+                                                          right,
+                                                          showDiff,
+                                                          highlightDiff,
+                                                          onToggleHighlight,
+                                                          removedRightLabel,
+                                                      }) => {
     const [currentDiffIndex, setCurrentDiffIndex] = useState<number | null>(null);
     const leftScrollContainerRef = useRef<HTMLDivElement>(null);
     const rightScrollContainerRef = useRef<HTMLDivElement>(null);
@@ -27,18 +29,64 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         return compareObjects(left, right);
     }, [left, right]);
 
+    const deletedKeysByParent = useMemo(() => {
+        const map = new Map<string, Set<string>>();
+        for (const d of differences) {
+            if (d.type !== 'deleted') continue;
+            if (d.path.length === 0) continue;
+            const parent = d.path.slice(0, -1).join('.');
+            const key = d.path[d.path.length - 1];
+            if (!isNaN(Number(key))) continue;
+            if (!map.has(parent)) map.set(parent, new Set());
+            map.get(parent)!.add(key);
+        }
+        return map;
+    }, [differences]);
+
+    const deletedIndicesByArrayPath = useMemo(() => {
+        const map = new Map<string, Set<number>>();
+        for (const d of differences) {
+            if (d.type !== 'deleted') continue;
+            if (d.path.length === 0) continue;
+            const last = d.path[d.path.length - 1];
+            const idx = Number(last);
+            if (Number.isInteger(idx)) {
+                const arrPath = d.path.slice(0, -1).join('.');
+                if (!map.has(arrPath)) map.set(arrPath, new Set());
+                map.get(arrPath)!.add(idx);
+            }
+        }
+        return map;
+    }, [differences]);
+
+    useEffect(() => {
+        diffElementRefs.current = new Map();
+        leftElementRefs.current = new Map();
+    }, [left, right, highlightDiff]);
+
     const visibleDifferences = useMemo(() => {
         return differences.filter(d => {
-            return d.path.length === 0 || d.path[d.path.length - 1] !== 'id';
+            const last = d.path[d.path.length - 1];
+            if (last === 'id') return false;
+            if (d.type !== 'deleted') {
+                return getValueByPath(right, d.path) !== undefined;
+            }
+            const parentPath = d.path.slice(0, -1);
+            const parentRight = getValueByPath(right, parentPath);
+            return parentRight !== undefined;
         });
-    }, [differences]);
+    }, [differences, right]);
+
+    const pathIndexMap = useMemo(() => {
+        const m = new Map<string, number>();
+        visibleDifferences.forEach((d, i) => m.set(d.path.join('.'), i));
+        return m;
+    }, [visibleDifferences]);
 
     useEffect(() => {
         setCurrentDiffIndex(prev => {
             if (visibleDifferences.length > 0) {
-                if (prev === null || prev >= visibleDifferences.length) {
-                    return 0;
-                }
+                if (prev === null || prev >= visibleDifferences.length) return 0;
                 return prev;
             } else {
                 return null;
@@ -46,57 +94,56 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         });
     }, [visibleDifferences.length]);
 
-    useEffect(() => {
-        if (currentDiffIndex !== null && highlightDiff && visibleDifferences[currentDiffIndex]) {
-            const diff = visibleDifferences[currentDiffIndex];
-            const pathKey = diff.path.join('.');
-            const rightElement = diffElementRefs.current.get(pathKey);
-            const leftElement = leftElementRefs.current.get(pathKey);
-            
-            const scrollToElement = (element: HTMLElement, container: HTMLDivElement | null) => {
-                if (!container || !element) return;
-                
-                const containerRect = container.getBoundingClientRect();
-                const elementRect = element.getBoundingClientRect();
-                
-                const scrollTop = container.scrollTop;
-                const elementTop = elementRect.top - containerRect.top + scrollTop;
-                const containerHeight = container.clientHeight;
-                const elementHeight = elementRect.height;
-                
-                const targetScrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
-                
-                container.scrollTo({
-                    top: targetScrollTop,
-                    behavior: 'smooth'
-                });
-            };
-            
-            if (rightElement && rightScrollContainerRef.current) {
-                scrollToElement(rightElement, rightScrollContainerRef.current);
-            }
-            
-            if (leftElement && leftScrollContainerRef.current) {
-                scrollToElement(leftElement, leftScrollContainerRef.current);
-            }
+    const findNextIndexWithRightRef = (start: number | null, dir: 1 | -1) => {
+        if (visibleDifferences.length === 0) return null;
+        let i = start === null ? (dir === 1 ? 0 : visibleDifferences.length - 1) : start;
+        for (let step = 0; step < visibleDifferences.length; step++) {
+            i = (i + dir + visibleDifferences.length) % visibleDifferences.length;
+            const key = visibleDifferences[i].path.join('.');
+            if (diffElementRefs.current.get(key)) return i;
         }
-    }, [currentDiffIndex, highlightDiff, visibleDifferences]);
+        return null;
+    };
 
     const goToNextDiff = () => {
         if (visibleDifferences.length === 0) return;
-        setCurrentDiffIndex(prev => {
-            if (prev === null) return 0;
-            return (prev + 1) % visibleDifferences.length;
-        });
+        setCurrentDiffIndex(prev => findNextIndexWithRightRef(prev, 1));
     };
 
     const goToPrevDiff = () => {
         if (visibleDifferences.length === 0) return;
-        setCurrentDiffIndex(prev => {
-            if (prev === null) return visibleDifferences.length - 1;
-            return prev === 0 ? visibleDifferences.length - 1 : prev - 1;
-        });
+        setCurrentDiffIndex(prev => findNextIndexWithRightRef(prev, -1));
     };
+
+    const handlePathClick = (pathKey: string) => {
+        const i = pathIndexMap.get(pathKey);
+        if (i !== undefined) setCurrentDiffIndex(i);
+    };
+
+    useEffect(() => {
+        if (currentDiffIndex === null || !highlightDiff || !visibleDifferences[currentDiffIndex]) return;
+        const diff = visibleDifferences[currentDiffIndex];
+        const pathKey = diff.path.join('.');
+        const rightElement = diffElementRefs.current.get(pathKey);
+        const leftElement = leftElementRefs.current.get(pathKey);
+        if (!rightElement) {
+            setCurrentDiffIndex(prev => findNextIndexWithRightRef(prev, 1));
+            return;
+        }
+        const scrollToElement = (element: HTMLElement, container: HTMLDivElement | null) => {
+            if (!container || !element) return;
+            const containerRect = container.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            const scrollTop = container.scrollTop;
+            const elementTop = elementRect.top - containerRect.top + scrollTop;
+            const containerHeight = container.clientHeight;
+            const elementHeight = elementRect.height;
+            const targetScrollTop = elementTop - containerHeight / 2 + elementHeight / 2;
+            container.scrollTo({ top: targetScrollTop, behavior: 'smooth' });
+        };
+        if (rightScrollContainerRef.current) scrollToElement(rightElement, rightScrollContainerRef.current);
+        if (leftElement && leftScrollContainerRef.current) scrollToElement(leftElement, leftScrollContainerRef.current);
+    }, [currentDiffIndex, highlightDiff, visibleDifferences]);
 
     const renderValue = (value: any, path: string[], isLeft: boolean): React.ReactNode => {
         if (value === null || value === undefined) {
@@ -105,26 +152,35 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
 
         if (typeof value === 'object') {
             if (Array.isArray(value)) {
+                const baseIndices = value.map((_, i) => i);
+                const arrKey = path.join('.');
+                const deletedIdx = !isLeft && highlightDiff ? (deletedIndicesByArrayPath.get(arrKey) || new Set()) : new Set<number>();
+                const indexSet = new Set<number>([...baseIndices, ...deletedIdx]);
+                const indices = Array.from(indexSet).sort((a, b) => a - b);
+
                 return (
                     <div className="ml-4">
-                        {value.map((item, index) => {
+                        {indices.map((index) => {
                             const itemPath = [...path, index.toString()];
-                            const diff = highlightDiff && !isLeft ? hasDifferenceAtPath(differences, itemPath) : null;
+                            const diffForClick = hasDifferenceAtPath(differences, itemPath);
+                            const diffForStyle = highlightDiff && !isLeft ? diffForClick : null;
                             const pathKey = itemPath.join('.');
-                            const isCurrentDiff = currentDiffIndex !== null && 
+                            const rightHasValue = !isLeft && index in value;
+                            const isDeletedHereRight = !isLeft && diffForClick?.type === 'deleted' && !rightHasValue;
+                            const isCurrentDiff = currentDiffIndex !== null &&
                                 visibleDifferences[currentDiffIndex]?.path.join('.') === pathKey;
 
-                            const bgColor = diff && highlightDiff && !isLeft
+                            const bgColor = diffForStyle && highlightDiff && !isLeft
                                 ? isCurrentDiff
-                                    ? diff.type === 'added'
+                                    ? diffForStyle.type === 'added'
                                         ? 'bg-green-700/60 border-green-400 border-4'
                                         : 'bg-red-700/60 border-red-400 border-4'
-                                    : diff.type === 'added'
+                                    : diffForStyle.type === 'added'
                                         ? 'bg-green-900/40 border-green-500/70'
-                                        : diff.type === 'deleted'
-                                          ? 'bg-red-900/40 border-red-500/70'
-                                          : 'bg-red-900/40 border-red-500/70'
+                                        : 'bg-red-900/40 border-red-500/70'
                                 : '';
+
+                            const clickable = !!diffForClick && pathIndexMap.has(pathKey);
 
                             return (
                                 <div
@@ -133,15 +189,19 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                                         if (el) {
                                             if (isLeft) {
                                                 leftElementRefs.current.set(pathKey, el);
-                                            } else if (diff) {
+                                            } else if (!isLeft && diffForClick) {
                                                 diffElementRefs.current.set(pathKey, el);
                                             }
                                         }
                                     }}
-                                    className={`mb-2 p-2 rounded border transition-all ${bgColor} ${diff && highlightDiff && !isLeft ? 'border-2' : 'border-gray-600'}`}
+                                    onClick={clickable ? () => handlePathClick(pathKey) : undefined}
+                                    role={clickable ? 'button' : undefined}
+                                    className={`mb-2 p-2 rounded border transition-all ${bgColor} ${diffForStyle && highlightDiff && !isLeft ? 'border-2' : 'border-gray-600'} ${clickable ? 'cursor-pointer' : ''}`}
                                 >
-                                    <span className="text-gray-400 text-xs">[{index}]</span>
-                                    {renderValue(item, itemPath, isLeft)}
+                                    <span className="text-gray-400 text-xs">[{index}]</span>{' '}
+                                    {isDeletedHereRight
+                                        ? <span className="italic text-red-300">{removedRightLabel ?? '(removed or doesn\'t exist)'}</span>
+                                        : (index in value ? renderValue(value[index], itemPath, isLeft) : <span className="text-gray-500 italic">(missing)</span>)}
                                 </div>
                             );
                         })}
@@ -150,6 +210,13 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
             } else {
                 const allKeys = new Set(Object.keys(value));
                 if (!isLeft && highlightDiff) {
+                    const parentKey = path.join('.');
+                    const deletedSet = deletedKeysByParent.get(parentKey);
+                    if (deletedSet) {
+                        for (const k of deletedSet) {
+                            if (k !== 'id') allKeys.add(k);
+                        }
+                    }
                     differences
                         .filter(d => d.type === 'added' && d.path.length === path.length + 1)
                         .forEach(d => {
@@ -159,45 +226,51 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                             }
                         });
                 }
-                
+
                 return (
                     <div className="ml-4 space-y-1">
                         {Array.from(allKeys).map(key => {
                             const keyPath = [...path, key];
-                            const itemValue = value[key];
-                            const diff = (highlightDiff && !isLeft && key !== 'id') ? hasDifferenceAtPath(differences, keyPath) : null;
+                            const itemValue = (key in value) ? value[key] : undefined;
+                            const diffForClick = hasDifferenceAtPath(differences, keyPath);
+                            const diffForStyle = (highlightDiff && !isLeft && key !== 'id') ? diffForClick : null;
                             const pathKey = keyPath.join('.');
-                            const isCurrentDiff = currentDiffIndex !== null && 
+                            const isCurrentDiff = currentDiffIndex !== null &&
                                 visibleDifferences[currentDiffIndex]?.path.join('.') === pathKey;
-                            
-                            const bgColor = diff && highlightDiff && !isLeft && key !== 'id'
+                            const rightHasKey = !isLeft && Object.prototype.hasOwnProperty.call(value, key);
+                            const isDeletedHereRight = !isLeft && diffForClick?.type === 'deleted' && !rightHasKey;
+                            const clickable = !!diffForClick && key !== 'id' && pathIndexMap.has(pathKey);
+
+                            const bgColor = diffForStyle && highlightDiff && key !== 'id'
                                 ? isCurrentDiff
-                                    ? diff.type === 'added'
+                                    ? diffForStyle.type === 'added'
                                         ? 'bg-green-700/60 border-2 border-green-400'
                                         : 'bg-red-700/60 border-2 border-red-400'
-                                    : diff.type === 'added'
+                                    : diffForStyle.type === 'added'
                                         ? 'bg-green-900/40'
-                                        : diff.type === 'deleted'
-                                          ? 'bg-red-900/40'
-                                          : 'bg-red-900/40'
+                                        : 'bg-red-900/40'
                                 : '';
 
                             return (
-                                <div 
-                                    key={key} 
+                                <div
+                                    key={key}
                                     ref={el => {
                                         if (el) {
                                             if (isLeft) {
                                                 leftElementRefs.current.set(pathKey, el);
-                                            } else if (diff && key !== 'id') {
+                                            } else if (!isLeft && diffForClick && key !== 'id') {
                                                 diffElementRefs.current.set(pathKey, el);
                                             }
                                         }
                                     }}
-                                    className={`p-1 rounded transition-all ${bgColor}`}
+                                    onClick={clickable ? () => handlePathClick(pathKey) : undefined}
+                                    role={clickable ? 'button' : undefined}
+                                    className={`p-1 rounded transition-all ${bgColor} ${clickable ? 'cursor-pointer' : ''}`}
                                 >
                                     <span className="text-blue-400 font-mono text-sm">{key}:</span>{' '}
-                                    {itemValue !== undefined ? renderValue(itemValue, keyPath, isLeft) : <span className="text-gray-500 italic">(missing)</span>}
+                                    {isDeletedHereRight
+                                        ? <span className="italic text-red-300">{removedRightLabel ?? '(removed)'}</span>
+                                        : (itemValue !== undefined ? renderValue(itemValue, keyPath, isLeft) : <span className="text-gray-500 italic">(missing)</span>)}
                                 </div>
                             );
                         })}
@@ -207,19 +280,20 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         }
 
         const isIdField = path.length > 0 && path[path.length - 1] === 'id';
-        const diff = (highlightDiff && !isLeft && !isIdField) ? hasDifferenceAtPath(differences, path) : null;
+        const diffForClick = hasDifferenceAtPath(differences, path);
+        const diffForStyle = (highlightDiff && !isLeft && !isIdField) ? diffForClick : null;
         const pathKey = path.join('.');
-        const isCurrentDiff = currentDiffIndex !== null && 
+        const isCurrentDiff = currentDiffIndex !== null &&
             visibleDifferences[currentDiffIndex]?.path.join('.') === pathKey;
-        
+
         let textColor = 'text-gray-200';
-        if (diff && highlightDiff && !isLeft && !isIdField) {
+        if (diffForStyle && highlightDiff && !isIdField) {
             if (isCurrentDiff) {
-                textColor = diff.type === 'added' ? 'text-green-300 font-bold' : 'text-red-300 font-bold';
+                textColor = diffForStyle.type === 'added' ? 'text-green-300 font-bold' : 'text-red-300 font-bold';
             } else {
-                if (diff.type === 'added') {
+                if (diffForStyle.type === 'added') {
                     textColor = 'text-green-400 font-semibold';
-                } else if (diff.type === 'deleted') {
+                } else if (diffForStyle.type === 'deleted') {
                     textColor = 'text-red-400';
                 } else {
                     textColor = 'text-red-400 font-semibold';
@@ -227,21 +301,25 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
             }
         }
 
+        const clickable = !!diffForClick && !isIdField && pathIndexMap.has(pathKey);
+
         return (
-            <span 
+            <span
                 ref={el => {
                     if (el) {
                         if (isLeft) {
                             leftElementRefs.current.set(pathKey, el);
-                        } else if (diff && !isIdField) {
+                        } else if (!isLeft && diffForClick && !isIdField) {
                             diffElementRefs.current.set(pathKey, el);
                         }
                     }
                 }}
-                className={textColor}
+                onClick={clickable ? () => handlePathClick(pathKey) : undefined}
+                role={clickable ? 'button' : undefined}
+                className={`${textColor} ${clickable ? 'cursor-pointer' : ''}`}
             >
-                {String(value)}
-            </span>
+        {String(value)}
+      </span>
         );
     };
 
@@ -249,7 +327,6 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         if (!obj) {
             return <div className="text-gray-500">No data</div>;
         }
-
         return (
             <div className="font-mono text-sm">
                 {renderValue(obj, [], isLeft)}
@@ -265,18 +342,6 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         <div className="mt-4 space-y-4">
             <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Differences</h3>
-                <div className="flex gap-2">
-                    <button
-                        onClick={onToggleHighlight}
-                        className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
-                            highlightDiff
-                                ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                        }`}
-                    >
-                        {highlightDiff ? 'Hide Highlight' : 'Show Highlight'}
-                    </button>
-                </div>
             </div>
 
             {differences.length === 0 ? (
@@ -290,8 +355,8 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                             Found {visibleDifferences.length} difference{visibleDifferences.length !== 1 ? 's' : ''}
                             {currentDiffIndex !== null && (
                                 <span className="ml-2 text-blue-400">
-                                    ({currentDiffIndex + 1} of {visibleDifferences.length})
-                                </span>
+                  ({currentDiffIndex + 1} of {visibleDifferences.length})
+                </span>
                             )}
                         </div>
                         {highlightDiff && visibleDifferences.length > 0 && (
@@ -345,7 +410,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 bg-red-900/40 border-2 border-red-500/70 rounded"></div>
-                                    <span className="text-red-400">Modified/Deleted (different in Device B)</span>
+                                    <span className="text-red-400">Modified/Deleted (different or removed in Device B)</span>
                                 </div>
                             </div>
                         </div>
@@ -355,4 +420,3 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         </div>
     );
 };
-
