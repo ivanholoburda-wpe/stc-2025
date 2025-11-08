@@ -234,7 +234,7 @@ export type Device = {
     vlans?: Vlan[];
     ethTrunks?: EthTrunk[];
     portVlans?: PortVlan[];
-    vxlanTunnels?: VxlanTunnel[];
+    vxlanTunnels: VxlanTunnel[]
     etrunks?: ETrunk[];
 };
 

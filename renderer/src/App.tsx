@@ -4,6 +4,7 @@ import { Header } from './components/ui/Header';
 import { Modal } from './components/ui/Modal';
 import { DashboardView } from './components/views/DashboardView';
 import { DevicesView } from './components/views/DevicesView';
+import { DeviceCompareView } from './components/views/DeviceCompareView';
 import { PlaceholderView } from './components/views/PlaceholderView';
 import { AiView } from './components/views/AiView';
 import { TopologyView } from './components/views/TopologyView';
@@ -14,7 +15,7 @@ import { ReportsView } from './components/views/ReportView';
 import {SettingsView} from "./components/views/SettingsView";
 import {BigQueryView} from "./components/views/BigQueryView";
 
-const extendedViewIds = ['dashboard', 'devices', 'ai', 'topology', 'analytics', 'alerts', 'reports', 'bigquery', 'settings'] as const;
+const extendedViewIds = ['dashboard', 'devices', 'device-compare', 'ai', 'topology', 'analytics', 'alerts', 'reports', 'bigquery', 'settings'] as const;
 export type ExtendedViewId = typeof extendedViewIds[number];
 
 
@@ -22,6 +23,7 @@ const viewTitles: Record<ExtendedViewId, string> = {
     dashboard: 'Home',
     devices: 'Devices',
     topology: 'Network Map',
+    'device-compare': 'Device Comparison',
     ai: 'AI Agent: Ruslan4ick 1.0',
     analytics: 'Analytics',
     alerts: 'Alerts',
@@ -67,6 +69,8 @@ export function App() {
                 return (
                     <DevicesView/>
                 );
+            case 'device-compare':
+                return <DeviceCompareView />;
             case 'topology':
                 return <TopologyView />;
             case 'ai': return <AiView />;
