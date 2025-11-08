@@ -74,41 +74,44 @@ export function compareObjects(left: any, right: any): DiffPath[] {
                     newValue: diff.rhs,
                 });
                 break;
-            case 'A':
-                if (diff.path) {
-                    const arrayPath = [...diff.path, diff.index?.toString() || ''];
-                    if (diff.item) {
-                        const itemPath = diff.item.path || [];
-                        if (itemPath.length > 0 && itemPath[itemPath.length - 1] === 'id') {
-                            return;
-                        }
-                        switch (diff.item.kind) {
-                            case 'N':
-                                result.push({
-                                    path: arrayPath,
-                                    type: 'added',
-                                    newValue: diff.item.rhs,
-                                });
-                                break;
-                            case 'D':
-                                result.push({
-                                    path: arrayPath,
-                                    type: 'deleted',
-                                    oldValue: diff.item.lhs,
-                                });
-                                break;
-                            case 'E':
-                                result.push({
-                                    path: arrayPath,
-                                    type: 'modified',
-                                    oldValue: diff.item.lhs,
-                                    newValue: diff.item.rhs,
-                                });
-                                break;
-                        }
-                    }
+            case 'A': {
+                const basePath = diff.path ?? [];
+                const arrayPath = [...basePath, diff.index !== undefined ? diff.index.toString() : ''];
+                if (!diff.item) {
+                    break;
+                }
+
+                const itemPath = diff.item.path ?? [];
+                if (itemPath.length > 0 && itemPath[itemPath.length - 1] === 'id') {
+                    break;
+                }
+
+                switch (diff.item.kind) {
+                    case 'N':
+                        result.push({
+                            path: arrayPath,
+                            type: 'added',
+                            newValue: diff.item.rhs,
+                        });
+                        break;
+                    case 'D':
+                        result.push({
+                            path: arrayPath,
+                            type: 'deleted',
+                            oldValue: diff.item.lhs,
+                        });
+                        break;
+                    case 'E':
+                        result.push({
+                            path: arrayPath,
+                            type: 'modified',
+                            oldValue: diff.item.lhs,
+                            newValue: diff.item.rhs,
+                        });
+                        break;
                 }
                 break;
+            }
         }
     });
 
