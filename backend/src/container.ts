@@ -121,6 +121,9 @@ import { BigQueryExportService, IBigQueryExportService } from './services/export
 import {GeneralReportProvider} from "./services/export/providers/GeneralReportProvider";
 import {DeviceFolderParsingService} from "./services/parser/DeviceFolderParsingService";
 import {IParsingServiceFactory, ParsingServiceFactory} from "./services/parser/ParsingServiceFactory";
+import {ArpStaticCountProvider} from "./services/analytics/providers/ArpStaticCountProvider";
+import {RoutesTotalCountProvider} from "./services/analytics/providers/RoutesTotalCountProvider";
+import {RoutesOspfCountProvider} from "./services/analytics/providers/RoutesOspfCountProvider";
 
 const container = new Container();
 
@@ -237,6 +240,9 @@ container.bind<IMetricProvider>(TYPES.IMetricProvider).to(BfdUpSessionsCountProv
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(InterfaceStatusProvider);
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(TransceiverRxPowerProvider);
 container.bind<IMetricProvider>(TYPES.IMetricProvider).to(TransceiverTxPowerProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(ArpStaticCountProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(RoutesTotalCountProvider);
+container.bind<IMetricProvider>(TYPES.IMetricProvider).to(RoutesOspfCountProvider);
 
 // Bind Report Providers
 container.bind<IReportProvider>(TYPES.IReportProvider).to(HardwareInventoryReportProvider);
@@ -250,6 +256,5 @@ container.bind<IReportProvider>(TYPES.IReportProvider).to(IgpReportProvider);
 container.bind<IReportProvider>(TYPES.IReportProvider).to(IpRoutePerDeviceReportProvider);
 container.bind<IReportProvider>(TYPES.IReportProvider).to(InterfaceReportProvider);
 container.bind<IReportProvider>(TYPES.IReportProvider).to(GeneralReportProvider);
-
 
 export { container };

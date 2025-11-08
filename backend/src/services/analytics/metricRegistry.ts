@@ -21,7 +21,6 @@ export const METRIC_REGISTRY: MetricDefinition[] = [
         unit: 'MB',
         description: 'Свободное место на диске в мегабайтах.'
     },
-
     {
         id: 'interfaces.status',
         label: 'Interface Status (Up/Down)',
@@ -59,7 +58,27 @@ export const METRIC_REGISTRY: MetricDefinition[] = [
         unit: 'Entries',
         description: 'Общее количество записей в ARP-таблице.'
     },
-
+    {
+        id: 'arp.static_count',
+        label: 'Static ARP Count',
+        category: 'L2/L3 State',
+        unit: 'Entries',
+        description: ''
+    },
+    {
+        id: 'routes.total_count',
+        label: 'Total IP Routes',
+        category: 'L2/L3 State',
+        unit: 'Routes',
+        description: 'Общее количество записей в таблице маршрутизации.'
+    },
+    {
+        id: 'routes.ospf_count',
+        label: 'OSPF Routes Count',
+        category: 'L2/L3 State',
+        unit: 'Routes',
+        description: 'Количество маршрутов, полученных по протоколу OSPF.'
+    },
     {
         id: 'bfd.up_sessions_count',
         label: 'Up BFD Sessions',
