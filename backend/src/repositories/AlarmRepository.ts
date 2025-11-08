@@ -31,6 +31,9 @@ export class AlarmRepository implements IAlarmRepository {
             order: {
                 date: 'DESC',
                 time: 'DESC'
+            },
+            relations: {
+                device: true,
             }
         });
     }

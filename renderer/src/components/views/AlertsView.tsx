@@ -97,6 +97,7 @@ export function AlertsView() {
                             <thead className="bg-gray-800 sticky top-0">
                             <tr>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Index</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Device</th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Level</th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Time</th>
@@ -109,6 +110,7 @@ export function AlertsView() {
                             {alarms.length > 0 ? alarms.map((alarm) => (
                                 <tr key={alarm.id} className="hover:bg-gray-700/50">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{alarm.index}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{alarm.device.folder_name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap"><LevelBadge level={alarm.level} /></td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{alarm.date}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{alarm.time}</td>

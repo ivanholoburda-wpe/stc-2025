@@ -2,8 +2,6 @@ import {injectable, inject} from "inversify";
 import {Repository, DataSource, In} from "typeorm";
 import {Device} from "../models/Device";
 import {TYPES} from "../types";
-import {Snapshot} from "../models/Snapshot";
-import {SnapshotRepository} from "./SnapshotRepository";
 
 export interface IDeviceRepository {
     findAll(snapshotId: number): Promise<Device[]>;
@@ -51,7 +49,6 @@ export class DeviceRepository implements IDeviceRepository {
 
     constructor(
         @inject(TYPES.DataSource) private dataSource: DataSource,
-        @inject(TYPES.SnapshotRepository) private snapshotRepository: SnapshotRepository
     ) {
         this.repository = dataSource.getRepository(Device);
     }
