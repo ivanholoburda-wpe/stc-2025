@@ -4,7 +4,7 @@
 
 STC-Toolkit is a powerful desktop application designed to analyze network device configuration files and visualize network topology in a structured, easy-to-understand format. It processes command outputs from network devices (primarily Huawei equipment) and provides comprehensive insights into your network infrastructure.
 
-![Version](https://img.shields.io/badge/version-1.0.5-blue.svg)
+![Version](https://img.shields.io/github/v/release/ivanholoburda-wpe/stc-2025?display_name=tag)
 ![Platform](https://img.shields.io/badge/platform-Windows-yellow.svg)
 
 ---
