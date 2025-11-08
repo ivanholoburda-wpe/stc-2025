@@ -7,11 +7,16 @@ import { ParsedDtoIngestor } from "../ingestion/ParsedDtoIngestor";
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../types";
 import { LogsParserService } from "./LogsParserService";
+import { ParsingService } from "./ParsingService";
+import {resolveLogFiles} from "./helpers";
+import {ISnapshotRepository} from "../../repositories/SnapshotRepository";
+import {IDeviceRepository} from "../../repositories/DeviceRepository";
 
 @injectable()
-export class RootFolderParsingService {
+export class RootFolderParsingService implements ParsingService {
     constructor(
-        @inject(TYPES.DataSource) private dataSource: DataSource,
+        @inject(TYPES.SnapshotRepository) private snapshotRepo: ISnapshotRepository,
+        @inject(TYPES.DeviceRepository) private deviceRepo: IDeviceRepository,
         @inject(TYPES.LogsParserService) private parser: LogsParserService,
     ) {}
 
@@ -24,11 +29,7 @@ export class RootFolderParsingService {
             throw new Error('Selected path is not a directory or does not exist');
         }
 
-        const snapshotRepo = this.dataSource.getRepository(Snapshot);
-        const deviceRepo = this.dataSource.getRepository(Device);
-
-        const snapshot = snapshotRepo.create({ root_folder_path: rootFolderPath });
-        await snapshotRepo.save(snapshot);
+        const snapshot = await this.snapshotRepo.create({ root_folder_path: rootFolderPath });
 
         const entries = await fs.readdir(rootFolderPath, { withFileTypes: true });
         const deviceFolders = entries
@@ -37,18 +38,17 @@ export class RootFolderParsingService {
 
         const tasks = deviceFolders.map(async (deviceFolderAbsPath: string) => {
             const folderName = path.basename(deviceFolderAbsPath);
-            let device = await deviceRepo.findOne({ where: { folder_name: folderName } });
+            let device = await this.deviceRepo.findByFolderName(folderName);
 
             if (!device) {
-                device = deviceRepo.create({
+                device = await this.deviceRepo.create({
                     folder_name: folderName,
                     hostname: folderName,
                     firstSeenSnapshot: snapshot
                 });
-                await deviceRepo.save(device);
             }
 
-            const logFilePaths = await this.resolveLogFiles(deviceFolderAbsPath);
+            const logFilePaths = await resolveLogFiles(deviceFolderAbsPath);
             if (logFilePaths.length === 0) {
                 console.warn(`No log files found in ${deviceFolderAbsPath}, skipping device.`);
                 return { folder: folderName, status: 'skipped' };
@@ -71,24 +71,6 @@ export class RootFolderParsingService {
 
         const devices = await Promise.all(tasks);
         return { snapshotId: snapshot.id, devices };
-    }
-
-    private async resolveLogFiles(deviceFolderAbsPath: string): Promise<string[]> {
-        const files = await fs.readdir(deviceFolderAbsPath);
-
-        const stats = await Promise.all(
-            files.map(async (f: string) => ({
-                name: f,
-                full: path.join(deviceFolderAbsPath, f),
-                st: await fs.stat(path.join(deviceFolderAbsPath, f))
-            }))
-        );
-
-        const textishFiles = stats
-            .filter((s: any) => s.st.isFile() && (s.name.endsWith(".txt") || s.name.endsWith(".log")))
-            .sort((a: any, b: any) => b.st.size - a.st.size);
-
-        return textishFiles.map(f => f.full);
     }
 }
 

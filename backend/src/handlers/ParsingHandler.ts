@@ -3,6 +3,7 @@ import RootFolderParsingService from "../services/parser/RootFolderParsingServic
 import { inject } from "inversify";
 import { TYPES } from "../types";
 import { dialog } from "electron";
+import {IParsingServiceFactory} from "../services/parser/ParsingServiceFactory";
 
 export interface ParsingResult {
     success: boolean,
@@ -13,7 +14,7 @@ export interface ParsingResult {
 @injectable()
 export class ParsingHandler {
     constructor(
-        @inject(TYPES.RootFolderParsingService) private parsingService: RootFolderParsingService
+        @inject(TYPES.ParsingServiceFactory) private parsingFactory: IParsingServiceFactory,
     ) {
     }
 
@@ -34,7 +35,8 @@ export class ParsingHandler {
         const directory = filePaths[0];
 
         try {
-            const result = await this.parsingService.run(directory);
+            const parser = await this.parsingFactory.getService(directory);
+            const result = await parser.run(directory);
             return {
                 success: true,
                 data: result,

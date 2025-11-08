@@ -41,6 +41,8 @@ export interface IDeviceRepository {
     findWithVxlanTunnels(deviceId: number, snapshotId: number): Promise<Device | null>;
 
     findWithETrunks(deviceId: number, snapshotId: number): Promise<Device | null>;
+
+    findByFolderName(folderName: string): Promise<Device | null>;
 }
 
 @injectable()
@@ -194,6 +196,13 @@ export class DeviceRepository implements IDeviceRepository {
             where: {
                 hostname: In(hostnames)
             }
+        });
+    }
+
+    async findByFolderName(folderName: string): Promise<Device | null> {
+        return await this.repository.findOne({
+            where: { folder_name: folderName },
+            relations: ["firstSeenSnapshot"]
         });
     }
 

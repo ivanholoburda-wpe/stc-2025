@@ -194,8 +194,6 @@ Interactive visualization of physical network connections.
 - **Click nodes** to see device information
 - **Hover over edges** to see link details
 
-> **⚠️ Important**: The topology requires LLDP data from **all** connected devices. Missing devices will result in incomplete topology maps.
-
 ---
 
 ### AI Agent: Ruslan4ick 1.0
