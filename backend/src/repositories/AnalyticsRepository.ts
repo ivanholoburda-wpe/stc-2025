@@ -3,17 +3,7 @@ import {DataSource} from "typeorm";
 import {TYPES} from "../types";
 import {TimeSeriesDataPoint} from "../services/analytics/providers/IMetricProvider";
 
-export interface GenericTimeSeriesOptions {
-    tableName: string;
-    fieldName: string;
-}
-
 export interface IAnalyticsRepository {
-    getGenericTimeSeries(
-        deviceId: number,
-        options: GenericTimeSeriesOptions
-    ): Promise<TimeSeriesDataPoint[]>;
-
     getCpuUsageTimeSeries(deviceId: number): Promise<TimeSeriesDataPoint[]>;
 
     getEstablishedBgpPeersTimeSeries(deviceId: number): Promise<TimeSeriesDataPoint[]>;
@@ -42,23 +32,6 @@ export interface IAnalyticsRepository {
 @injectable()
 export class AnalyticsRepository implements IAnalyticsRepository {
     constructor(@inject(TYPES.DataSource) private dataSource: DataSource) {
-    }
-
-    async getGenericTimeSeries(
-        deviceId: number,
-        options: GenericTimeSeriesOptions
-    ): Promise<TimeSeriesDataPoint[]> {
-        const { tableName, fieldName } = options;
-        const alias = 't';
-
-        const sql = `
-            SELECT s.created_at as time, ${alias}.${fieldName} as value
-            FROM ${tableName} ${alias}
-            JOIN snapshots s ON ${alias}.snapshot_id = s.id
-            ORDER BY s.created_at ASC
-        `;
-
-        return this.dataSource.query(sql);
     }
 
     getCpuUsageTimeSeries(deviceId: number): Promise<TimeSeriesDataPoint[]> {
