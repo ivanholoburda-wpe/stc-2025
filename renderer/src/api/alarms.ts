@@ -1,4 +1,5 @@
 import {APIResult} from "./types";
+import {Device} from "./devices";
 
 export interface Alarm {
     id: number;
@@ -9,6 +10,7 @@ export interface Alarm {
     info: string
     oid: string;
     ent_code: number;
+    device: Device;
 }
 
 export async function getAlarmsForSnapshot(snapshotId: number): Promise<APIResult<Alarm[]>> {
