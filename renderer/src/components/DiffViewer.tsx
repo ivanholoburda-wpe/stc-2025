@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import { compareObjects, hasDifferenceAtPath, getValueByPath } from '../utils/objectDiff';
 
 interface DiffViewerProps {
@@ -83,27 +83,78 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         return m;
     }, [visibleDifferences]);
 
+    const getOrderedDiffIndices = useCallback(() => {
+        if (visibleDifferences.length === 0) {
+            return [];
+        }
+
+        const entries = visibleDifferences
+            .map((diff, idx) => {
+                const key = diff.path.join('.');
+                const element = diffElementRefs.current.get(key);
+                if (!element) return null;
+                const rect = element.getBoundingClientRect();
+                return {idx, top: rect.top, left: rect.left};
+            })
+            .filter((entry): entry is {idx: number; top: number; left: number} => entry !== null);
+
+        if (entries.length === 0) {
+            return visibleDifferences.map((_, idx) => idx);
+        }
+
+        entries.sort((a, b) => {
+            if (a.top !== b.top) return a.top - b.top;
+            if (a.left !== b.left) return a.left - b.left;
+            return a.idx - b.idx;
+        });
+
+        const ordered = entries.map(entry => entry.idx);
+
+        if (ordered.length < visibleDifferences.length) {
+            const missing = visibleDifferences
+                .map((_, idx) => idx)
+                .filter(idx => !ordered.includes(idx));
+            ordered.push(...missing);
+        }
+
+        return ordered;
+    }, [visibleDifferences]);
+
     useEffect(() => {
+        const ordered = getOrderedDiffIndices();
         setCurrentDiffIndex(prev => {
-            if (visibleDifferences.length > 0) {
-                if (prev === null || prev >= visibleDifferences.length) return 0;
-                return prev;
-            } else {
+            if (visibleDifferences.length === 0) {
                 return null;
             }
+            if (prev === null) {
+                return ordered[0] ?? 0;
+            }
+            if (prev >= visibleDifferences.length) {
+                return ordered[ordered.length - 1] ?? (visibleDifferences.length - 1);
+            }
+            if (!ordered.includes(prev)) {
+                return ordered[0] ?? prev;
+            }
+            return prev;
         });
-    }, [visibleDifferences.length]);
+    }, [getOrderedDiffIndices, visibleDifferences]);
 
-    const findNextIndexWithRightRef = (start: number | null, dir: 1 | -1) => {
-        if (visibleDifferences.length === 0) return null;
-        let i = start === null ? (dir === 1 ? 0 : visibleDifferences.length - 1) : start;
-        for (let step = 0; step < visibleDifferences.length; step++) {
-            i = (i + dir + visibleDifferences.length) % visibleDifferences.length;
-            const key = visibleDifferences[i].path.join('.');
-            if (diffElementRefs.current.get(key)) return i;
+    const findNextIndexWithRightRef = useCallback((start: number | null, dir: 1 | -1) => {
+        const ordered = getOrderedDiffIndices();
+        if (ordered.length === 0) return null;
+
+        if (start === null) {
+            return dir === 1 ? ordered[0] : ordered[ordered.length - 1];
         }
-        return null;
-    };
+
+        const currentPos = ordered.indexOf(start);
+        if (currentPos === -1) {
+            return dir === 1 ? ordered[0] : ordered[ordered.length - 1];
+        }
+
+        const nextPos = (currentPos + dir + ordered.length) % ordered.length;
+        return ordered[nextPos];
+    }, [getOrderedDiffIndices]);
 
     const goToNextDiff = () => {
         if (visibleDifferences.length === 0) return;
@@ -143,7 +194,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
         };
         if (rightScrollContainerRef.current) scrollToElement(rightElement, rightScrollContainerRef.current);
         if (leftElement && leftScrollContainerRef.current) scrollToElement(leftElement, leftScrollContainerRef.current);
-    }, [currentDiffIndex, highlightDiff, visibleDifferences]);
+    }, [currentDiffIndex, highlightDiff, visibleDifferences, findNextIndexWithRightRef]);
 
     const renderValue = (value: any, path: string[], isLeft: boolean): React.ReactNode => {
         if (value === null || value === undefined) {
