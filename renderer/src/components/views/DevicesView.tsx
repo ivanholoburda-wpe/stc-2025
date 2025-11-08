@@ -278,7 +278,7 @@ export function DevicesView() {
                         filteredDevices.map(device => (
                             <button key={device.id} onClick={() => setSelectedDeviceId(device.id)}
                                     className={`w-full text-left p-3 rounded-lg transition-colors ${selectedDeviceId === device.id ? 'bg-blue-600' : 'hover:bg-gray-700'}`}>
-                                <div className="font-semibold">{device.hostname}</div>
+                                <div className="font-semibold">{device.folder_name}</div>
                                 <div className="text-xs text-gray-400">{device.model}</div>
                             </button>
                         ))

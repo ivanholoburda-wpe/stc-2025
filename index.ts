@@ -15,7 +15,6 @@ import {ConfigurationHandler} from "./backend/src/handlers/ConfigurationHandler"
 import {MaintenanceHandler} from "./backend/src/handlers/MaintenanceHandler";
 
 function createWindow(): void {
-    // Adapt window size to available screen work area so small monitors are supported
     const { workArea } = screen.getPrimaryDisplay();
     const targetWidth = 1200;
     const targetHeight = 700;
@@ -41,7 +40,6 @@ function createWindow(): void {
         mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
     }
 
-    // Register zoom shortcuts (fixes non-working zoom-in hotkey)
     const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
     const step = 0.1;
     const minZoom = 0.25;
@@ -54,14 +52,11 @@ function createWindow(): void {
     };
 
     const shortcuts: Array<[string, () => void]> = [
-        // Zoom In variants
         ['CommandOrControl+=', () => setZoomRelative(step)],
         ['CommandOrControl+Plus', () => setZoomRelative(step)],
         ['CommandOrControl+numadd', () => setZoomRelative(step)],
-        // Zoom Out variants (keep existing behavior consistent)
         ['CommandOrControl+-', () => setZoomRelative(-step)],
         ['CommandOrControl+numsub', () => setZoomRelative(-step)],
-        // Reset Zoom
         ['CommandOrControl+0', () => mainWindow.webContents.setZoomFactor(1)],
     ];
 
@@ -74,7 +69,6 @@ function createWindow(): void {
     });
 
     mainWindow.on('closed', () => {
-        // Unregister only our shortcuts when window closed
         shortcuts.forEach(([accel]) => globalShortcut.unregister(accel));
     });
 }

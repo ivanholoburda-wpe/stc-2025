@@ -48,4 +48,6 @@ export const TYPES = {
     InventoryPortRepository: Symbol.for("InventoryPortRepository"),
     DatabaseMaintenanceService: Symbol.for("DatabaseMaintenanceService"),
     BigQueryExportService: Symbol.for("BigQueryExportService"),
+    DeviceFolderParsingService: Symbol.for("DeviceFolderParsingService"),
+    ParsingServiceFactory: Symbol.for("ParsingServiceFactory"),
 };

@@ -119,6 +119,8 @@ import {IDatabaseMaintenanceService, DatabaseMaintenanceService} from "./service
 import {MaintenanceHandler} from "./handlers/MaintenanceHandler";
 import { BigQueryExportService, IBigQueryExportService } from './services/export/BigQueryExportService';
 import {GeneralReportProvider} from "./services/export/providers/GeneralReportProvider";
+import {DeviceFolderParsingService} from "./services/parser/DeviceFolderParsingService";
+import {IParsingServiceFactory, ParsingServiceFactory} from "./services/parser/ParsingServiceFactory";
 
 const container = new Container();
 
@@ -172,6 +174,8 @@ container.bind<AnalyticsService>(TYPES.AnalyticsService).to(AnalyticsService);
 container.bind<IExportService>(TYPES.ExportService).to(ExportService);
 container.bind<IDatabaseMaintenanceService>(TYPES.DatabaseMaintenanceService).to(DatabaseMaintenanceService);
 container.bind<IBigQueryExportService>(TYPES.BigQueryExportService).to(BigQueryExportService);
+container.bind<DeviceFolderParsingService>(TYPES.DeviceFolderParsingService).to(DeviceFolderParsingService);
+container.bind<IParsingServiceFactory>(TYPES.ParsingServiceFactory).to(ParsingServiceFactory);
 
 container.bind<DeviceHandler>(DeviceHandler).toSelf();
 container.bind<ParsingHandler>(ParsingHandler).toSelf();
