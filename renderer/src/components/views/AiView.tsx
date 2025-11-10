@@ -11,7 +11,7 @@ export const AiView = () => {
     const [inputValue, setInputValue] = useState('');
 
     const [messages, setMessages] = useState([
-        {id: generateId(), sender: 'ai', text: 'Вітаю! Оберіть снапшот і поставте ваше запитання.'}
+        {id: generateId(), sender: 'ai', text: 'Hello! Please select a snapshot and ask your question.'}
     ]);
 
     const [snapshots, setSnapshots] = useState([]);
@@ -28,7 +28,7 @@ export const AiView = () => {
                     setMessages(prev => [...prev, {
                         id: crypto.randomUUID(),
                         sender: 'ai',
-                        text: `Помилка завантаження снапшотів: ${result.error}`
+                        text: `Error loading snapshots: ${result.error}`
                     }]);
                 }
             } catch (error) {
@@ -36,7 +36,7 @@ export const AiView = () => {
                 setMessages(prev => [...prev, {
                     id: crypto.randomUUID(),
                     sender: 'ai',
-                    text: `Критична помилка: ${(error as Error).message}`
+                    text: `Critical error: ${(error as Error).message}`
                 }]);
             } finally {
                 setIsSnapshotsLoading(false);
@@ -61,7 +61,7 @@ export const AiView = () => {
             setMessages(prev => [...prev, {
                 id: generateId(),
                 sender: 'ai',
-                text: 'Будь ласка, спочатку оберіть снапшот.'
+                text: 'Please select a snapshot first.'
             }]);
             return;
         }
@@ -93,8 +93,8 @@ export const AiView = () => {
     return (
         <div className="flex flex-col h-full p-6 text-white bg-gray-900">
             <div className="mb-4 flex-shrink-0">
-                <label htmlFor="snapshot-select" className="block text-sm font-medium text-gray-300 mb-2">Оберіть
-                    снапшот для аналізу:</label>
+                <label htmlFor="snapshot-select" className="block text-sm font-medium text-gray-300 mb-2">Select
+                    snapshot for analysis:</label>
                 <select
                     id="snapshot-select"
                     value={selectedSnapshot}
@@ -103,7 +103,7 @@ export const AiView = () => {
                     className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150 ease-in-out shadow-inner"
                 >
                     <option value="" disabled>
-                        {isSnapshotsLoading ? 'Завантаження снапшотів...' : '-- Будь ласка, виберіть --'}
+                        {isSnapshotsLoading ? 'Loading snapshots...' : '-- Please select --'}
                     </option>
                     {snapshots.map(snap => (
                         <option key={snap.id} value={snap.id}>
@@ -151,7 +151,7 @@ export const AiView = () => {
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder={isLoading ? "AI генерує відповідь..." : "Введіть ваше запитання..."}
+                        placeholder={isLoading ? "AI is generating response..." : "Enter your question..."}
                         disabled={isLoading}
                         className="flex-grow bg-gray-700 border border-gray-600 rounded-full py-2.5 px-5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 transition duration-150 ease-in-out"
                     />
@@ -159,7 +159,7 @@ export const AiView = () => {
                         type="submit"
                         disabled={isLoading || !inputValue.trim()}
                         className="bg-blue-600 rounded-full p-3 text-white shadow-lg hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors duration-200"
-                        title="Надіслати"
+                        title="Send"
                     >
                         <SendIcon className="w-5 h-5"/>
                     </button>
