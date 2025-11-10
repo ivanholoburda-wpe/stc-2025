@@ -17,7 +17,7 @@ import {MaintenanceHandler} from "./backend/src/handlers/MaintenanceHandler";
 function createWindow(): void {
     const { workArea } = screen.getPrimaryDisplay();
     const targetWidth = 1200;
-    const targetHeight = 700;
+    const targetHeight = 800;
     const minWidth = Math.min(targetWidth, workArea.width);
     const minHeight = Math.min(targetHeight, workArea.height);
     const initialWidth = Math.min(targetWidth, workArea.width);
@@ -32,6 +32,8 @@ function createWindow(): void {
             preload: path.join(__dirname, 'preload.js'),
         },
     });
+
+    mainWindow.maximize();
 
     console.log(process.env.NODE_ENV);
     if (process.env.NODE_ENV === 'development') {
