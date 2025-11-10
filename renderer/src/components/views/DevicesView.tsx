@@ -128,7 +128,7 @@ export function DevicesView() {
         fetchBaseDetails();
     }, [selectedDeviceId, selectedSnapshotId]);
 
-    // 3. "Ліниве" завантаження даних для активної вкладки
+    // 3. Lazy loading of data for active tab
     useEffect(() => {
         if (!selectedDeviceId || !selectedSnapshotId || !activeTab || activeTab === 'Summary') return;
         const loadTabData = async () => {
@@ -232,14 +232,14 @@ export function DevicesView() {
         if (error) return <ErrorDisplay error={error}/>;
         if (loading.tab) return <LoadingSpinner/>;
 
-        const noDataMsg = "Немає даних для відображення.";
+        const noDataMsg = "No data to display.";
 
         switch (activeTab) {
             case 'Summary':
                 return summaryDetails ? <SummaryTab device={summaryDetails}/> : <NoDataDisplay message={noDataMsg}/>;
             case 'Hardware':
                 if (hardware === null) {
-                    return <NoDataDisplay message="Завантаження даних..."/>;
+                    return <NoDataDisplay message="Loading data..."/>;
                 }
                 return <HardwareTab components={hardware}/>;
             case 'Ports':

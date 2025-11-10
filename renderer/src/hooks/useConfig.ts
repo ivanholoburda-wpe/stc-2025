@@ -6,8 +6,8 @@ interface ConfigState {
 }
 
 /**
- * Хук для отримання конфігурації застосунку (наприклад, режиму офлайн).
- * @returns Поточний стан конфігурації.
+ * Hook for getting application configuration (e.g., offline mode).
+ * @returns Current configuration state.
  */
 export const useConfig = (): ConfigState => {
   const [isOffline, setIsOffline] = useState(false);

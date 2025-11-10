@@ -184,7 +184,7 @@ export function AnalyticsView() {
 
                 {metricRequiresInterface && (
                     <div>
-                        <label htmlFor="interface-select" className="block text-sm font-medium text-gray-300 mb-2">Інтерфейс:</label>
+                        <label htmlFor="interface-select" className="block text-sm font-medium text-gray-300 mb-2">Interface:</label>
                         <select
                             id="interface-select"
                             value={selectedInterfaceName}
